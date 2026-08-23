@@ -1,5 +1,7 @@
 # 泥云智探使用说明
 
+本网页已全面开源至 [https://github.com/Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。
+
 ## 一、这是什么网站
 
 “泥云智探”是一个面向公众、学生和传统文化爱好者的齐鲁封泥智慧人文平台。

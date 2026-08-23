@@ -4,6 +4,8 @@
 
 正式网址：待定。当前本地访问地址为 `http://127.0.0.1:3000`，正式上线后将以部署平台分配的公网地址或最终绑定域名为准。
 
+本网页已全面开源至 [https://github.com/Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。
+
 普通用户使用说明：请阅读 [docs/User-Safari.md](./docs/User-Safari.md)。
 
 ## 功能

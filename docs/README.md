@@ -2,6 +2,8 @@
 
 该目录保存不会直接参与网站运行的项目资料。
 
+本网页已全面开源至 [https://github.com/Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。
+
 其中，[普通用户使用说明](./User-Safari.md)介绍网站的浏览路线、地图与 3D 交互、AI 助手、趣味问答以及显示设置。显示设置中的“墨玉”是深色模式，“昼夜自动”会按照本地时间在浅色和深色之间切换。
 
 ```text
