@@ -9,6 +9,7 @@
   const musicButton = document.querySelector("#toggleMusic");
   const restartButton = document.querySelector("#restartMusic");
   const carouselButton = document.querySelector("#toggleMusicCarousel");
+  const nextButton = document.querySelector("#nextMusic");
   const trackInputs = [...document.querySelectorAll("[name=backgroundMusicTrack]")];
   const tracks = (config.tracks || []).map((track) => ({
     ...track,
@@ -44,11 +45,18 @@
     return tracks.find((track) => track.id === selectedTrackId) || tracks[0] || null;
   }
 
+  function getSelectedTrackVolume() {
+    const track = getSelectedTrack();
+    const scale = Number.isFinite(Number(track?.volumeScale)) ? Math.min(1, Math.max(0, Number(track.volumeScale))) : 1;
+    return settings.volume * scale;
+  }
+
   function applySelectedTrack() {
     const track = getSelectedTrack();
     audio.pause();
     audio.currentTime = 0;
     audio.src = track?.url || "";
+    audio.volume = getSelectedTrackVolume();
     audio.loop = !carouselEnabled;
     audio.title = track?.label || config.title || "背景音乐";
     trackInputs.forEach((input) => { input.checked = input.value === track?.id; });
@@ -74,6 +82,7 @@
       musicButton.disabled = !hasMusic;
     }
     if (restartButton) restartButton.disabled = !hasMusic;
+    if (nextButton) nextButton.disabled = tracks.length < 2 || activeVideos > 0;
     if (carouselButton) {
       const canCarousel = tracks.length > 1;
       carouselButton.disabled = !canCarousel;
@@ -104,7 +113,7 @@
     try {
       audio.volume = Math.min(audio.volume, settings.volume);
       await audio.play();
-      fadeTo(settings.volume);
+      fadeTo(getSelectedTrackVolume());
       syncControls();
       return true;
     } catch (_) {
@@ -165,6 +174,16 @@
     if (settings.enabled && activeVideos === 0) playMusic();
   }
 
+  function skipToNextTrack() {
+    if (tracks.length < 2 || activeVideos > 0) return;
+    const currentIndex = tracks.findIndex((track) => track.id === selectedTrackId);
+    selectedTrackId = tracks[(currentIndex + 1) % tracks.length].id;
+    window.localStorage.setItem(trackStorageKey, selectedTrackId);
+    applySelectedTrack();
+    syncControls();
+    if (settings.enabled) playMusic();
+  }
+
   document.addEventListener("play", handleVideoPlay, true);
   document.addEventListener("pause", handleVideoStop, true);
   document.addEventListener("ended", handleVideoStop, true);
@@ -173,7 +192,7 @@
 
   // 用户已开启音乐时尝试自动播放；若浏览器拦截，则在用户第一次操作页面时重试。
   function resumeAfterUserGesture(event) {
-    if (event.target.closest?.("#toggleMusic, #restartMusic, #toggleMusicCarousel, #backgroundMusicEnabled, [name=backgroundMusicTrack], #backgroundMusicVolume")) return;
+    if (event.target.closest?.("#toggleMusic, #restartMusic, #toggleMusicCarousel, #nextMusic, #backgroundMusicEnabled, [name=backgroundMusicTrack], #backgroundMusicVolume")) return;
     if (!settings.enabled || activeVideos > 0 || !audio.paused) return;
     playMusic();
   }
@@ -221,6 +240,8 @@
   });
   carouselButton?.addEventListener("pointerdown", (event) => event.stopPropagation());
   restartButton?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  nextButton?.addEventListener("click", (event) => { event.stopPropagation(); skipToNextTrack(); });
+  nextButton?.addEventListener("pointerdown", (event) => event.stopPropagation());
   trackInputs.forEach((input) => input.addEventListener("change", () => {
     const shouldResume = settings.enabled && !audio.paused;
     selectedTrackId = input.value;
@@ -231,7 +252,7 @@
   }));
   volumeInput?.addEventListener("input", () => {
     settings.volume = Number(volumeInput.value) / 100;
-    audio.volume = settings.volume;
+    audio.volume = getSelectedTrackVolume();
     saveSettings();
     syncControls();
   });

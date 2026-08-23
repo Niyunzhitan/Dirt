@@ -11,17 +11,19 @@ window.MEDIA_CONFIG = {
   /*
    * ==================== 音乐快速配置区 ====================
    * 修改音乐时优先调整这里，不需要改 js/media-coordinator.js。
-   * defaultTrackId 必须对应 tracks 中的 id；defaultVolume 使用 0～1，0.03 表示 3%。
+   * defaultTrackId 必须对应 tracks 中的 id；defaultVolume 使用 0～1，0.06 表示 6%。
+   * tracks.volumeScale 是单曲音量系数：1 为正常，0.6 为总音量的一半。
    */
   backgroundMusic: {
     title: "泥云智探背景音乐",
-    defaultTrackId: "amazingGrace", // 默认曲目：恩典
-    defaultVolume: 0.03, // 默认音量：3%
+    defaultTrackId: "lane", // 默认曲目：古巷
+    defaultVolume: 0.06, // 默认音量：3%
     defaultEnabled: false, // 默认关闭，用户可通过导航栏或设置开启
-    defaultCarouselEnabled: false, // 默认关闭轮播，开启后两首歌曲交替播放
+    defaultCarouselEnabled: false, // 默认关闭轮播，开启后按 tracks 顺序播放全部歌曲
     tracks: [
-      { id: "amazingGrace", label: "amazingGrace", url: "./assets/media/music/amazingGrace.mp3" },
-      { id: "eternal", label: "eternal", url: "./assets/media/music/eternal.mp3" }
+      { id: "lane", label: "lane", volumeScale: 1, url: "./assets/media/music/lane.mp3" },
+      { id: "amazingGrace", label: "amazingGrace", volumeScale: 1, url: "./assets/media/music/amazingGrace.mp3" },
+      { id: "eternal", label: "eternal", volumeScale: 0.6, url: "./assets/media/music/eternal.mp3" }
     ]
   },
 

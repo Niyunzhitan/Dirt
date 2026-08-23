@@ -1024,7 +1024,7 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 .setting-check { display: flex; align-items: center; gap: var(--space-xs); color: var(--color-ink-muted); cursor: var(--cursor-pointer) !important; }
 .setting-check input { width: 1.15rem; height: 1.15rem; margin: 0; accent-color: var(--color-accent); cursor: var(--cursor-pointer) !important; }
 .sound-toggle-row { display: flex; align-items: center; justify-content: flex-start; gap: var(--space-2xs); }
-.music-track-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: var(--space-md); border: var(--rule-hairline) solid var(--color-rule-strong); }
+.music-track-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--space-md); border: var(--rule-hairline) solid var(--color-rule-strong); }
 .music-track-tabs label { min-width: 0; cursor: var(--cursor-pointer) !important; }
 .music-track-tabs input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .music-track-tabs span { min-height: 2.75rem; display: grid; place-items: center; padding-inline: var(--space-2xs); color: var(--color-ink-muted); border-right: var(--rule-hairline) solid var(--color-rule); cursor: var(--cursor-pointer) !important; font: inherit; font-size: var(--text-sm); white-space: nowrap; transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
@@ -1033,16 +1033,21 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 .music-track-tabs input:focus-visible + span { outline: 2px solid var(--color-focus); outline-offset: -3px; }
 .music-action-buttons { display: flex; align-items: center; gap: var(--space-3xs); }
 .music-restart-button,
-.music-carousel-button { width: 2.75rem; height: 2.75rem; display: grid; place-items: center; padding: 0; color: var(--color-ink-muted); border: 1px solid transparent; background: transparent; cursor: var(--cursor-pointer) !important; font-size: 1.35rem; line-height: 1; }
+.music-carousel-button,
+.music-next-button { width: 2.75rem; height: 2.75rem; display: grid; place-items: center; padding: 0; color: var(--color-ink-muted); border: 1px solid transparent; background: transparent; cursor: var(--cursor-pointer) !important; font-size: 1.35rem; line-height: 1; }
 .music-restart-button:hover:not(:disabled),
-.music-carousel-button:hover:not(:disabled) { color: var(--color-accent); }
+.music-carousel-button:hover:not(:disabled),
+.music-next-button:hover:not(:disabled) { color: var(--color-accent); }
 .music-carousel-button[data-enabled="true"] { color: var(--color-accent); border-color: var(--color-rule); background: var(--color-paper-deep); }
 .music-restart-button:active:not(:disabled),
-.music-carousel-button:active:not(:disabled) { color: var(--color-accent-dark); background: var(--color-paper-deep); }
+.music-carousel-button:active:not(:disabled),
+.music-next-button:active:not(:disabled) { color: var(--color-accent-dark); background: var(--color-paper-deep); }
 .music-restart-button:focus-visible,
-.music-carousel-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.music-carousel-button:focus-visible,
+.music-next-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .music-restart-button:disabled,
-.music-carousel-button:disabled { cursor: not-allowed; opacity: .4; }
+.music-carousel-button:disabled,
+.music-next-button:disabled { cursor: not-allowed; opacity: .4; }
 .setting-label { margin-bottom: var(--space-xs); }
 .segmented-control { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: var(--rule-hairline) solid var(--color-rule-strong); }
 .segmented-control label { min-width: 0; cursor: var(--cursor-pointer) !important; }

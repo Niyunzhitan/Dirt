@@ -22,7 +22,7 @@
 - 随机十题、逐题判定的封泥趣味问答
 - 汉白玉、墨玉和昼夜自动三种色彩主题
 - 开屏动画、图片、地图、3D 展厅、AI、问答和弹窗的深色模式适配
-- `eternal.mp3` 与 `amazingGrace.mp3` 背景音乐、单曲循环和音乐轮播
+- `lane.mp3`、`amazingGrace.mp3` 与 `eternal.mp3` 背景音乐、单曲循环、下一首和音乐轮播
 
 ## 色彩主题
 
@@ -202,7 +202,7 @@ data/media-config.js
 最简单的本地替换方式：
 
 1. 课程视频和封面放入 `assets/media/courses/`，在 `courses` 中填写相对路径。
-2. 背景音乐放入 `assets/media/music/`，在 `backgroundMusic.tracks` 中填写曲目 id、显示名称和相对路径。
+2. 背景音乐放入 `assets/media/music/`，在 `backgroundMusic.tracks` 中填写曲目 id、显示名称、音量系数和相对路径；曲目数组顺序就是轮播顺序。
 3. Photoshop 贴图直接覆盖 `assets/textures/` 中配置的同名 PNG/WebP；同名覆盖不需要改代码。
 4. 使用新文件名时，只修改 `data/media-config.js` 中对应的媒体路径。
 5. 使用外部 CDN 或视频源时必须使用 HTTPS，并把域名加入 `allowedExternalHosts`，否则网页会拒绝加载。
