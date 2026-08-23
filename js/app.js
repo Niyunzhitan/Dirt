@@ -679,6 +679,7 @@
   let openingFallbackTimer = null;
   let openingFinishedAt = 0;
   let openingRemoveTimer = null;
+  let cachedPaperWidth = null; // 缓存卷轴宽度，避免重复计算
 
   function updateLoaderVisuals(progress) {
     if (!openingLoader) return;
@@ -756,7 +757,11 @@
 
       // 卷轴完整展开
       // 最终宽度必须至少容纳卷轴纸面的真实宽度，否则进度到 100% 时内容仍会被裁掉。
-      const paperWidth = scrollPaper?.getBoundingClientRect().width || 704;
+      // 缓存 paperWidth 避免每帧都触发 getBoundingClientRect 导致性能卡顿
+      if (!cachedPaperWidth && scrollPaper) {
+        cachedPaperWidth = scrollPaper.getBoundingClientRect().width || 704;
+      }
+      const paperWidth = cachedPaperWidth || 704;
       const widthRatio = window.innerWidth < openingLoaderConfig.mobileBreakpoint
         ? openingLoaderConfig.finalWidthRatio.mobile
         : openingLoaderConfig.finalWidthRatio.desktop;
@@ -1600,6 +1605,46 @@
     }
     requestAnimationFrame(animate);
   }());
+
+  /* 5. 图片懒加载：监听图片加载完成，添加淡入效果 */
+  (function initLazyImageLoading() {
+    // 现代浏览器支持原生 loading="lazy"，我们只需监听加载完成事件
+    const lazyImages = $$('img[loading="lazy"]');
+
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            // 图片进入视口后，等待其加载完成
+            if (img.complete) {
+              img.classList.add('loaded');
+            } else {
+              img.addEventListener('load', function onLoad() {
+                img.classList.add('loaded');
+                img.removeEventListener('load', onLoad);
+              }, { once: true });
+            }
+            imageObserver.unobserve(img);
+          }
+        });
+      }, {
+        rootMargin: '50px' // 提前50px开始加载
+      });
+
+      lazyImages.forEach((img) => {
+        // 如果图片已经加载完成（可能是缓存），直接添加类名
+        if (img.complete) {
+          img.classList.add('loaded');
+        } else {
+          imageObserver.observe(img);
+        }
+      });
+    } else {
+      // 降级处理：不支持 IntersectionObserver 的浏览器直接显示
+      lazyImages.forEach((img) => img.classList.add('loaded'));
+    }
+  })();
 
   init().catch(() => { finishOpeningLoader(false); showToast("部分页面资料加载失败，请稍后重试"); });
 }());
