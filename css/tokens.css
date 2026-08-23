@@ -1,0 +1,298 @@
+/*
+ * 全站设计变量（Design Tokens）
+ * 修改这里可以统一调整颜色、字体、间距、动画速度等基础风格。
+ * 具体板块的排版仍由 styles.css 管理。
+ */
+:root {
+  /*
+   * ==================== 常用视觉参数快速调整区 ====================
+   * 后续改视觉时优先修改本区，不必在 styles.css 中逐行寻找数字。
+   * 色彩和字体的详细变量紧接在本区下方。
+   */
+
+  /* 页面尺寸：正文最大宽度、正文占视口宽度（88vw 约等于两侧各留 6vw）、导航高度 */
+  --layout-content-max: 78rem;
+  --layout-content-width: 88vw;
+  --layout-header-height: 4.75rem;
+  --layout-header-height-mobile: 4.125rem;
+  /* 导航在该宽度以下折叠；数值包含浏览器放大后的文字回流空间。 */
+  --layout-nav-menu-top: var(--layout-header-height);
+  --layout-nav-menu-top-mobile: var(--layout-header-height-mobile);
+
+  /* 印小灵宠物：控制图片区域、对话面板和语录气泡位置。 */
+  /* 容器尺寸等于图片画布尺寸，便于图片完整拖到视口四边。 */
+  --layout-ai-pet-width: 15rem;
+  --layout-ai-pet-height: 11.25rem;
+  --layout-ai-pet-panel-bottom: 9rem;
+  /* 语录气泡中心相对宠物图片左上角的距离。值越大，气泡越向右或向下。 */
+  --layout-ai-pet-greeting-offset-x: 5.25rem;
+  --layout-ai-pet-greeting-offset-y: 1.2rem;
+  --layout-ai-pet-width-mobile: 9rem;
+  --layout-ai-pet-height-mobile: 6.75rem;
+  --layout-ai-pet-panel-bottom-mobile: 7rem;
+  --layout-ai-pet-greeting-offset-x-mobile: 4.8rem;
+  --layout-ai-pet-greeting-offset-y-mobile: 0.95rem;
+
+  /* 导航文字与时钟字号：单位 rem，分别控制栏目链接和设置图标左侧时间。 */
+  --text-nav: clamp(.84rem, .82vw, .98rem);
+  --text-header-clock: .78rem;
+
+  /* 地图模块固定高度：桌面端地图与介绍同高；手机端上下排列后分别控制 */
+  --layout-map-panel-height: 36rem;
+  --layout-map-height-mobile: 25.625rem;
+  --layout-site-panel-height-mobile: 34rem;
+
+  /* 3D 牌具展厅尺寸：桌面场景高度、手机场景高度和右侧展签宽度。 */
+  --layout-product-3d-height: 42rem;
+  --layout-product-3d-height-mobile: 31rem;
+  --layout-product-3d-caption-width: 22rem;
+
+  /* 栏目留白：控制各大栏目上下空间，数字越大页面越舒展 */
+  --layout-section-space: 8.5rem;
+  --layout-section-space-mobile: 5.5rem;
+
+  /* 栏目进退场动画：进入稍慢，退出稍快，位移控制上下滑动距离 */
+  --motion-reveal-enter: 1100ms;
+  --motion-reveal-exit: 900ms;
+  --motion-reveal-distance: 32px;
+  --motion-child-enter: 900ms;
+  --motion-child-distance: 24px;
+  --motion-stagger-step: 80ms;
+
+  /* 常用装饰参数：背景微尘透明度、卡片描边高亮时间、首屏文物漂浮速度 */
+  --effect-dust-opacity: 0.68;
+  --effect-search-highlight-duration: 1800ms;
+  --effect-hero-drift-duration: 8s;
+  --effect-hero-small-drift-duration: 7s;
+
+  /* 局部动效速度：卡片倾斜的角度、透视和抬升由 JavaScript 根据鼠标位置计算 */
+  --motion-ripple: 600ms;
+  --motion-card-hover: 350ms;
+  --motion-header-tool-hover: 180ms;
+  --motion-settings-enter: 800ms;
+  --motion-settings-exit: 320ms;
+  --motion-settings-reveal-start: 100%;
+  --motion-search-enter: 850ms;
+  --motion-search-exit: 360ms;
+  --motion-search-travel-y: 1.5rem;
+  --motion-search-scale-from: .97;
+  --motion-filter-state: 250ms;
+  --motion-scroll-knot: 400ms;
+
+  /* 用户设置运行时变量：由设置抽屉即时更新，不建议手动修改。 */
+  --reader-font-size: 0.9rem;
+  --reader-line-height: 1.8;
+  --user-motion-scale: 0.6;
+
+  /*
+   * ==================== 浅色 / 深色主题快速配置区 ====================
+   * 浅色值写在 :root，深色值写在文件末尾的 [data-theme="dark"]。
+   * 调整主题时优先修改这里和对应的深色覆盖，不要在 styles.css 中新增硬编码颜色。
+   */
+  --theme-body-glow: rgba(255, 255, 255, 0.45);
+  --theme-body-texture: rgba(140, 110, 80, 0.015);
+  --theme-opening-bg: #f5eedf;
+  --theme-opening-center: rgba(246, 241, 230, 0.95);
+  --theme-opening-middle: rgba(237, 229, 212, 0.92);
+  --theme-opening-edge: rgba(220, 206, 180, 0.96);
+  --theme-opening-dot: rgba(140, 105, 75, 0.08);
+  --theme-opening-glow: rgba(186, 93, 69, 0.12);
+  --theme-opening-glow-secondary: rgba(212, 175, 55, 0.07);
+  --theme-opening-pattern-strong: rgba(160, 125, 90, 0.04);
+  --theme-opening-pattern-soft: rgba(160, 125, 90, 0.015);
+  --theme-opening-pattern-opacity: 0.45;
+  --theme-opening-watermark: rgba(168, 51, 42, 0.038);
+  --theme-opening-watermark-glow: rgba(168, 51, 42, 0.02);
+  --theme-opening-corner: rgba(159, 48, 39, 0.16);
+  --theme-opening-corner-inner: rgba(159, 48, 39, 0.22);
+  --theme-opening-title: #2b1810;
+  --theme-opening-subtitle: #6b5c4d;
+  --theme-opening-status: #5c4e40;
+  --theme-opening-track: rgba(140, 110, 80, 0.18);
+  --theme-opening-track-border: rgba(140, 110, 80, 0.25);
+  --theme-modal-scrim: rgba(25, 28, 27, 0.68);
+  --theme-panel-shadow: var(--color-shadow);
+  --theme-image-shadow: rgba(0, 0, 0, 0.65);
+  --theme-image-edge-fade: 0%;
+  --theme-scrollbar-track: oklch(88% 0.015 78);
+  --theme-scrollbar-thumb: oklch(58% 0.018 72);
+  --theme-scrollbar-thumb-hover: oklch(48% 0.025 55);
+  --theme-quick-prompt-bg: var(--color-paper-soft);
+  --theme-quick-prompt-text: var(--color-bronze-dark);
+  --theme-quick-prompt-border: var(--color-rule-strong);
+
+  /* 页面纸张底色、正文颜色和次要文字颜色 */
+  --color-paper: oklch(91% 0.018 82);
+  --color-paper-soft: oklch(94% 0.014 82);
+  --color-paper-deep: oklch(86% 0.024 78);
+  --color-paper-creative: var(--color-paper-soft);
+  /* 导航选项卡、完整导航栏和页尾共用同一表面色。 */
+  --color-navigation-surface: var(--color-paper-soft);
+  --color-ink: oklch(24% 0.012 70);
+  --color-ink-muted: oklch(49% 0.015 70);
+
+  /* 朱砂与印章色：用于按钮、强调文字、印章和交互反馈 */
+  --color-accent: oklch(48% 0.14 29);
+  --color-accent-dark: oklch(36% 0.11 29);
+  --color-cinnabar-soft: rgba(168, 51, 42, 0.12);
+
+  /* 澄泥、陶土、竹简与丝帛色：用于文物和手卷场景 */
+  --color-clay: oklch(53% 0.09 43);
+  --color-clay-soft: oklch(74% 0.055 62);
+
+  /* 青铜和深色展区：主要用于地图及深色背景 */
+  --color-bronze: oklch(46% 0.045 160);
+  --color-bronze-dark: oklch(30% 0.035 160);
+  --color-dark-surface: oklch(29% 0.032 160);
+  --color-dark-surface-soft: oklch(36% 0.038 160);
+  --color-dark-ink: oklch(94% 0.014 82);
+  --color-dark-muted: oklch(76% 0.018 120);
+  --color-map-marker: oklch(82% 0.055 72);
+  --color-rule: oklch(50% 0.02 75 / 20%);
+  --color-rule-strong: oklch(42% 0.04 45 / 35%);
+  --color-focus: oklch(54% 0.16 29);
+  --color-accent-ink: oklch(96% 0.012 82);
+  --color-shadow: oklch(25% 0.02 45 / 25%);
+  --color-shadow-soft: oklch(25% 0.02 45 / 18%);
+
+  /* 数字手卷专用颜色 */
+  --color-scroll-paper: oklch(88% 0.035 77);
+  --color-scroll-paper-light: oklch(93% 0.024 79);
+  --color-scroll-fiber: oklch(54% 0.025 72 / 18%);
+  --color-scroll-edge: oklch(46% 0.045 53);
+  --color-scroll-cord: oklch(38% 0.055 42);
+
+  /* 字体分工：榜书用于大标题，宋体用于展陈标题，黑体用于界面正文 */
+  --font-monument: "Sanji Bangshu Web", "三极榜书", "STKaiti", KaiTi, serif;
+  --font-display: "Noto Serif SC", "Songti SC", SimSun, serif;
+  --font-literary: "Noto Serif SC", "Songti SC", SimSun, serif;
+  --font-body: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  /* 统一间距阶梯：优先使用这些变量，避免各处随意填写尺寸 */
+  --space-3xs: .25rem;
+  --space-2xs: .5rem;
+  --space-xs: .75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  /* 统一字号阶梯 */
+  --text-xs: .75rem;
+  --text-sm: .875rem;
+  --text-md: 1.05rem;
+  --text-lg: 1.4rem;
+  --text-xl: 1.9rem;
+  --text-2xl: 2.7rem;
+  --text-display: clamp(4.5rem, 9vw, 8.75rem);
+  /* 通用动画节奏：按钮等小交互使用，不控制栏目加载动画 */
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-stamp: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-short: 180ms;
+  --dur-medium: 650ms;
+  --dur-long: 1100ms;
+  /* 边框和圆角。当前展陈风格使用直角卡片。 */
+  --rule-hairline: 1px;
+
+  /* 旧样式使用的简短别名统一映射到上面的设计变量，避免维护两套色值。 */
+  --paper: var(--color-paper);
+  --ink: var(--color-ink);
+  --muted: var(--color-ink-muted);
+  --red: var(--color-accent);
+  --red-dark: var(--color-accent-dark);
+  --green: var(--color-bronze);
+  --green-dark: var(--color-bronze-dark);
+  --section-bg: var(--color-paper);
+  --line: var(--color-rule);
+  --serif: var(--font-display);
+  --sans: var(--font-body);
+}
+
+/*
+ * ==================== 夜间模式（Dark / Night Theme）设计变量 ====================
+ * 齐鲁金石雅韵深色基调：玄青墨玉、深黛陶泥、苍金青铜与朱砂微光。
+ * 兼具东方美学与高对比度阅读舒适性。
+ */
+[data-theme="dark"] {
+  /* 深色主题快速配置：与 :root 中的同名变量一一对应。 */
+  --theme-body-glow: rgba(255, 255, 255, 0.04);
+  --theme-body-texture: rgba(255, 255, 255, 0.012);
+  --theme-opening-bg: #151819;
+  --theme-opening-center: rgba(32, 38, 38, 0.95);
+  --theme-opening-middle: rgba(20, 24, 25, 0.96);
+  --theme-opening-edge: rgba(13, 16, 17, 0.98);
+  --theme-opening-dot: rgba(224, 180, 140, 0.05);
+  --theme-opening-glow: rgba(224, 86, 74, 0.16);
+  --theme-opening-glow-secondary: rgba(212, 175, 55, 0.1);
+  --theme-opening-pattern-strong: rgba(220, 190, 150, 0.04);
+  --theme-opening-pattern-soft: rgba(220, 190, 150, 0.02);
+  --theme-opening-pattern-opacity: 0.25;
+  --theme-opening-watermark: rgba(224, 86, 74, 0.06);
+  --theme-opening-watermark-glow: rgba(224, 86, 74, 0.08);
+  --theme-opening-corner: rgba(224, 86, 74, 0.28);
+  --theme-opening-corner-inner: rgba(224, 86, 74, 0.4);
+  --theme-opening-title: #f2ece1;
+  --theme-opening-subtitle: #c4b6a4;
+  --theme-opening-status: #d8cdbf;
+  --theme-opening-track: rgba(255, 255, 255, 0.08);
+  --theme-opening-track-border: rgba(255, 255, 255, 0.14);
+  --theme-modal-scrim: rgba(0, 0, 0, 0.78);
+  --theme-panel-shadow: rgba(0, 0, 0, 0.7);
+  --theme-image-shadow: rgba(0, 0, 0, 0.65);
+  --theme-image-edge-fade: 7%;
+  /* 浏览器式深色滚动条：暗轨道、灰色滑块，悬停时略微提亮。 */
+  --theme-scrollbar-track: oklch(13% 0.008 75);
+  --theme-scrollbar-thumb: oklch(42% 0.012 75);
+  --theme-scrollbar-thumb-hover: oklch(55% 0.018 72);
+  --theme-quick-prompt-bg: oklch(25% 0.018 75);
+  --theme-quick-prompt-text: oklch(88% 0.018 80);
+  --theme-quick-prompt-border: oklch(72% 0.02 80 / 34%);
+
+  /* 页面底色与纸张质感：从古宣纸转为玄黑、深黛与墨玉古砚色 */
+  --color-paper: oklch(18% 0.015 75);
+  --color-paper-soft: oklch(22% 0.018 75);
+  --color-paper-deep: oklch(14% 0.012 75);
+  --color-paper-creative: oklch(21% 0.016 75);
+  --color-ink: oklch(92% 0.016 80);
+  --color-ink-muted: oklch(72% 0.022 78);
+
+  /* 朱砂印泥：夜间提升明度与鲜艳度，避免在深色背景下暗沉 */
+  --color-accent: oklch(62% 0.185 29);
+  --color-accent-dark: oklch(52% 0.16 29);
+  --color-cinnabar-soft: rgba(224, 86, 74, 0.18);
+
+  /* 陶土、澄泥与竹帛色：夜间使用淡古金与赭石柔和色 */
+  --color-clay: oklch(68% 0.11 48);
+  --color-clay-soft: oklch(42% 0.065 55);
+
+  /* 青铜、冷绿与深色容器表面 */
+  --color-bronze: oklch(58% 0.075 160);
+  --color-bronze-dark: oklch(44% 0.06 160);
+  --color-dark-surface: oklch(15% 0.02 165);
+  --color-dark-surface-soft: oklch(20% 0.025 165);
+  --color-dark-ink: oklch(95% 0.012 80);
+  --color-dark-muted: oklch(75% 0.02 120);
+  --color-map-marker: oklch(86% 0.08 72);
+
+  /* 边框线条与阴影：夜间改用微光轮廓与柔和深黑阴影 */
+  --color-rule: oklch(80% 0.015 80 / 14%);
+  --color-rule-strong: oklch(85% 0.02 80 / 25%);
+  --color-focus: oklch(68% 0.19 29);
+  --color-accent-ink: oklch(98% 0.01 80);
+  --color-shadow: oklch(5% 0.01 45 / 65%);
+  --color-shadow-soft: oklch(5% 0.01 45 / 45%);
+
+  /* 数字手卷专用夜色 */
+  --color-scroll-paper: oklch(24% 0.02 70);
+  --color-scroll-paper-light: oklch(27% 0.022 72);
+  --color-scroll-fiber: oklch(80% 0.02 72 / 12%);
+  --color-scroll-edge: oklch(48% 0.06 50);
+  --color-scroll-cord: oklch(55% 0.08 40);
+
+  /* AI 回复气泡与助手对话框：提高亮度和对比度，避免发暗 */
+  --color-chat-assistant-bg: oklch(30% 0.022 165);
+  --color-chat-assistant-border: oklch(75% 0.03 165 / 35%);
+
+  /* 背景微尘夜间微光 */
+  --effect-dust-opacity: 0.85;
+}

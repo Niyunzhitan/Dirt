@@ -1,0 +1,13 @@
+Rubbish/
+.git/
+.gitignore
+*.log
+.env
+docs/
+dist/
+.claude/
+.hallmark/
+node_modules/
+.env*
+db/schema.sql
+db/seed.js

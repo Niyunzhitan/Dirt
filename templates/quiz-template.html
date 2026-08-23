@@ -1,0 +1,57 @@
+<div>
+        <div class="section-heading split-heading">
+          <div><p class="eyebrow">趣味问答</p><h2 id="quizTitle">泥印里的知识，你记住了多少？</h2></div>
+          <p class="heading-note">每轮随机抽取十题，每题 10 分。看看你学会了多少吧！</p>
+        </div>
+        <div class="quiz-toolbar">
+          <div><strong aria-label="答题进度">{{ completed }} / {{ total }}</strong></div>
+          <div class="quiz-progress" aria-hidden="true"><i :style="progressStyle"></i></div>
+          <div class="quiz-score" aria-label="当前得分" aria-live="polite"><strong>{{ score }}</strong><small>分</small></div>
+        </div>
+        <form class="quiz-form" aria-describedby="quizFeedback" :aria-busy="submitting" @submit.prevent="submit">
+          <div class="quiz-list" :class="{ 'is-result': showingResult }" aria-live="polite" :aria-busy="loading">
+            <p v-if="loading" class="quiz-loading">正在随机抽取十道题……</p>
+            <div v-else-if="loadError" class="empty-state"><strong>题目加载失败</strong><p>{{ loadError }}</p></div>
+            <div v-else-if="showingResult" class="quiz-result">
+              <span>本轮称号</span><h3>{{ resultTitle }}</h3><strong>{{ score }}<small>分</small></strong>
+              <p>共答对 {{ correctCount }} / {{ total }} 题。每一次辨认，都是走近齐鲁金石的一步。</p>
+              <button class="button quiz-share-button" type="button" @click="openShare">分享成绩 <span aria-hidden="true">↗</span></button>
+              <button class="button primary" type="button" @click="loadQuiz">再来一轮 <span aria-hidden="true">↻</span></button>
+            </div>
+            <fieldset v-else-if="currentQuestion" class="quiz-question" :class="{ 'is-correct': answerResult && answerResult.correct, 'is-wrong': answerResult && !answerResult.correct }">
+              <legend class="sr-only">第 {{ index + 1 }} 题：{{ currentQuestion.question }}</legend>
+              <div class="quiz-question-title">
+                <span class="quiz-question-number">{{ String(index + 1).padStart(2, '0') }}</span>
+                <span class="quiz-difficulty" :data-difficulty="currentQuestion.difficulty || '简单'">{{ currentQuestion.difficulty || '简单' }}</span>
+                <h3>{{ currentQuestion.question }}<span v-if="answered" class="quiz-analysis-hint">【下滑查看详细解析】</span></h3>
+              </div>
+              <div class="quiz-options" :class="{ 'has-long-option': currentQuestion.hasLongOption }">
+                <label v-for="option in currentQuestion.displayOptions" :key="option.originalKey" :class="optionClass(option)">
+                  <input v-model="selectedAnswer" type="radio" :name="'quiz-' + currentQuestion.id" :value="option.originalKey" :disabled="answered">
+                  <span class="quiz-option-key">{{ option.displayKey }}</span><span>{{ option.text }}</span>
+                </label>
+              </div>
+              <div v-if="answerResult" class="quiz-explanation">
+                <strong>{{ answerResult.correct ? '回答正确，答案 ' + correctDisplayKey + '，本题获得 ' + answerResult.earnedScore + ' 分' : '回答错误，正确答案是 ' + correctDisplayKey }}</strong>
+                <p>{{ answerResult.explanation }}</p>
+              </div>
+            </fieldset>
+          </div>
+          <p id="quizFeedback" class="quiz-feedback" role="status" aria-live="polite">{{ feedback }}</p>
+          <div v-if="!showingResult" class="quiz-actions">
+            <button class="button primary" type="submit" :disabled="submitting || (!answered && !selectedAnswer)">{{ submitText }} <span aria-hidden="true">→</span></button>
+            <button class="button primary" type="button" @click="loadQuiz">再来一轮 <span aria-hidden="true">↻</span></button>
+          </div>
+        </form>
+        <teleport to="body">
+          <dialog ref="shareDialog" class="share-dialog" aria-labelledby="shareTitle" @click.self="closeShare" @cancel.prevent="closeShare">
+            <div class="share-panel">
+              <button class="share-close" type="button" aria-label="关闭成绩分享弹窗" @click="closeShare">×</button>
+              <p class="eyebrow">趣味问答成绩</p><div class="share-rank" aria-hidden="true"><span>段</span></div>
+              <p class="share-kicker">本轮段位</p><h2 id="shareTitle">{{ resultTitle }}</h2><p class="share-summary">{{ shareSummary }}</p>
+              <div class="share-url-row"><span class="share-url">{{ shareUrl }}</span><button ref="copyButton" class="share-copy" :class="{ 'is-copied': copied }" type="button" @click="copyUrl">{{ copied ? '已复制' : '复制当前网址' }}</button></div>
+              <p class="share-feedback" role="status" aria-live="polite">{{ copyFeedback }}</p>
+            </div>
+          </dialog>
+        </teleport>
+      </div>
