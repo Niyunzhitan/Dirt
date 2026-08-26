@@ -64,6 +64,8 @@ if (root && window.SEAL_3D_PRODUCTS) {
   let targetRotation = { x: showcaseSettings.initialRotationX, y: showcaseSettings.initialRotationY };
   let flipped = false;
   let loadRevision = 0;
+  let showcaseVisible = true;
+  let animationFrameId = 0;
 
   const textureLoader = new THREE.TextureLoader();
 
@@ -287,9 +289,28 @@ if (root && window.SEAL_3D_PRODUCTS) {
   new ResizeObserver(resize).observe(viewport);
   document.addEventListener("fullscreenchange", resize);
 
+  // 3D 展厅离开视口或页面切到后台时暂停渲染，回来后再从当前状态继续。
+  const showcaseVisibilityObserver = new IntersectionObserver(([entry]) => {
+    showcaseVisible = entry.isIntersecting;
+    if (showcaseVisible && !document.hidden && !animationFrameId) animate();
+  }, { threshold: 0.01 });
+  showcaseVisibilityObserver.observe(root);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = 0;
+    } else if (!document.hidden && showcaseVisible && !animationFrameId) {
+      animate();
+    }
+  });
+
   const clock = new THREE.Clock();
   function animate() {
-    requestAnimationFrame(animate);
+    if (!showcaseVisible || document.hidden) {
+      animationFrameId = 0;
+      return;
+    }
+    animationFrameId = requestAnimationFrame(animate);
     const delta = Math.min(clock.getDelta(), 0.04);
     if (model) {
       if (autoRotate && document.documentElement.dataset.motion !== "0") targetRotation.y += delta * showcaseSettings.autoRotateSpeed;

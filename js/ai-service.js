@@ -54,7 +54,7 @@
     async chat({ message, images = [], sessionId = "guest" }) {
       const encodedImages = await Promise.all(images.map(fileToDataUrl));
       const candidates = [...new Set([activeBaseUrl, ...API_BASE_URLS].filter(Boolean))];
-      let lastError = "AI服务暂时不可用";
+      let lastError = "印小灵暂时没接上线，请稍后再试一次";
       for (const baseUrl of candidates) {
         try {
           const response = await fetch(`${baseUrl}/api/ai/chat`, {

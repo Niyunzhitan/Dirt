@@ -1,6 +1,7 @@
 const mapRoot = document.querySelector("#shandongMap");
 
 if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
+  mapRoot.dataset.mapMode = mapRoot.dataset.mapMode || "terrain";
   const canvas = mapRoot.querySelector("#shandongTerrainCanvas");
   const status = mapRoot.querySelector("#mapTerrainStatus");
   const rotationInput = mapRoot.querySelector("#mapRotation");
@@ -44,6 +45,38 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     // 地图只需要柔和地形明暗，不启用实时阴影，避免出现灰色投影层。
     renderer.shadowMap.enabled = false;
     renderer.setClearColor(0x000000, 0);
+
+    // 地图没有自动动画；只在相机、窗口或点位发生变化时请求一帧，避免离屏时持续占用 GPU。
+    let mapVisible = true;
+    let mapRenderFrame = 0;
+    let markersNeedProjection = true;
+    const requestMapRender = () => {
+      if (!mapVisible || mapRenderFrame) return;
+      mapRenderFrame = window.requestAnimationFrame(() => {
+        mapRenderFrame = 0;
+        if (!mapVisible) return;
+        if (markersNeedProjection) {
+          projectMarkers();
+          markersNeedProjection = false;
+        }
+        renderer.render(scene, camera);
+      });
+    };
+
+    // 点位 DOM、平面图尺寸和地图容器可能在不同帧准备好。
+    // 连续请求两帧可避开首次布局尚未稳定时得到的旧尺寸，不需要恢复持续渲染循环。
+    const invalidateMarkerProjection = () => {
+      markersNeedProjection = true;
+      requestMapRender();
+      window.requestAnimationFrame(() => {
+        markersNeedProjection = true;
+        requestMapRender();
+      });
+    };
+    window.addEventListener("shandong-map-mode-change", (event) => {
+      mapRoot.dataset.mapMode = event.detail?.mode === "flat" ? "flat" : "terrain";
+      invalidateMarkerProjection();
+    });
 
     scene.add(new THREE.HemisphereLight(0xe8dfca, 0x18302b, 2.4));
     const sun = new THREE.DirectionalLight(0xffe4bd, 4.8);
@@ -341,6 +374,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       const elevationDegrees = Math.round(THREE.MathUtils.radToDeg(cameraElevation));
       if (rotationInput && Number(rotationInput.value) !== elevationDegrees) rotationInput.value = String(elevationDegrees);
       if (rotationOutput) rotationOutput.textContent = `${elevationDegrees}°`;
+      markersNeedProjection = true;
+      requestMapRender();
     }
 
     updateCamera();
@@ -359,6 +394,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       camera.bottom = -viewHeight / 2;
       camera.updateProjectionMatrix();
       fitFullView();
+      invalidateMarkerProjection();
     }
 
     // 根据当前抬升角计算地形投影包络，避免山东东西或南北边缘被裁掉。
@@ -389,6 +425,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       cameraDistance = userDistance;
       updateCamera();
       mapRoot.dataset.fitZoom = fitZoom.toFixed(4);
+      requestMapRender();
     }
 
     function terrainHeight(percentX, percentY) {
@@ -405,6 +442,31 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     // 点位与地形共享同一组百分比坐标，旋转或缩放时重新投影到屏幕。
     function projectMarkers() {
       const rect = mapRoot.getBoundingClientRect();
+      if (mapRoot.dataset.mapMode === "flat") {
+        const flatImage = mapRoot.querySelector("#shandongFlatMapImage");
+        if (flatImage?.naturalWidth && flatImage?.naturalHeight) {
+          const imageRatio = flatImage.naturalWidth / flatImage.naturalHeight;
+          const displayWidth = Math.min(rect.width, rect.height * imageRatio);
+          const displayHeight = displayWidth / imageRatio;
+          const imageLeft = (rect.width - displayWidth) / 2;
+          const imageTop = (rect.height - displayHeight) / 2;
+          // 图片左侧保留了队伍署名，按山东轮廓的实际边界校准点位投影。
+          // 这个范围只用于简化平面图；3D 版仍直接使用 DEM 的经纬度范围。
+          const flatMapBounds = { left: 0.177, right: 0.966, top: 0.099, bottom: 0.911 };
+          mapRoot.querySelectorAll(".map-marker").forEach((marker) => {
+            const percentX = Number(marker.dataset.terrainX) / 100;
+            const percentY = Number(marker.dataset.terrainY) / 100;
+            if (!Number.isFinite(percentX) || !Number.isFinite(percentY)) return;
+            const imageX = flatMapBounds.left + percentX * (flatMapBounds.right - flatMapBounds.left);
+            const imageY = flatMapBounds.top + percentY * (flatMapBounds.bottom - flatMapBounds.top);
+            marker.style.left = `${((imageLeft + imageX * displayWidth) / rect.width) * 100}%`;
+            marker.style.top = `${((imageTop + imageY * displayHeight) / rect.height) * 100}%`;
+            marker.style.visibility = "visible";
+            marker.style.zIndex = "5";
+          });
+          return;
+        }
+      }
       mapRoot.querySelectorAll(".map-marker").forEach((marker) => {
         const percentX = Number(marker.dataset.terrainX);
         const percentY = Number(marker.dataset.terrainY);
@@ -495,23 +557,42 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         fitFullView();
       });
     }
-    mapRoot.addEventListener("click", (event) => {
+      mapRoot.addEventListener("click", (event) => {
       if (event.target.closest("[data-map-reset]")) resetMapView();
     });
 
     new ResizeObserver(resize).observe(mapRoot);
+    const markerRoot = mapRoot.querySelector("#mapMarkers");
+    if (markerRoot) {
+      // 筛选条件变化时 app.js 会重建点位；监听子节点变化后重新投影新元素。
+      new MutationObserver(invalidateMarkerProjection).observe(markerRoot, { childList: true });
+    }
+    const flatMapImage = mapRoot.querySelector("#shandongFlatMapImage");
+    if (flatMapImage) {
+      if (flatMapImage.complete) invalidateMarkerProjection();
+      else flatMapImage.addEventListener("load", invalidateMarkerProjection, { once: true });
+    }
+    const mapVisibilityObserver = new IntersectionObserver(([entry]) => {
+      mapVisible = entry.isIntersecting;
+      if (mapVisible) {
+        invalidateMarkerProjection();
+      }
+    }, { threshold: 0.01 });
+    mapVisibilityObserver.observe(mapRoot);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && mapRenderFrame) {
+        cancelAnimationFrame(mapRenderFrame);
+        mapRenderFrame = 0;
+      } else if (!document.hidden) {
+        requestMapRender();
+      }
+    });
     resize();
     mapRoot.classList.add("has-three-terrain");
     status.textContent = config.attribution;
     loadHeightMap();
 
-    function animate() {
-      requestAnimationFrame(animate);
-      // 点位必须跟随相机投影，不能再使用固定的 CSS 百分比位置。
-      projectMarkers();
-      renderer.render(scene, camera);
-    }
-    animate();
+    requestMapRender();
   } catch (error) {
     console.warn("山东地貌初始化失败，已回退到平面地图。", error);
     status.textContent = "平面地图模式";

@@ -47,6 +47,20 @@
   --layout-product-3d-height-mobile: 31rem;
   --layout-product-3d-caption-width: 22rem;
 
+  /* 开屏卷轴 IP：中心高度与主标题“泥”字对齐；百分比相对卷轴正文区域。 */
+  --layout-opening-ip-height: 13.5rem;
+  --layout-opening-ip-right: 1.4rem;
+  --layout-opening-ip-center-y: 50%;
+  --layout-opening-ip-height-mobile: 7.5rem;
+  --layout-opening-ip-right-mobile: .35rem;
+  --layout-opening-ip-center-y-mobile: 50%;
+  --layout-opening-seal-right: 18rem;
+
+  /* 首屏罗盘动画：修改方向或周期时只调整这里。方向可填 normal 或 reverse。 */
+  --effect-compass-spin-duration: 90s;
+  --effect-compass-forward-direction: normal;
+  --effect-compass-reverse-direction: reverse;
+
   /* 栏目留白：控制各大栏目上下空间，数字越大页面越舒展 */
   --layout-section-space: 8.5rem;
   --layout-section-space-mobile: 5.5rem;
@@ -89,8 +103,8 @@
    * 浅色值写在 :root，深色值写在文件末尾的 [data-theme="dark"]。
    * 调整主题时优先修改这里和对应的深色覆盖，不要在 styles.css 中新增硬编码颜色。
    */
-  --theme-body-glow: rgba(255, 255, 255, 0.45);
-  --theme-body-texture: rgba(140, 110, 80, 0.015);
+  --theme-body-glow: rgba(212, 175, 55, 0.08);
+  --theme-body-texture: rgba(140, 110, 80, 0.025);
   --theme-opening-bg: #f5eedf;
   --theme-opening-center: rgba(246, 241, 230, 0.95);
   --theme-opening-middle: rgba(237, 229, 212, 0.92);
@@ -121,15 +135,15 @@
   --theme-quick-prompt-text: var(--color-bronze-dark);
   --theme-quick-prompt-border: var(--color-rule-strong);
 
-  /* 页面纸张底色、正文颜色和次要文字颜色 */
-  --color-paper: oklch(91% 0.018 82);
-  --color-paper-soft: oklch(94% 0.014 82);
-  --color-paper-deep: oklch(86% 0.024 78);
+  /* 页面纸张底色、正文颜色和次要文字颜色（精细平衡：明度85.5%~88.5%，温润暖米古宣色，不苍白也不沉闷） */
+  --color-paper: oklch(85.5% 0.024 76);
+  --color-paper-soft: oklch(88.5% 0.02 76);
+  --color-paper-deep: oklch(79.5% 0.03 74);
   --color-paper-creative: var(--color-paper-soft);
-  /* 导航选项卡、完整导航栏和页尾共用同一表面色。 */
-  --color-navigation-surface: var(--color-paper-soft);
-  --color-ink: oklch(24% 0.012 70);
-  --color-ink-muted: oklch(49% 0.015 70);
+  /* 导航选项卡、完整导航栏和页尾共用同一表面色 */
+  --color-navigation-surface: oklch(86.5% 0.022 76 / 96%);
+  --color-ink: oklch(20% 0.015 65);
+  --color-ink-muted: oklch(42% 0.018 68);
 
   /* 朱砂与印章色：用于按钮、强调文字、印章和交互反馈 */
   --color-accent: oklch(48% 0.14 29);
@@ -253,6 +267,8 @@
   --color-paper-soft: oklch(22% 0.018 75);
   --color-paper-deep: oklch(14% 0.012 75);
   --color-paper-creative: oklch(21% 0.016 75);
+  /* 深色模式导航栏与页尾：使用深黛墨玉色半透背景 */
+  --color-navigation-surface: oklch(19% 0.016 75 / 94%);
   --color-ink: oklch(92% 0.016 80);
   --color-ink-muted: oklch(72% 0.022 78);
 

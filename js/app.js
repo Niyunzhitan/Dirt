@@ -143,7 +143,8 @@
     dustOpacityRange: 0.45,    // 单粒微尘透明度随机增量
     dustPrimaryColor: "168, 51, 42", // 主要朱砂色 RGB
     dustAccentColor: "212, 175, 55", // 少量金色 RGB
-    dustPrimaryRatio: 0.6      // 朱砂微尘占比
+    dustPrimaryRatio: 0.6,      // 朱砂微尘占比
+    dustFrameIntervalMs: 32     // 微尘绘制间隔，约 31 FPS；页面装饰不需要 60 FPS
   };
 
   const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
@@ -360,13 +361,18 @@
   function renderSites(sites) {
     visibleSites = sites;
     const root = $("#mapMarkers");
-    const bounds = window.SHANDONG_TERRAIN?.bounds || { west: 114.81, east: 122.71, north: 38.4, south: 34.38 };
+    const bounds = window.SHANDONG_TERRAIN?.bounds || { west: 114.8102646639, east: 122.706, north: 38.3997238086, south: 34.3786 };
     root.innerHTML = sites.map((site, index) => {
       const city = String(site.city || "").split(" · ")[0];
       const county = String(site.city || "").split(" · ")[1]?.replace(/[县市区]$/, "");
+      // 两种地图统一使用县级经纬度；site.x/site.y 只作为缺少县级坐标时的旧数据兜底。
       const coordinate = mapCoordinates.counties[county] || mapCoordinates.cities[city];
-      const x = coordinate ? ((coordinate[0] - bounds.west) / (bounds.east - bounds.west)) * 100 : Number(site.x) || 0;
-      const y = coordinate ? ((bounds.north - coordinate[1]) / (bounds.north - bounds.south)) * 100 : Number(site.y) || 0;
+      const x = coordinate
+        ? ((coordinate[0] - bounds.west) / (bounds.east - bounds.west)) * 100
+        : Number(site.x) || 0;
+      const y = coordinate
+        ? ((bounds.north - coordinate[1]) / (bounds.north - bounds.south)) * 100
+        : Number(site.y) || 0;
       const safeX = Math.min(100, Math.max(0, x));
       const safeY = Math.min(100, Math.max(0, y));
       const label = county ? `${city}·${county}` : city;
@@ -412,23 +418,159 @@
     $("#sourceFindings").innerHTML = knowledge.findings.map((item, index) => `<article><span>${String(index + 1).padStart(2, "0")}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></article>`).join("");
   }
 
-  // 主页面精选与弹窗完整列表共用同一份卡片模板。
+  // 补充史料全部来自本地数据文件，图片、目录与证据栏均在浏览器端生成。
+  // 补充史料直接嵌入45区县图录卡片，数据仍只来自本地前端文件。
+  function supplementaryList(items) {
+    if (!Array.isArray(items) || !items.length) return "";
+    return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+  }
+
+  function getSupplementarySource(site) {
+    return (window.SUPPLEMENTARY_SOURCES?.entries || [])
+      .find((entry) => Number(entry.mapSiteId) === Number(site.id));
+  }
+
+  function sourceCardSupplementImageTemplate(image, index) {
+    const imageUrl = safeResourceUrl(image.src);
+    if (!imageUrl) return "";
+    return `<figure class="source-card-supplement-figure">
+      <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(image.alt || "补充史料图片")}" decoding="async">
+      <figcaption>${escapeHtml(image.kind || "史料图")} ${String(index + 1).padStart(2, "0")} · ${escapeHtml(image.caption || "")}</figcaption>
+    </figure>`;
+  }
+
+  function sourceCardSupplementDebateTemplate(items) {
+    if (!Array.isArray(items) || !items.length) return "";
+    return `<div class="source-card-supplement-debate" aria-label="两种学术观点">
+      <strong>学术争议：两说并存</strong>
+      <div>${items.map((item) => `<p><b>${escapeHtml(item.label)}</b>${escapeHtml(item.text)}</p>`).join("")}</div>
+    </div>`;
+  }
+
+  function sourceCardSupplementTemplate(entry) {
+    const images = Array.isArray(entry.images) ? entry.images : [];
+    return `<section class="source-card-supplement${entry.debate ? " is-debated" : ""}" aria-label="补充史料：${escapeHtml(entry.title)}">
+      <div class="source-card-supplement-heading"><span class="source-card-supplement-label">补充史料</span><span class="source-card-supplement-category">${escapeHtml(entry.category)}</span></div>
+      <h4 class="source-card-supplement-title">${escapeHtml(entry.title)}</h4>
+      <p class="source-card-supplement-lead">${escapeHtml(entry.lead)}</p>
+      ${images.length ? `<div class="source-card-supplement-gallery${images.length === 1 ? " is-single" : ""}">${images.map(sourceCardSupplementImageTemplate).join("")}</div>` : ""}
+      <aside class="source-card-supplement-insight"><span>关键认识</span><p>${escapeHtml(entry.insight)}</p></aside>
+      ${sourceCardSupplementDebateTemplate(entry.debate)}
+      <details class="source-card-supplement-details">
+        <summary>展开考古证据、传世文献与出处</summary>
+        <div class="source-card-supplement-details-content">
+          <div class="source-card-supplement-detail-grid">
+            <section><h5>考古证据</h5>${supplementaryList(entry.archaeology)}</section>
+            <section><h5>传世文献与研究</h5>${supplementaryList(entry.transmittedSources)}</section>
+          </div>
+          <div class="source-card-supplement-references"><h5>史料出处</h5>${supplementaryList(entry.references)}</div>
+          <p class="source-card-supplement-caution"><strong>谨慎说明：</strong>${escapeHtml(entry.caution)}</p>
+        </div>
+      </details>
+    </section>`;
+  }
+
   function sourceCardTemplate(site) {
-    return `<article data-source-card="${site.id}" tabindex="-1"><div><span>${escapeHtml(site.city)}</span><strong>${escapeHtml(site.seals.slice(0, 3).join(" · "))}${site.seals.length > 3 ? ` 等 ${site.count} 条` : ""}</strong></div><p>${escapeHtml(site.period)}<br>${escapeHtml(site.admin)}</p><a href="#map" data-source-site="${site.id}">在地图查看 <b aria-hidden="true">→</b></a></article>`;
+    const seals = Array.isArray(site.seals) ? site.seals : [];
+    const supplement = getSupplementarySource(site);
+    return `<article class="${supplement ? "has-supplement" : ""}" data-source-card="${site.id}" tabindex="-1">
+      <div class="source-card-heading"><span>${escapeHtml(site.city)}</span><strong>${escapeHtml(seals.slice(0, 3).join(" · "))}${seals.length > 3 ? ` 等 ${site.count} 条` : ""}</strong></div>
+      <p class="source-card-meta">${escapeHtml(site.period)}<br>${escapeHtml(site.admin)}</p>
+      ${supplement ? sourceCardSupplementTemplate(supplement) : ""}
+      <a class="source-card-map-link" href="#map" data-source-site="${site.id}">在地图查看 <b aria-hidden="true">→</b></a>
+    </article>`;
   }
 
   function renderSourceCards(root, items) {
     root.innerHTML = items.length
       ? items.map(sourceCardTemplate).join("")
       : '<p class="source-empty">没有匹配资料，请尝试现代区县、古地名、印文或郡国名称。</p>';
+    cacheSourceSupplementHeights(root);
+  }
+
+  // Measure accordion content while rendering, so the first click does not pay the layout cost.
+  function cacheSourceSupplementHeights(root) {
+    if (!root) return;
+    root.querySelectorAll(".source-card-supplement-details").forEach((details) => {
+      if (details.open) return;
+      details.open = true;
+      details.dataset.openHeight = String(details.scrollHeight);
+      details.open = false;
+    });
+  }
+
+
+  // Animate the accordion height while keeping the readable text visually steady.
+  async function animateSourceSupplementDetails(details, shouldOpen) {
+    const summary = details.querySelector(":scope > summary");
+    const content = details.querySelector(":scope > .source-card-supplement-details-content");
+    if (!summary || !content || details.classList.contains("is-animating")) return;
+
+    if (prefersReducedMotion()) {
+      details.open = shouldOpen;
+      return;
+    }
+
+    const startHeight = details.getBoundingClientRect().height;
+    const duration = shouldOpen
+      ? Math.min(260, Math.max(200, readCssTime("--dur-short")))
+      : Math.min(280, Math.max(240, readCssTime("--dur-short")));
+    const contentDuration = shouldOpen ? duration : 360;
+    const heightDuration = shouldOpen ? duration : 230;
+    const heightDelay = 0;
+    const easing = readCssValue("--ease-out");
+
+    details.classList.add("is-animating");
+    details.style.height = `${startHeight}px`;
+    // Hide the content before opening <details>, so the first painted frame cannot flash it in.
+    content.style.opacity = shouldOpen ? "0" : "1";
+    if (shouldOpen) details.open = true;
+    // The full height was measured during rendering; avoid a first-click layout read.
+    const endHeight = shouldOpen
+      ? Number(details.dataset.openHeight) || details.scrollHeight
+      : summary.getBoundingClientRect().height;
+
+    const heightAnimation = details.animate([
+      { height: `${startHeight}px` },
+      { height: `${endHeight}px` }
+    ], { duration: heightDuration, delay: heightDelay, easing, fill: "both" });
+    const contentAnimation = content.animate(
+      shouldOpen ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }],
+      { duration: contentDuration, easing, fill: "both" }
+    );
+
+    try {
+      await Promise.all([heightAnimation.finished, contentAnimation.finished]);
+    } catch (_) {
+      return;
+    } finally {
+      if (!shouldOpen) details.open = false;
+      heightAnimation.cancel();
+      contentAnimation.cancel();
+      content.style.removeProperty("opacity");
+      details.style.removeProperty("height");
+      details.classList.remove("is-animating");
+    }
+  }
+
+  function handleSourceSupplementDetailsClick(event) {
+    const summary = event.target.closest(".source-card-supplement-details > summary");
+    if (!summary || !event.currentTarget.contains(summary)) return;
+    event.preventDefault();
+    animateSourceSupplementDetails(summary.parentElement, !summary.parentElement.open);
   }
 
   // 页面只展示前三处；完整筛选结果只在弹窗中渲染。
   function renderSourcePreview() {
     const sites = getKnowledge()?.sites || [];
-    renderSourceCards($("#sourceIndex"), sites.slice(0, 3));
-    $("#sourceSearchFeedback").textContent = `显示精选 ${Math.min(3, sites.length)} 处区县资料`;
-    $("#openSourceIndex").firstChild.textContent = `查看其余 ${Math.max(0, sites.length - 3)} 处资料 `;
+    const featuredIds = [120, 129, 138];
+    const featuredSites = featuredIds
+      .map((id) => sites.find((site) => Number(site.id) === id))
+      .filter(Boolean);
+    const previewSites = featuredSites.length ? featuredSites : sites.slice(0, 3);
+    renderSourceCards($("#sourceIndex"), previewSites);
+    $("#sourceSearchFeedback").textContent = `显示精选 ${previewSites.length} 处区县资料`;
+    $("#openSourceIndex").firstChild.textContent = `查看其余 ${Math.max(0, sites.length - previewSites.length)} 处资料 `;
   }
 
   function renderSourceDialogIndex(keyword = "") {
@@ -538,8 +680,9 @@
     stages: [
       { text: "正在辨识战国秦汉封泥……", progress: 15 },
       { text: "封缄受力，封泥渐生细纹……", progress: 38 },
-      { text: "封泥碎裂脱落，丝绳松解……", progress: 68 },
-      { text: "齐鲁图卷徐徐展开……", progress: 88 },
+      // 停在 55% 的碎裂逻辑之前，避免等待数据时提前生成破坏粒子。
+      { text: "卷轴晃动，封泥将裂……", progress: 54 },
+      { text: "齐鲁图卷徐徐展开……", progress: 100 },
       { text: "展厅已开启，欢迎进入泥云智探", progress: 100 }
     ],
     stageIntervalMs: 750,
@@ -550,7 +693,6 @@
     progressEase: 0.12,
     progressStopThreshold: 0.2,
     particleFrameIntervalMs: 32,
-    debrisCooldownMs: { crack: 140, break: 110, burst: 90 },
     debrisCount: { crack: 2, break: 4, burst: 6, finalBurst: 14 },
     mobileBreakpoint: 640,
     earlyExpandHalfWidth: { mobile: 110, desktop: 160 },
@@ -586,7 +728,6 @@
   let particles = [];
   let particleAnimId = null;
   let lastParticleFrame = 0;
-  let lastDebrisTime = 0;
 
   function initSealParticles() {
     if (!sealParticlesCanvas) return;
@@ -680,11 +821,11 @@
   let openingFinishedAt = 0;
   let openingRemoveTimer = null;
   let cachedPaperWidth = null; // 缓存卷轴宽度，避免重复计算
+  let shatterParticlesPlayed = false;
 
   function updateLoaderVisuals(progress) {
     if (!openingLoader) return;
     const clamped = Math.max(0, Math.min(100, progress));
-    const now = performance.now();
 
     // 更新进度条和百分比文字
     if (openingLoaderProgress) openingLoaderProgress.style.width = `${clamped}%`;
@@ -711,10 +852,7 @@
       if (claySealEntity) {
         claySealEntity.classList.add("shaking");
       }
-      if (sealParticleEngine && now - lastDebrisTime > openingLoaderConfig.debrisCooldownMs.crack) {
-        sealParticleEngine.createDebris(openingLoaderConfig.debrisCount.crack, false);
-        lastDebrisTime = now;
-      }
+      // 碎裂粒子留到真正进入破坏阶段时只播放一次。
     }
     // 阶段3：55% ~ 80% (封泥大面积破损脱落，丝绳崩断，卷轴微张)
     else if (clamped < 80) {
@@ -725,9 +863,9 @@
         claySealEntity.classList.add("shaking");
         claySealEntity.style.transform = `scale(${1 - expandRatio * 0.15})`;
       }
-      if (sealParticleEngine && now - lastDebrisTime > openingLoaderConfig.debrisCooldownMs.break) {
-        sealParticleEngine.createDebris(openingLoaderConfig.debrisCount.break, false);
-        lastDebrisTime = now;
+      if (sealParticleEngine && !shatterParticlesPlayed) {
+        sealParticleEngine.createDebris(openingLoaderConfig.debrisCount.finalBurst, true);
+        shatterParticlesPlayed = true;
       }
 
       // 卷轴开始轻度向两侧微扩
@@ -749,11 +887,6 @@
 
       // 触发四大块封泥向四周炸开脱落飞散
       sealFragments.forEach(([fragment, className]) => fragment?.classList.add(className));
-
-      if (sealParticleEngine && clamped < 96 && now - lastDebrisTime > openingLoaderConfig.debrisCooldownMs.burst) {
-        sealParticleEngine.createDebris(openingLoaderConfig.debrisCount.burst, true);
-        lastDebrisTime = now;
-      }
 
       // 卷轴完整展开
       // 最终宽度必须至少容纳卷轴纸面的真实宽度，否则进度到 100% 时内容仍会被裁掉。
@@ -807,6 +940,7 @@
     wakeProgressAnimation();
 
     stageIndex = 0;
+    shatterParticlesPlayed = false;
     openingLoaderStatus.textContent = openingLoaderConfig.stages[stageIndex].text;
     targetProgressVal = openingLoaderConfig.stages[stageIndex].progress;
 
@@ -842,11 +976,6 @@
     openingLoaderStatus.textContent = success ? openingLoaderConfig.stages[stageIndex].text : "展厅已打开，部分资料稍后加载";
     targetProgressVal = 100;
     wakeProgressAnimation();
-
-    // 确保粒子再爆发一次
-    if (sealParticleEngine) {
-      sealParticleEngine.createDebris(openingLoaderConfig.debrisCount.finalBurst, true);
-    }
 
     // 等待进度过渡到 100% 并在完全展开后停留片刻，之后再平滑淡出退出。
     const removeOpeningLoader = () => {
@@ -1136,6 +1265,19 @@
   }
 
   $$(".filter-chip").forEach((button) => button.addEventListener("click", () => applyMapFilter(button.dataset.period)));
+  const mapModeButtons = $$("[data-map-mode]");
+  mapModeButtons.forEach((button) => button.addEventListener("click", () => {
+    const mode = button.dataset.mapMode;
+    const mapRoot = $("#shandongMap");
+    if (!mapRoot || !mode) return;
+    mapRoot.dataset.mapMode = mode;
+    mapModeButtons.forEach((item) => {
+      const active = item.dataset.mapMode === mode;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-pressed", String(active));
+    });
+    window.dispatchEvent(new CustomEvent("shandong-map-mode-change", { detail: { mode } }));
+  }));
   $("#mapMarkers").addEventListener("click", (event) => {
     const marker = event.target.closest(".map-marker");
     if (!marker) return;
@@ -1172,6 +1314,16 @@
   }
   $("#sourceIndex").addEventListener("click", handleSourceSiteClick);
   $("#sourceDialogIndex").addEventListener("click", handleSourceSiteClick);
+  $("#sourceIndex").addEventListener("click", handleSourceSupplementDetailsClick);
+  $("#sourceDialogIndex").addEventListener("click", handleSourceSupplementDetailsClick);
+  let sourceHeightCacheTimer = 0;
+  window.addEventListener("resize", () => {
+    window.clearTimeout(sourceHeightCacheTimer);
+    sourceHeightCacheTimer = window.setTimeout(() => {
+      cacheSourceSupplementHeights($("#sourceIndex"));
+      cacheSourceSupplementHeights($("#sourceDialogIndex"));
+    }, 120);
+  });
 
   // 完整图录弹窗只在打开后渲染，减少首页首次加载的 DOM 数量。
   $("#openSourceIndex").addEventListener("click", () => {
@@ -1343,18 +1495,18 @@
   function renderSelectedImages() {
     const preview = $("#uploadPreview");
     preview.hidden = selectedImages.length === 0;
-    $("#uploadCount").textContent = `已选择 ${selectedImages.length} 张图片`;
+    $("#uploadCount").textContent = `印小灵收到 ${selectedImages.length} 张图片啦`;
     $("#uploadThumbnails").innerHTML = selectedImages.map((item, index) => `<div class="upload-item"><img src="${item.previewUrl}" alt="待上传图片 ${index + 1}"><button type="button" data-remove-image="${item.id}" aria-label="移除${escapeHtml(item.file.name)}">×</button><span title="${escapeHtml(item.file.name)}">${escapeHtml(item.file.name)}</span></div>`).join("");
   }
   // 发送期间禁用按钮；成功后保存 sessionId，让百炼能够接着上一次对话回答。
   async function sendAiMessage(message) {
     const images = selectedImages.map((item) => item.file);
     if (!message && !images.length) return;
-    const uploadText = images.length ? `已附带 ${images.length} 张图片` : "";
+    const uploadText = images.length ? `带了 ${images.length} 张图片给你看` : "";
     appendMessage([message, uploadText].filter(Boolean).join(" · "), "user");
     $("#aiQuestion").value = "";
     clearSelectedImages();
-    const pending = appendMessage("思考中……", "assistant pending");
+    const pending = appendMessage("印小灵正在翻翻小册子……", "assistant pending");
     const submitButton = $("#chatForm button[type='submit']"); submitButton.disabled = true;
     try {
       const result = await AiService.chat({ message, images, sessionId: aiSessionId });
@@ -1365,7 +1517,7 @@
         window.sessionStorage.setItem(aiSessionStorageKey, aiSessionId);
       }
     } catch (error) {
-      pending.textContent = normalizeDisplayedAiName(error.message);
+      pending.textContent = `呜，线索暂时没接上：${normalizeDisplayedAiName(error.message)}`;
       pending.classList.remove("pending");
     } finally {
       submitButton.disabled = false;
@@ -1375,7 +1527,7 @@
     const statusElement = $("#aiStatus");
     if (!statusElement) return;
     statusElement.classList.toggle("disconnected", !status.connected);
-    statusElement.innerHTML = `<i></i> ${status.connected ? "AI助手已连接" : "AI服务未连接"}`;
+    statusElement.innerHTML = `<i></i> ${status.connected ? "印小灵已经准备好啦" : "印小灵暂时打了个小盹"}`;
   }
   window.addEventListener("ai-status-change", (event) => renderAiStatus(event.detail || { connected: false }));
   $("#chatForm").addEventListener("submit", (event) => { event.preventDefault(); sendAiMessage($("#aiQuestion").value.trim()); });
@@ -1384,10 +1536,10 @@
     const files = [...$("#aiImage").files];
     const availableSlots = Math.max(0, 4 - selectedImages.length);
     const validFiles = files.filter((file) => {
-      if (file.size > 5 * 1024 * 1024) { showToast(`${file.name} 超过 5MB，未加入上传队列`); return false; }
+      if (file.size > 5 * 1024 * 1024) { showToast(`${file.name} 太大啦，请换一张不超过 5MB 的图片`); return false; }
       return true;
     }).slice(0, availableSlots);
-    if (files.length > availableSlots) showToast("一次最多选择 4 张图片");
+    if (files.length > availableSlots) showToast("印小灵一次最多能抱住 4 张图片哦");
     validFiles.forEach((file) => selectedImages.push({ id: `${Date.now()}-${Math.random()}`, file, previewUrl: URL.createObjectURL(file) }));
     $("#aiImage").value = "";
     renderSelectedImages();
@@ -1402,7 +1554,7 @@
     renderSelectedImages();
   });
   $("#clearImages").addEventListener("click", clearSelectedImages);
-  $("#clearChat").addEventListener("click", () => { $("#chatMessages").innerHTML = '<div class="chat-message assistant">对话已清空。印小灵还可以继续陪你了解封泥。</div>'; aiSessionId = ""; window.sessionStorage.removeItem(aiSessionStorageKey); clearSelectedImages(); });
+  $("#clearChat").addEventListener("click", () => { $("#chatMessages").innerHTML = '<div class="chat-message assistant">小黑板擦干净啦！重新开始吧，想聊封泥或别的小问题都可以。</div>'; aiSessionId = ""; window.sessionStorage.removeItem(aiSessionStorageKey); clearSelectedImages(); });
 
   // ==================== 08. 通用点击提示和藏品详情 ====================
   document.addEventListener("click", async (event) => {
@@ -1586,10 +1738,24 @@
       color: Math.random() < visualEffects.dustPrimaryRatio ? visualEffects.dustPrimaryColor : visualEffects.dustAccentColor
     }));
 
-    function animate() {
+    let dustFrameId = 0;
+    let lastDustFrameTime = 0;
+    let dustVisible = true;
+
+    function animate(timestamp = 0) {
+      if (document.hidden || !dustVisible) {
+        dustFrameId = 0;
+        return;
+      }
+      if (timestamp - lastDustFrameTime < visualEffects.dustFrameIntervalMs) {
+        dustFrameId = requestAnimationFrame(animate);
+        return;
+      }
+      lastDustFrameTime = timestamp;
       ctx.clearRect(0, 0, width, height);
       const activeCount = Math.min(particles.length, userSettings.dustQuantity);
-      particles.slice(0, activeCount).forEach((p) => {
+      for (let index = 0; index < activeCount; index += 1) {
+        const p = particles[index];
         p.x += p.speedX;
         p.y += p.speedY;
         if (p.y > height) { p.y = -5; p.x = Math.random() * width; }
@@ -1600,10 +1766,23 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
-      });
-      requestAnimationFrame(animate);
+      }
+      dustFrameId = requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    const dustVisibilityObserver = new IntersectionObserver(([entry]) => {
+      dustVisible = entry.isIntersecting;
+      if (dustVisible && !document.hidden && !dustFrameId) dustFrameId = requestAnimationFrame(animate);
+    }, { threshold: 0.01 });
+    dustVisibilityObserver.observe(canvas);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && dustFrameId) {
+        cancelAnimationFrame(dustFrameId);
+        dustFrameId = 0;
+      } else if (!document.hidden && dustVisible && !dustFrameId) {
+        dustFrameId = requestAnimationFrame(animate);
+      }
+    });
+    dustFrameId = requestAnimationFrame(animate);
   }());
 
   /* 5. 图片懒加载：监听图片加载完成，添加淡入效果 */
@@ -1643,6 +1822,74 @@
     } else {
       // 降级处理：不支持 IntersectionObserver 的浏览器直接显示
       lazyImages.forEach((img) => img.classList.add('loaded'));
+    }
+  })();
+
+  /* 6. 首屏 IP 与背景罗盘鼠标微视差交互 */
+  (function initHeroInteractiveParallax() {
+    const heroVisualArea = $("#heroVisualArea");
+    if (!heroVisualArea) return;
+
+    const mascotFigure = $("#heroMascotFigure");
+    const mascotSpeech = $("#heroMascotSpeech");
+    const compassOuter = $(".compass-outer-ring", heroVisualArea);
+
+    const speechGreetings = [
+      "有幸相会！我是印小灵，邀你共探两千年前的泥上春秋~ ✨",
+      "从临淄到琅琊，一方小小的泥块，封存着秦汉的大智慧~",
+      "今天想了解哪一方齐鲁封泥？随时在下方问我！"
+    ];
+    let speechIndex = 0;
+
+    // 鼠标在首屏区域移动时的深度视差跟随
+    let parallaxRaf = null;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+
+    heroVisualArea.addEventListener("mousemove", (event) => {
+      if (prefersReducedMotion()) return;
+      const rect = heroVisualArea.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - 0.5; // -0.5 ~ 0.5
+      const y = (event.clientY - rect.top) / rect.height - 0.5; // -0.5 ~ 0.5
+      targetMouseX = x;
+      targetMouseY = y;
+      if (!parallaxRaf) parallaxRaf = requestAnimationFrame(updateHeroParallax);
+    });
+
+    heroVisualArea.addEventListener("mouseleave", () => {
+      targetMouseX = 0;
+      targetMouseY = 0;
+      if (!parallaxRaf) parallaxRaf = requestAnimationFrame(updateHeroParallax);
+    });
+
+    // 点击 IP 形象切换问候语
+    if (mascotFigure && mascotSpeech) {
+      mascotFigure.addEventListener("click", () => {
+        speechIndex = (speechIndex + 1) % speechGreetings.length;
+        const span = $("span", mascotSpeech);
+        if (span) span.textContent = speechGreetings[speechIndex];
+        mascotSpeech.style.opacity = "1";
+        mascotSpeech.style.transform = "translateY(0) scale(1)";
+      });
+    }
+
+    function updateHeroParallax() {
+      currentMouseX += (targetMouseX - currentMouseX) * 0.1;
+      currentMouseY += (targetMouseY - currentMouseY) * 0.1;
+
+      // 罗盘微倾斜与位移
+      if (compassOuter) {
+        compassOuter.style.transform = `translate3d(${currentMouseX * -15}px, ${currentMouseY * -15}px, 0)`;
+      }
+
+      const diff = Math.abs(targetMouseX - currentMouseX) + Math.abs(targetMouseY - currentMouseY);
+      if (diff > 0.001) {
+        parallaxRaf = requestAnimationFrame(updateHeroParallax);
+      } else {
+        parallaxRaf = null;
+      }
     }
   })();
 
