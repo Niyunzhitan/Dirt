@@ -20,6 +20,7 @@ dist/
 # 研究原始资料与视觉验收截图不参与网站运行
 docs/research/
 docs/qa/
+ppt-rendered-audit/
 
 # 操作系统生成文件
 Thumbs.db

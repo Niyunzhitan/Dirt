@@ -1,15 +1,25 @@
-# 山东 DEM 高度图
+# 山东 DEM 地形数据
 
-本目录中的 `shandong-heightmap.png` 由用户提供的：
+本目录保存山东 3D 文化地图使用的轻量高度图和有效区域遮罩：
 
 ```text
-D:\Downloads\21de6-main\21de6-main\DEM_Shandong\Shandong_DEM.tif
+shandong-heightmap.png   768 x 392 灰度高度图
+shandong-mask.png        山东轮廓遮罩
 ```
 
-转换生成。原始数据说明为“山东省 DEM 数据 30 米”，原始文件是 16 位单波段 GeoTIFF，范围和高程统计来自原始 `.tif.xml` 与 `.aux.xml`。
+它们由用户提供的山东省 30 米 DEM GeoTIFF 转换生成。原始 GeoTIFF 约 148 MB，没有放进网页仓库；当前灰度图只用于 Three.js 表现地形起伏。
 
-当前网页使用的是降采样后的 768 x 392 灰度高度图，不包含原始 148MB GeoTIFF。灰度值仅用于 Three.js 展示地形起伏，不是测绘、导航或工程计算数据。
+地图还会读取：
 
-`data/shandong-prefectures.js` 使用 DataV 行政区划数据中的山东省 16 个地级市外边界，经过等距抽样后用于网页划分展示。边界折线按经纬度映射到同一 DEM 范围，并逐点采样地形高度，因此会跟随地图缩放、平移和视角抬升。该数据同样只用于文化展示，不作为行政勘界依据。
+- `data/shandong-terrain.js`：DEM 路径、经纬度范围和显示参数
+- `data/shandong-terrain-inline.js`：直接打开 `index.html` 时使用的内嵌轻量数据
+- `data/shandong-prefectures.js`：山东 16 个地级市边界
+- `js/three-map.js`：相机、缩放、抬升、点位投影与按需渲染
 
-许可注意：随数据目录提供的 `LICENSE` 写有 MIT License，但数据 README 同时写有“未经允许不得随意传播和商业使用”。两者存在冲突；正式公网商业使用前，应向数据提供方确认最终授权、署名和再分发条件。
+这些数据用于文化展示和历史地理理解，不适合测绘、导航、行政勘界或工程计算。
+
+## 授权提醒
+
+原数据目录中的 `LICENSE` 标注 MIT License，但数据 README 同时写有“未经允许不得随意传播和商业使用”，两者存在冲突。正式公网发布或商业使用前，应向数据提供方确认最终授权、署名方式和再分发条件。
+
+替换 DEM 时，需要同时核对图片尺寸、`bounds` 经纬度范围、遮罩方向和行政边界映射。只替换图片而不改配置，点位可能出现偏移。
