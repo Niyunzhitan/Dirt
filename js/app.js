@@ -700,7 +700,7 @@
     ],
     stageIntervalMs: 750,
     // 数据和首屏资源准备好后，在最终破碎前停留；完成状态短暂停留后再退场。
-    preBreakHoldMs: 1400,
+    preBreakHoldMs: 1400, // 封泥将碎额外等待时长
     completedHoldMs: 900,
     removeDelayMs: 1100,
     initialProgress: 8,
@@ -837,6 +837,7 @@
   let shatterParticlesPlayed = false;
   let pageLoadPromise = null;
   let openingFinishPromise = null;
+  let shatterFragmentsStarted = false;
 
   // 开屏结束前确认浏览器已完成首屏资源和初始绘制，避免动画退场后正文仍在跳动加载。
   function waitForPageReady() {
@@ -937,8 +938,11 @@
         claySealEntity.style.transform = `scale(${0.85 - openRatio * 0.4})`;
       }
 
-      // 触发四大块封泥向四周炸开脱落飞散
-      sealFragments.forEach(([fragment, className]) => fragment?.classList.add(className));
+      // 只在进入最终破碎阶段时触发一次，避免每帧重复检查和修改碎片状态。
+      if (!shatterFragmentsStarted) {
+        sealFragments.forEach(([fragment, className]) => fragment?.classList.add(className));
+        shatterFragmentsStarted = true;
+      }
 
       // 卷轴完整展开
       // 最终宽度必须至少容纳卷轴纸面的真实宽度，否则进度到 100% 时内容仍会被裁掉。
@@ -993,6 +997,7 @@
 
     stageIndex = 0;
     shatterParticlesPlayed = false;
+    shatterFragmentsStarted = false;
     openingLoaderStatus.textContent = openingLoaderConfig.stages[stageIndex].text;
     targetProgressVal = openingLoaderConfig.stages[stageIndex].progress;
 
@@ -1031,6 +1036,8 @@
     // 把资源准备时间放在最终破碎前，避免破碎结束后主页面还在加载。
     openingLoaderStatus.textContent = "封泥将裂，展厅正在备妥……";
     await waitForPageReady();
+    // 提前完成最终阶段会用到的尺寸测量，避免破碎第一帧同时触发布局计算。
+    if (!cachedPaperWidth && scrollPaper) cachedPaperWidth = scrollPaper.getBoundingClientRect().width || 704;
     if (openingLoaderConfig.preBreakHoldMs > 0) {
       await new Promise((resolve) => window.setTimeout(resolve, openingLoaderConfig.preBreakHoldMs));
     }

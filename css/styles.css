@@ -497,6 +497,7 @@ img[loading="lazy"].loaded {
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 12px 24px rgba(35, 14, 8, 0.55));
+  will-change: transform, opacity;
   transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -542,6 +543,7 @@ img[loading="lazy"].loaded {
   background: radial-gradient(circle, #8c3323 0%, #4a180e 100%);
   border: 1px solid #b3513b;
   box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  will-change: transform, opacity;
   transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.65s ease;
 }
 .seal-fragment.frag-nw {
