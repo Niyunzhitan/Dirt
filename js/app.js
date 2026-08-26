@@ -90,7 +90,8 @@
   const motionSettingRanges = {
     pageMotion: { min: 0, max: 100, step: 10, defaultValue: 60, unit: "%" },
     cardTilt: { min: 0, max: 6, step: 0.5, defaultValue: 4, unit: "°" },
-    backgroundDust: { min: 0, max: 64, step: 4, defaultValue: 16, unit: "粒" }
+    backgroundDust: { min: 0, max: 64, step: 4, defaultValue: 16, unit: "粒" },
+    backgroundDustSpeed: { min: 0, max: 200, step: 5, defaultValue: 100, initialValue: 25, unit: "%" }
   };
 
   // 动态设置到底层视觉参数的换算边界。
@@ -104,7 +105,8 @@
     lineHeight: "comfortable",
     motionIntensity: systemPrefersReducedMotion ? motionSettingRanges.pageMotion.min : motionSettingRanges.pageMotion.defaultValue,
     tiltDegrees: systemPrefersReducedMotion ? motionSettingRanges.cardTilt.min : motionSettingRanges.cardTilt.defaultValue,
-    dustQuantity: systemPrefersReducedMotion ? motionSettingRanges.backgroundDust.min : motionSettingRanges.backgroundDust.defaultValue
+    dustQuantity: systemPrefersReducedMotion ? motionSettingRanges.backgroundDust.min : motionSettingRanges.backgroundDust.defaultValue,
+    dustSpeed: systemPrefersReducedMotion ? motionSettingRanges.backgroundDustSpeed.min : motionSettingRanges.backgroundDustSpeed.defaultValue
   };
   let userSettings = { ...defaultSettings };
   let settingsNeedMigration = false;
@@ -114,6 +116,11 @@
     const legacySettings = legacySettingsStorageKeys.map((key) => window.localStorage.getItem(key)).find(Boolean);
     const savedSettings = JSON.parse(currentSettings || legacySettings || "{}");
     if (!currentSettings && legacySettings) settingsNeedMigration = true;
+    // 新增速度设置首次使用时从 25% 开始；“恢复默认”仍回到 100%。
+    if (savedSettings.dustSpeed === undefined) {
+      savedSettings.dustSpeed = systemPrefersReducedMotion ? motionSettingRanges.backgroundDustSpeed.min : motionSettingRanges.backgroundDustSpeed.initialValue;
+      settingsNeedMigration = true;
+    }
     // 兼容旧版“微尘强度 0～100%”：按比例迁移为“微尘数量 0～32 粒”。
     if (savedSettings.dustQuantity === undefined && savedSettings.dustIntensity !== undefined) {
       savedSettings.dustQuantity = Math.round((Number(savedSettings.dustIntensity) / 100) * motionSettingRanges.backgroundDust.max / motionSettingRanges.backgroundDust.step) * motionSettingRanges.backgroundDust.step;
@@ -122,7 +129,10 @@
     delete savedSettings.dustIntensity;
     userSettings = { ...defaultSettings, ...savedSettings };
   } catch (_) {
-    userSettings = { ...defaultSettings };
+    userSettings = {
+      ...defaultSettings,
+      dustSpeed: systemPrefersReducedMotion ? motionSettingRanges.backgroundDustSpeed.min : motionSettingRanges.backgroundDustSpeed.initialValue
+    };
   }
 
   /* 必须由 JavaScript 计算的动态视觉参数；CSS 外观参数统一放在 tokens.css。 */
@@ -133,9 +143,11 @@
     cardTiltDegrees: motionSettingRanges.cardTilt.defaultValue, // 运行时由“卡片倾斜角度”设置更新
     cardPerspective: 800,      // 卡片 3D 透视距离
     cardLift: Math.min(motionSettingEffects.cardLiftMax, motionSettingRanges.cardTilt.defaultValue), // 随倾斜角度联动
+    dustSpeedScale: motionSettingRanges.backgroundDustSpeed.defaultValue / 100, // 运行时由“背景微尘速度”设置更新
     dustMaxParticles: motionSettingRanges.backgroundDust.max, // 粒子池数量，单位：粒
     dustSizeMin: 0.8,          // 微尘最小半径
     dustSizeRange: 2.2,        // 微尘半径随机增量
+    dustBaseSpeedScale: 2.5,    // 将当前基准速度提升为原来的 2.5 倍
     dustHorizontalSpeed: 0.35, // 微尘水平漂移速度
     dustVerticalSpeedMin: 0.15,// 微尘最小下落速度
     dustVerticalSpeedRange: 0.4,// 微尘下落速度随机增量
@@ -222,7 +234,8 @@
       lineHeight: Object.hasOwn(readerSettingOptions.lineHeight, settings.lineHeight) ? settings.lineHeight : defaultSettings.lineHeight,
       motionIntensity: clampNumber(settings.motionIntensity, motionSettingRanges.pageMotion.min, motionSettingRanges.pageMotion.max, defaultSettings.motionIntensity),
       tiltDegrees: clampNumber(settings.tiltDegrees, motionSettingRanges.cardTilt.min, motionSettingRanges.cardTilt.max, defaultSettings.tiltDegrees),
-      dustQuantity: clampNumber(settings.dustQuantity, motionSettingRanges.backgroundDust.min, motionSettingRanges.backgroundDust.max, defaultSettings.dustQuantity)
+      dustQuantity: clampNumber(settings.dustQuantity, motionSettingRanges.backgroundDust.min, motionSettingRanges.backgroundDust.max, defaultSettings.dustQuantity),
+      dustSpeed: clampNumber(settings.dustSpeed, motionSettingRanges.backgroundDustSpeed.min, motionSettingRanges.backgroundDustSpeed.max, defaultSettings.dustSpeed)
     };
   }
 
@@ -244,6 +257,7 @@
 
     visualEffects.cardTiltDegrees = userSettings.tiltDegrees;
     visualEffects.cardLift = userSettings.tiltDegrees ? Math.min(motionSettingEffects.cardLiftMax, userSettings.tiltDegrees) : 0;
+    visualEffects.dustSpeedScale = userSettings.dustSpeed / 100;
     if (save) window.localStorage.setItem(settingsStorageKey, JSON.stringify(userSettings));
   }
 
@@ -682,12 +696,12 @@
       { text: "封缄受力，封泥渐生细纹……", progress: 38 },
       // 停在 55% 的碎裂逻辑之前，避免等待数据时提前生成破坏粒子。
       { text: "卷轴晃动，封泥将裂……", progress: 54 },
-      { text: "齐鲁图卷徐徐展开……", progress: 100 },
       { text: "展厅已开启，欢迎进入泥云智探", progress: 100 }
     ],
     stageIntervalMs: 750,
-    fallbackMs: 5500,
-    fullOpenHoldMs: 1400,
+    // 数据和首屏资源准备好后，在最终破碎前停留；完成状态短暂停留后再退场。
+    preBreakHoldMs: 1400,
+    completedHoldMs: 900,
     removeDelayMs: 1100,
     initialProgress: 8,
     progressEase: 0.12,
@@ -818,14 +832,52 @@
   let stageIndex = 0;
   let openingIntervalTimer = null;
   let openingFallbackTimer = null;
-  let openingFinishedAt = 0;
   let openingRemoveTimer = null;
   let cachedPaperWidth = null; // 缓存卷轴宽度，避免重复计算
   let shatterParticlesPlayed = false;
+  let pageLoadPromise = null;
+  let openingFinishPromise = null;
+
+  // 开屏结束前确认浏览器已完成首屏资源和初始绘制，避免动画退场后正文仍在跳动加载。
+  function waitForPageReady() {
+    if (pageLoadPromise) return pageLoadPromise;
+    pageLoadPromise = new Promise((resolve) => {
+      const waitForWindowLoad = () => {
+        const fontReady = document.fonts?.ready || Promise.resolve();
+        const firstViewportImages = [...document.images].filter((image) => {
+          const rect = image.getBoundingClientRect();
+          return rect.top < window.innerHeight && rect.bottom > 0;
+        });
+        const imageReady = Promise.all(firstViewportImages.map((image) => image.complete
+          ? Promise.resolve()
+          : new Promise((imageResolve) => {
+            image.addEventListener("load", imageResolve, { once: true });
+            image.addEventListener("error", imageResolve, { once: true });
+          })));
+
+        Promise.all([fontReady, imageReady]).then(() => {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+        });
+      };
+
+      if (document.readyState === "complete") waitForWindowLoad();
+      else window.addEventListener("load", waitForWindowLoad, { once: true });
+    });
+    return pageLoadPromise;
+  }
 
   function updateLoaderVisuals(progress) {
     if (!openingLoader) return;
     const clamped = Math.max(0, Math.min(100, progress));
+
+    // 说明文字跟随实际进度切换，避免定时器先更新文案而进度条还没追上。
+    if (openingLoaderStatus) {
+      let visualStage = openingLoaderConfig.stages[0];
+      if (clamped >= 99.5) visualStage = openingLoaderConfig.stages[3];
+      else if (clamped >= 45) visualStage = openingLoaderConfig.stages[2];
+      else if (clamped >= 25) visualStage = openingLoaderConfig.stages[1];
+      openingLoaderStatus.textContent = visualStage.text;
+    }
 
     // 更新进度条和百分比文字
     if (openingLoaderProgress) openingLoaderProgress.style.width = `${clamped}%`;
@@ -947,12 +999,10 @@
     openingIntervalTimer = window.setInterval(() => {
       if (stageIndex < openingLoaderConfig.stages.length - 2) {
         stageIndex++;
-        openingLoaderStatus.textContent = openingLoaderConfig.stages[stageIndex].text;
         targetProgressVal = openingLoaderConfig.stages[stageIndex].progress;
       }
     }, openingLoaderConfig.stageIntervalMs);
 
-    openingFallbackTimer = window.setTimeout(() => finishOpeningLoader(false), openingLoaderConfig.fallbackMs);
   }
 
   // 让出一次绘制机会，避免数据渲染连续占满主线程，开馆动画可以继续流畅播放。
@@ -968,16 +1018,30 @@
 
   function finishOpeningLoader(success = true) {
     if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
+    if (openingFinishPromise) return openingFinishPromise;
+    openingFinishPromise = finishOpeningLoaderWhenReady(success);
+    return openingFinishPromise;
+  }
+
+  async function finishOpeningLoaderWhenReady(success) {
+    if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
     if (openingIntervalTimer) window.clearInterval(openingIntervalTimer);
     if (openingFallbackTimer) window.clearTimeout(openingFallbackTimer);
 
-    // 数据完成只触发动画收尾，不直接隐藏加载层。
+    // 把资源准备时间放在最终破碎前，避免破碎结束后主页面还在加载。
+    openingLoaderStatus.textContent = "封泥将裂，展厅正在备妥……";
+    await waitForPageReady();
+    if (openingLoaderConfig.preBreakHoldMs > 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, openingLoaderConfig.preBreakHoldMs));
+    }
+    if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
+
     stageIndex = openingLoaderConfig.stages.length - 1;
-    openingLoaderStatus.textContent = success ? openingLoaderConfig.stages[stageIndex].text : "展厅已打开，部分资料稍后加载";
+    if (!success) openingLoaderStatus.textContent = "展厅已打开，部分资料稍后加载";
     targetProgressVal = 100;
     wakeProgressAnimation();
 
-    // 等待进度过渡到 100% 并在完全展开后停留片刻，之后再平滑淡出退出。
+    // 100% 状态先完整展示片刻，再开始淡出，避免最终文案一闪而过。
     const removeOpeningLoader = () => {
       if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
       openingLoader.classList.add("is-closing");
@@ -989,7 +1053,7 @@
       }, openingLoaderConfig.removeDelayMs);
     };
 
-    const checkFullOpenAndExit = () => {
+    const checkFullOpenAndExit = async () => {
       const paperWidth = scrollPaper?.offsetWidth || 704;
       const containerWidth = scrollPaperContainer?.offsetWidth || 0;
       const contentVisible = scrollContent?.classList.contains("is-visible");
@@ -999,18 +1063,12 @@
         return;
       }
 
-      if (!openingFinishedAt) openingFinishedAt = performance.now();
-      if (performance.now() - openingFinishedAt < openingLoaderConfig.fullOpenHoldMs) {
-        requestAnimationFrame(checkFullOpenAndExit);
-        return;
-      }
-
-       removeOpeningLoader();
+      await waitForPageReady();
+      await new Promise((resolve) => window.setTimeout(resolve, openingLoaderConfig.completedHoldMs));
+      removeOpeningLoader();
     };
 
     checkFullOpenAndExit();
-    // 移动端字体回流或浏览器缩放可能让尺寸条件无法精确满足，不能因此卡住主页面。
-    window.setTimeout(removeOpeningLoader, openingLoaderConfig.fullOpenHoldMs + 2600);
   }
 
   async function init() {
@@ -1127,7 +1185,8 @@
   const settingOutputs = {
     motionIntensity: $("#motionValue"),
     tiltDegrees: $("#tiltValue"),
-    dustQuantity: $("#dustValue")
+    dustQuantity: $("#dustValue"),
+    dustSpeed: $("#dustSpeedValue")
   };
 
   function describeMotion(value) {
@@ -1151,6 +1210,13 @@
     return `${value} 粒，较多微尘`;
   }
 
+  function describeDustSpeed(value) {
+    if (value === 0) return "0%，微尘静止";
+    if (value <= 70) return `${value}%，缓慢漂移`;
+    if (value <= 130) return `${value}%，标准速度`;
+    return `${value}%，快速漂移`;
+  }
+
   function syncSettingsForm() {
     if (!settingsForm) return;
     const themeOption = settingsForm.querySelector(`[name="themeMode"][value="${userSettings.themeMode}"]`);
@@ -1165,7 +1231,8 @@
     const rangeBindings = {
       motionIntensity: motionSettingRanges.pageMotion,
       tiltDegrees: motionSettingRanges.cardTilt,
-      dustQuantity: motionSettingRanges.backgroundDust
+      dustQuantity: motionSettingRanges.backgroundDust,
+      dustSpeed: motionSettingRanges.backgroundDustSpeed
     };
     Object.entries(rangeBindings).forEach(([name, range]) => {
       const input = settingsForm.elements[name];
@@ -1178,9 +1245,11 @@
     settingOutputs.motionIntensity.value = `${userSettings.motionIntensity}${motionSettingRanges.pageMotion.unit}`;
     settingOutputs.tiltDegrees.value = `${userSettings.tiltDegrees}${motionSettingRanges.cardTilt.unit}`;
     settingOutputs.dustQuantity.value = `${userSettings.dustQuantity} ${motionSettingRanges.backgroundDust.unit}`;
+    settingOutputs.dustSpeed.value = `${userSettings.dustSpeed}${motionSettingRanges.backgroundDustSpeed.unit}`;
     settingsForm.elements.motionIntensity?.setAttribute("aria-valuetext", describeMotion(userSettings.motionIntensity));
     settingsForm.elements.tiltDegrees?.setAttribute("aria-valuetext", describeTilt(userSettings.tiltDegrees));
     settingsForm.elements.dustQuantity?.setAttribute("aria-valuetext", describeDust(userSettings.dustQuantity));
+    settingsForm.elements.dustSpeed?.setAttribute("aria-valuetext", describeDustSpeed(userSettings.dustSpeed));
     $("#systemMotionNote").hidden = !systemPrefersReducedMotion;
   }
 
@@ -1751,13 +1820,16 @@
         dustFrameId = requestAnimationFrame(animate);
         return;
       }
+      const elapsedFrames = lastDustFrameTime ? (timestamp - lastDustFrameTime) / visualEffects.dustFrameIntervalMs : 1;
       lastDustFrameTime = timestamp;
       ctx.clearRect(0, 0, width, height);
       const activeCount = Math.min(particles.length, userSettings.dustQuantity);
+      const frameFactor = Math.min(2, Math.max(0, elapsedFrames));
       for (let index = 0; index < activeCount; index += 1) {
         const p = particles[index];
-        p.x += p.speedX;
-        p.y += p.speedY;
+        const speed = visualEffects.dustBaseSpeedScale * visualEffects.dustSpeedScale * frameFactor;
+        p.x += p.speedX * speed;
+        p.y += p.speedY * speed;
         if (p.y > height) { p.y = -5; p.x = Math.random() * width; }
         if (p.x > width) p.x = 0;
         if (p.x < 0) p.x = width;
