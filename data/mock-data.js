@@ -62,11 +62,6 @@ window.MOCK_DATA = {
     { id: "COURSE-02", title: "字印藏韵：聆听封泥故事，鉴赏千年美学", lesson: 2, duration: "40 分钟", description: "第二课介绍封泥的发现与传承，比较秦印和汉印的文字风格。学生还会从文字、手工痕迹与自然残损中理解封泥的美。", videoUrl: "", posterUrl: "" },
     { id: "COURSE-03", title: "纸笔创泥：手绘创意封泥，实践传统文化", lesson: 3, duration: "45 分钟", description: "第三课先认识私印封泥，再从外形、篆文、纹饰和配色入手完成手绘作品。学生可以选择古韵复刻，也可以加入自己的创意。", videoUrl: "", posterUrl: "" }
   ],
-  creativeWorks: [
-    { id: "CREATIVE-01", name: "印小灵 IP 形象", category: "角色设计", mark: "印", description: "印小灵的外形参考了封泥轮廓和朱砂印面。我们希望它以亲切的方式陪伴访客阅读封泥资料。" },
-    { id: "CREATIVE-02", name: "齐鲁金石拓片纸品", category: "纸品设计", mark: "印", description: "我们从临淄守印、齐北船丞等印文中提取字形和纹理，再把它们用于带有手作质感的纸品设计。" },
-    { id: "CREATIVE-03", name: "模拟封缄研学教具", category: "研学教具", mark: "封", description: "这套教具用于文化普及课程。学习者可以亲手完成削检、穿绳、覆泥和钤印，理解古人怎样封好一份文书。" }
-  ],
   questions: [
     { id: 1, difficulty: "简单", question: "封泥在古代最主要的用途是什么？", optionA: "装饰陶器", optionB: "封缄文书或物品", optionC: "制作钱币", optionD: "记录天气", correctAnswer: "B", explanation: "封泥通常与绳结、封检和印章配合，用于封缄简牍文书、容器或货物。" },
     { id: 2, difficulty: "简单", question: "收件官署打开封缄文书前，首先需要做什么？", optionA: "核验泥封和印文是否完整", optionB: "把封泥重新浸湿", optionC: "在封泥上再盖一枚印", optionD: "抄写一份新文书", correctAnswer: "A", explanation: "收件人先核验印文和泥封完整性，确认没有被私拆，再破泥开读。" },

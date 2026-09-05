@@ -88,7 +88,6 @@
       const items = useDatabase ? await request("/api/data/courses") : copyItems(window.MOCK_DATA.courses);
       return useDatabase ? applyCourseMedia(items) : delay(applyCourseMedia(items));
     },
-    async getCreativeWorks() { return useDatabase ? request("/api/data/creative-works") : delay(copyItems(window.MOCK_DATA.creativeWorks)); },
     async startQuiz() { return useQuizDatabase ? request("/api/quiz/start") : startMockQuiz(); },
     async answerQuiz(questionId, answer) { return useQuizDatabase ? post("/api/quiz/answer", { questionId, answer }) : answerMockQuiz(questionId, answer); }
   };

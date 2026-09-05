@@ -601,12 +601,6 @@
     });
   }
 
-  function renderCreativeWorks(items) {
-    const grid = $("#creativeGrid");
-    if (!grid) return;
-    grid.innerHTML = items.map((item, index) => `<article class="creative-card creative-${index + 1}"><div class="creative-art"><span>${escapeHtml(item.mark)}</span><i>${String(index + 1).padStart(2, "0")}</i></div><div><small>${escapeHtml(item.category)}</small><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description)}</p></div></article>`).join("");
-  }
-
   // 将 ppt-knowledge.js 中整理的研究发现写入页面。
   function renderSourceFindings() {
     const knowledge = getKnowledge();
@@ -765,8 +759,6 @@
       .filter(Boolean);
     const previewSites = featuredSites.length ? featuredSites : sites.slice(0, 3);
     renderSourceCards($("#sourceIndex"), previewSites);
-    $("#sourceSearchFeedback").textContent = `显示精选 ${previewSites.length} 处区县资料`;
-    $("#openSourceIndex").firstChild.textContent = `查看其余 ${Math.max(0, sites.length - previewSites.length)} 处资料 `;
   }
 
   function renderSourceDialogIndex(keyword = "") {
@@ -788,6 +780,23 @@
     const next = $("#scrollNext");
     const progress = $("#scrollProgress");
     const status = $("#scrollStatus");
+    // 每一幕可通过 data-scroll-image 接入 PNG、JPG、JPEG 或 WebP 图片；失败时保留 CSS 插画。
+    $$("[data-scroll-image]", viewport).forEach((illustration) => {
+      const imagePath = illustration.dataset.scrollImage?.trim();
+      if (!imagePath) return;
+      const image = document.createElement("img");
+      image.className = "scroll-custom-image";
+      image.alt = illustration.getAttribute("aria-label") || "数字手卷配图";
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.src = imagePath;
+      image.addEventListener("load", () => {
+        image.classList.add("loaded");
+        illustration.classList.add("has-custom-image");
+      }, { once: true });
+      image.addEventListener("error", () => image.remove(), { once: true });
+      illustration.prepend(image);
+    });
     let activeIndex = 0;
     let dragging = false;
     let dragStart = 0;
@@ -1262,7 +1271,7 @@
 
   async function init() {
     startOpeningLoader();
-    const [stats, mapConfig, sites, relics, courseItems, creativeItems] = await Promise.all([ApiService.getStats(), ApiService.getMapConfig(), ApiService.getSites(), ApiService.getRelics(), ApiService.getCourses(), ApiService.getCreativeWorks()]);
+    const [stats, mapConfig, sites, relics, courseItems] = await Promise.all([ApiService.getStats(), ApiService.getMapConfig(), ApiService.getSites(), ApiService.getRelics(), ApiService.getCourses()]);
     $("#statRelics").textContent = stats.relics;
     $("#statSites").textContent = stats.sites;
     $("#statCourses").textContent = stats.courses;
@@ -1278,7 +1287,6 @@
     await yieldToBrowser();
     renderCourses(courseItems);
     initCourseScroll();
-    renderCreativeWorks(creativeItems);
     await yieldToBrowser();
     renderSourceFindings();
     renderSourcePreview();
@@ -1925,7 +1933,7 @@
   /* 2. Interactive Tactile Stamp Ripple on Clickable Buttons */
   document.addEventListener("click", (event) => {
     const eventTarget = event.target instanceof Element ? event.target : null;
-    const target = eventTarget?.closest(".button, .filter-chip, .search-row button, .chat-form button, .scroll-story-controls button, .course-scroll-controls button, .quick-prompts button");
+    const target = eventTarget?.closest(".button, .filter-chip, .search-row button, .chat-form button, .scroll-story-controls button, .course-scroll-controls button, .quick-prompts button, .source-index-more");
     if (!target) return;
     const rect = target.getBoundingClientRect();
     const ripple = document.createElement("span");
@@ -1954,8 +1962,8 @@
   /* 3. 3D 卡片倾斜：计算和复位方式与 Web-backup 中的原函数保持一致。 */
   if (window.matchMedia("(pointer: fine)").matches) {
     const cardSelector = [
-      ".relic-card", ".story-card", ".creative-card", ".research-grid article",
-      ".knowledge-values dl div", ".value-grid article", ".story-details article",
+      ".relic-card", ".story-card", ".research-grid article",
+      ".knowledge-values dl div", ".story-details article",
       ".course-list button", ".source-findings article", ".source-index article"
     ].join(", ");
 
