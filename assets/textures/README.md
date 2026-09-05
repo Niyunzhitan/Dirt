@@ -1,6 +1,6 @@
-# 3D 牌具贴图
+# 封泥牌具贴图
 
-Three.js 模型负责形状、圆角、材质和光照，Photoshop 贴图只负责表面图案。贴图缺失或加载失败时，网页会生成占位图，模型和切换功能仍可使用。
+Three.js 模型负责牌具的形状、圆角、材质和光照。贴图只负责表面图案。贴图缺失或加载失败时，网页会使用占位图，模型和切换功能仍然可以使用。
 
 ## 目录结构
 
@@ -23,16 +23,16 @@ mahjong/
 - 色彩空间：sRGB
 - 格式：优先 WebP，也支持 PNG
 
-重要文字和印文距离画布边缘至少保留宽度的 `6%`。不要在贴图中重复绘制圆角和立体投影，这些效果由模型完成。
+重要文字和印文距离边缘至少保留画布宽度的 `6%`。不要在贴图里重复绘制圆角和立体投影，这些效果由模型完成。
 
-## 替换方式
+## 替换贴图
 
-常用路径集中在 [data/media-config.js](../../data/media-config.js) 的 `textures` 中。
+路径集中在 [data/media-config.js](../../data/media-config.js) 的 `textures` 配置中。
 
 - 保留文件名：直接覆盖同名文件，不需要改代码。
-- 使用新文件名：只修改 `media-config.js`，不要改 `three-showcase.js`。
+- 使用新文件名：只修改 `media-config.js`，不要修改 `three-showcase.js`。
 - 使用外部贴图：必须使用 HTTPS，并把域名加入 `allowedExternalHosts`。
 
-直接双击 `index.html` 时，浏览器可能因 `file://` 安全限制使用占位贴图；通过 `npm start` 打开时会正常读取本地 PNG 或 WebP。
+直接双击 `index.html` 时，浏览器可能因 `file://` 的安全限制使用占位贴图；运行 `npm start` 后再打开页面，通常可以正常读取本地文件。
 
-贴图会公开给网站访客，不要在文件或配置中放入账号、Token、Cookie、水印私密信息或未获授权的素材。
+贴图会公开给访客，不要放入账号、Token、Cookie、私密水印或未获授权的素材。

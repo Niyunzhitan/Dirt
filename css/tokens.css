@@ -42,7 +42,7 @@
   --layout-map-height-mobile: 25.625rem;
   --layout-site-panel-height-mobile: 34rem;
 
-  /* 3D 牌具展厅尺寸：桌面场景高度、手机场景高度和右侧展签宽度。 */
+  /* 封泥牌具展厅尺寸：桌面场景高度、手机场景高度和右侧展签宽度。 */
   --layout-product-3d-height: 42rem;
   --layout-product-3d-height-mobile: 31rem;
   --layout-product-3d-caption-width: 22rem;

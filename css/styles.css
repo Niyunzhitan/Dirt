@@ -435,7 +435,9 @@ img[loading="lazy"].loaded {
 }
 .scroll-cord.cord-snapped {
   opacity: 0;
-  transform: scale(1.15);
+  transform: translateX(32vw) scale(.96);
+  transform-origin: center center;
+  transition: opacity .18s var(--ease-out), transform .18s var(--ease-out);
 }
 .cord-line {
   position: absolute;
@@ -900,37 +902,10 @@ button { color: inherit; }
 .section-heading h2 { margin: 0; font: 600 clamp(2.125rem, 4vw, 3.4375rem)/1.38 var(--serif); }
 .compact-heading { max-width: none; }
 .compact-heading h2 { white-space: nowrap; }
-.index { color: var(--red); font: 700 1.12rem Georgia, serif; }
 
-/* ==================== 05. 文物调研板块 ==================== */
-.research { padding: 7rem 0; background: var(--section-bg); }
-.research-grid { margin-top: 3.25rem; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.research-grid article { min-width: 0; min-height: 15rem; padding: 1.8rem 1.4rem; border-right: 1px solid var(--line); transition: transform .3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color .3s ease, box-shadow .3s ease; }
-.research-grid article:hover {
-  transform: translateY(-4px);
-  background-color: rgba(168, 51, 42, 0.03);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
-}
-.research-grid article:first-child { padding-left: 0; }
-.research-grid article:last-child { border-right: 0; }
-.research-grid span { color: var(--red); font: 700 1.05rem Georgia, serif; }
-.research-grid h3 { margin: 2rem 0 .8rem; font: 600 1.45rem/1.5 var(--serif); }
-.research-grid p { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.85; }
-.research-note { margin: 1.3rem 0 0; color: var(--muted); font-size: .72rem; line-height: 1.8; }
-
-/* ==================== 06. 认识封泥与封泥故事板块 ==================== */
+/* ==================== 05. 认识封泥与封泥故事板块 ==================== */
 /* 两个板块共用纸本文字和编号风格。数字手卷的详细样式在文件后部。 */
 .knowledge, .stories { padding: 7rem 0; background: var(--section-bg); }
-.story-index { color: var(--red); font: 700 1.05rem Georgia, serif; }
-.knowledge-values { margin-top: 3.5rem; display: grid; grid-template-columns: .75fr 1.25fr; gap: clamp(2.5rem, 7vw, 7rem); align-items: start; }
-.knowledge-lead small { color: var(--red); font-size: .82rem; font-weight: 700; }
-.knowledge-lead h3 { margin: .9rem 0 0; font: 600 clamp(1.8rem, 3vw, 2.7rem)/1.55 var(--serif); }
-.knowledge-values dl { margin: 0; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
-.knowledge-values dl div { padding: 1.2rem 1.2rem 1.4rem 0; border-bottom: 1px solid var(--line); }
-.knowledge-values dl div:nth-child(odd) { border-right: 1px solid var(--line); }
-.knowledge-values dl div:nth-child(even) { padding-left: 1.2rem; }
-.knowledge-values dt { font: 600 1.15rem var(--serif); }
-.knowledge-values dd { margin: .55rem 0 0; color: var(--muted); font-size: .8rem; line-height: 1.75; }
 .story-grid { margin-top: 3.25rem; display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .story-card { min-width: 0; min-height: 16rem; padding: 1.8rem; display: grid; grid-template-columns: 3.2rem 1fr; gap: 1.25rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--color-paper-soft); }
 .story-card small { color: var(--red); font-size: .75rem; font-weight: 700; }
@@ -1176,14 +1151,14 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 #doneSettings:hover { background: var(--color-accent-dark); }
 
 /* 阅读设置仅作用于正文和说明，不缩放导航、按钮与展示标题。 */
-html[data-reader-size] :is(.hero-lead, .heading-note, .intro-copy, .research-grid p, .knowledge-values dd, .story-details p, .relic-info p, .map-heading > p, #siteDescription, .map-knowledge p, .source-findings p, .source-index p, .course-recap-copy p, .course-scroll-footer p, .ai-intro > p:not(.eyebrow), .ai-intro li) { font-size: var(--reader-font-size); line-height: var(--reader-line-height); }
+html[data-reader-size] :is(.hero-lead, .heading-note, .intro-copy, .story-details p, .relic-info p, .map-heading > p, #siteDescription, .map-knowledge p, .source-findings p, .source-index p, .course-recap-copy p, .course-scroll-footer p, .ai-intro > p:not(.eyebrow), .ai-intro li) { font-size: var(--reader-font-size); line-height: var(--reader-line-height); }
 
 /* 动效强度主要控制空间位移；0% 时保留内容但取消移动。 */
 html[data-motion="0"] { scroll-behavior: auto; }
 html[data-motion="0"] [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
-html[data-motion="0"] .research-grid article,
 html[data-motion="0"] .collection-grid .relic-card,
 html[data-motion="0"] .story-grid .story-card,
+html[data-motion="0"] .knowledge-functions article,
 html[data-motion="0"] .source-findings article,
 html[data-motion="0"] .source-index article { opacity: 1; transform: none; transition: border-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
 html[data-motion="0"] .hero-relic-main { animation: none; }
@@ -1222,8 +1197,6 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
 .course-scroll-controls p b { margin-top: .2rem; font-size: var(--text-sm); }
 .course-lesson-tabs { position: relative; display: grid; gap: var(--space-sm); padding: var(--space-md) 0; }
 .course-lesson-tabs button { min-width: 0; min-height: 8rem; padding: var(--space-md); display: grid; grid-template-columns: 2.1rem minmax(0, 1fr) 1.2rem; grid-template-rows: auto auto; align-items: center; gap: var(--space-sm); color: var(--color-ink-muted); border: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-soft); cursor: var(--cursor-pointer); text-align: left; transform: none; transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
-.course-lesson-tabs button > span { color: var(--color-accent); font-weight: 700; }
-.course-lesson-tabs button > span { position: relative; z-index: 1; width: 2.1rem; padding: .15rem 0; text-align: center; background: var(--color-paper-soft); }
 .course-lesson-tabs button strong { color: inherit; font: 400 clamp(1rem, 1.5vw, 1.25rem) var(--font-display); line-height: 1.55; }
 .course-lesson-tabs button small { grid-column: 2 / 4; color: inherit; white-space: nowrap; }
 .course-lesson-tabs button::after { content: "→"; grid-column: 3; grid-row: 1; color: var(--color-ink-muted); font-size: 1.15rem; }
@@ -1289,10 +1262,10 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
   .course-scroll-hint { padding-inline: var(--space-md); }
 }
 
-/* ==================== 09. 封泥文创展示板块 ==================== */
+/* ==================== 09. 封泥牌具展示板块 ==================== */
 .creative-section { padding: 7rem 0; color: var(--ink); background: var(--section-bg); }
 
-/* 3D 牌具展厅：替换原 IP 文创卡片，Canvas 使用全宽展台而非装饰卡片。 */
+/* 封泥牌具：Canvas 使用全宽展台，不再使用装饰卡片。 */
 .product-3d-section { padding-bottom: 4rem !important; overflow: clip; }
 .product-3d-heading { padding-bottom: var(--space-xl); }
 .product-3d-showcase { width: min(var(--layout-content-max), var(--layout-content-width)); min-width: 0; margin-inline: auto; color: var(--color-dark-ink); background: var(--color-dark-surface); border: var(--rule-hairline) solid var(--color-rule-strong); }
@@ -1433,10 +1406,6 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
   .course-list { display: grid; grid-template-columns: repeat(3, 1fr); }
   .course-list button { grid-template-columns: 1.7rem 1fr; align-items: start; }
   .course-list button i { display: none; }
-  .knowledge-values { grid-template-columns: 1fr; gap: 2.5rem; }
-  .research-grid { grid-template-columns: repeat(2, 1fr); }
-  .research-grid article:nth-child(2) { border-right: 0; }
-  .research-grid article:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
 }
 
 @media (max-width: 47.5rem) {
@@ -1454,21 +1423,12 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
   .chat-message { max-width: 92%; }
   .quick-prompts { flex-wrap: nowrap; overflow-x: auto; }
   .quick-prompts button { flex: 0 0 auto; }
-  .research, .knowledge, .stories { padding: 4.7rem 0; }
-  .story-grid, .knowledge-values dl { grid-template-columns: 1fr; }
-  .knowledge-values dl div, .knowledge-values dl div:nth-child(even) { padding: 1.1rem 0; border-right: 0; }
+  .knowledge, .stories { padding: 4.7rem 0; }
+  .story-grid { grid-template-columns: 1fr; }
   .story-card { min-height: 0; padding: 1.5rem 1rem; grid-template-columns: 2.4rem 1fr; }
-  .research-grid { grid-template-columns: 1fr; }
-  .research-grid article, .research-grid article:first-child { min-height: 0; padding: 1.5rem 0; border-right: 0; border-bottom: 1px solid var(--line); }
-  .research-grid article:last-child { border-bottom: 0; }
-  .research-grid h3 { margin-top: 1rem; }
   .search-results button { align-items: flex-start; flex-direction: column; gap: 0.25rem; }
   .search-results button span { text-align: left; }
   .music-button[data-playing="true"] { border-color: transparent; background: transparent; }
-  .research-grid article,
-  .research-grid article:first-child,
-  .knowledge-values dl div,
-  .knowledge-values dl div:nth-child(even) { padding: var(--space-md); }
 }
 
 @media (max-width: 25rem) {
@@ -1806,12 +1766,14 @@ body { color: var(--color-ink); background: var(--color-paper); font-family: var
 .heading-note, .map-heading > p { width: min(100%, 50rem); max-width: none; margin: 1.5rem 0 0; font-size: var(--text-md); }
 .split-heading, .map-heading { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: 0; }
 .split-heading h2 { max-width: none; }
-.research, .knowledge, .stories, .collection, .map-section, .intro, .course-section, .creative-section, .ai-section, .quiz-section { padding-block: var(--layout-section-space); }
-.research, .knowledge, .stories, .collection, .intro, .course-section, .creative-section, .ai-section, .quiz-section { background: var(--color-paper); }
+.knowledge, .stories, .collection, .map-section, .intro, .course-section, .creative-section, .ai-section, .quiz-section { padding-block: var(--layout-section-space); }
+.knowledge, .stories, .collection, .intro, .course-section, .creative-section, .ai-section, .quiz-section { background: var(--color-paper); }
 .map-section { background: var(--color-paper); }
 
 .artifact-strip { margin: 4rem 0 4.5rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: clamp(1rem, 3vw, 2.5rem); }
 .artifact-strip figure { min-width: 0; margin: 0; }
+.artifact-strip .artifact-link { cursor: var(--cursor-pointer); }
+.artifact-strip .artifact-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
 .artifact-strip figure:nth-child(even) { transform: translateY(2.5rem); }
 .artifact-strip img { width: 100%; aspect-ratio: 1; display: block; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(0 1.1rem 1rem var(--color-shadow-soft)); transition: transform var(--dur-medium) var(--ease-out); }
 .artifact-strip figure:hover img { transform: translateY(-.45rem); }
@@ -1841,7 +1803,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   .museum-object { min-height: 27rem; margin-top: 1.5rem; }
   .hero-relic-main { width: min(88vw, 28rem); left: 50%; right: auto; top: 50%; transform: translate3d(-50%, calc(-50% + var(--parallax-y, 0px)), 0); }
   .hero-relic-main figcaption { right: 0; bottom: -1.5rem; }
-  .research, .knowledge, .stories, .collection, .map-section, .intro, .course-section, .creative-section, .ai-section, .quiz-section { padding-block: var(--layout-section-space-mobile); }
+  .knowledge, .stories, .collection, .map-section, .intro, .course-section, .creative-section, .ai-section, .quiz-section { padding-block: var(--layout-section-space-mobile); }
   .section-heading h2 { font-size: 1.55rem; }
   .heading-note, .map-heading > p { margin-top: 1rem; }
   .artifact-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
@@ -1856,7 +1818,6 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 /* ==================== 13. 统一纸张表面与栏目间视觉系统 ==================== */
 body,
 .hero,
-.research,
 .knowledge,
 .stories,
 .collection,
@@ -1876,24 +1837,17 @@ body,
 .search-box { background: var(--color-paper-soft); }
 
 .eyebrow,
-.index,
-.research-grid span,
-.story-index,
-.knowledge-lead small,
+.card-index,
 .story-card small,
 .panel-kicker,
 .site-city,
 .relic-info > div,
 .featured-course-copy span,
-.course-list button > span,
 .ai-intro li::before { color: var(--color-accent); }
 
 .hero-lead,
 .heading-note,
 .map-heading > p,
-.research-grid p,
-.research-note,
-.knowledge-values dd,
 .story-card p,
 .site-panel > p:not(.site-city),
 .site-meta dt,
@@ -1907,7 +1861,6 @@ body,
 .upload-item span,
 .ai-disclaimer { color: var(--color-ink-muted); }
 
-.research-grid,
 .story-grid,
 .map-layout,
 .site-panel,
@@ -2040,8 +1993,15 @@ body,
 .story-details p { max-width: 66ch; color: var(--color-ink-muted); line-height: 1.9; }
 .story-details a { display: inline-block; margin-top: var(--space-md); padding-bottom: var(--space-3xs); border-bottom: var(--rule-hairline) solid var(--color-ink); font-size: var(--text-sm); white-space: nowrap; }
 
+.knowledge-functions { margin-top: var(--space-xl); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-sm); }
+.knowledge-functions article { min-width: 0; padding: var(--space-lg); display: grid; grid-template-columns: 2.1rem 1fr; gap: var(--space-sm); border: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-soft); }
+.knowledge-functions article > span { color: var(--color-accent); font: 700 var(--text-sm)/1 var(--font-body); }
+.knowledge-functions h3 { margin: 0 0 var(--space-xs); color: var(--color-ink); font: 600 var(--text-lg)/1.35 var(--font-display); }
+.knowledge-functions p { margin: 0; color: var(--color-ink-muted); font: 500 var(--text-sm)/1.8 var(--font-display); }
+
 @media (max-width: 62rem) {
   .story-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .knowledge-functions { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 47.5rem) {
@@ -2050,41 +2010,41 @@ body,
   .story-details { grid-template-columns: minmax(0, 1fr); }
   .story-card { min-height: 11.5rem; padding: var(--space-md); }
   .story-details article { min-height: 0; padding: var(--space-lg) var(--space-md); }
+  .knowledge-functions article { padding: var(--space-md); }
 }
 
 /* ==================== 15. 地图下方的知识研究、图录照片和检索列表 ==================== */
-.map-knowledge { margin-top: 1.5rem; padding-top: var(--space-sm); border-top: var(--rule-hairline) solid var(--color-rule); }
-.source-index-block { margin-bottom: var(--space-xl); }
+.map-knowledge { margin-top: 0; padding-top: 0; border-top: 0; }
+.source-index-block { margin-top: 0; margin-bottom: var(--space-xl); padding-top: 0; border-top: 0; }
 .map-knowledge-head { max-width: 62rem; }
 .map-knowledge-head h3,
 .source-index-head h3 { margin: 0; color: var(--color-ink); font: 600 var(--text-xl)/1.45 var(--font-display); }
 .map-knowledge-head p { max-width: 68ch; margin: var(--space-md) 0 0; color: var(--color-ink-muted); line-height: 1.9; }
-.source-stats { margin: var(--space-xl) 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: var(--rule-hairline) solid var(--color-rule); border-bottom: var(--rule-hairline) solid var(--color-rule); }
-.source-stats div { padding: var(--space-lg); border-right: var(--rule-hairline) solid var(--color-rule); background: rgba(255,255,255,.16); }
-.source-stats div:last-child { border-right: 0; }
+.source-stats { margin: var(--space-xl) 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-sm); }
+.source-stats div { min-width: 0; padding: var(--space-lg); border: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-soft); }
 .source-stats dt { font: 600 var(--text-2xl)/1 var(--font-display); }
 .source-stats dd { margin: var(--space-xs) 0 0; color: var(--color-ink-muted); font-size: var(--text-sm); }
 
-.evidence-pair { margin-top: var(--space-xl); display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); border: var(--rule-hairline) solid var(--color-rule); box-shadow: 0 14px 38px rgba(53,42,31,.08); }
+.evidence-pair { margin-top: var(--space-xl); display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: var(--space-sm); }
 .evidence-pair figure { margin: 0; min-width: 0; }
 .evidence-pair img { width: 100%; display: block; object-fit: contain; mix-blend-mode: multiply; }
-.source-photo { padding: var(--space-lg); border-right: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-deep); }
+.source-photo { padding: var(--space-lg); border: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-soft); }
 .source-photo img { aspect-ratio: 4 / 3; object-fit: cover; }
 .evidence-pair figcaption { padding-top: var(--space-sm); color: var(--color-ink-muted); font-size: var(--text-xs); }
-.rubbing-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: var(--color-paper-soft); }
-.rubbing-group figure { padding: var(--space-md); border-right: var(--rule-hairline) solid var(--color-rule); border-bottom: var(--rule-hairline) solid var(--color-rule); }
-.rubbing-group figure:nth-child(even) { border-right: 0; }
-.rubbing-group figure:nth-child(n+3) { border-bottom: 0; }
+.rubbing-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
+.rubbing-group figure { padding: var(--space-md); border: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-soft); }
 .rubbing-group img { aspect-ratio: 1; }
 
 .source-findings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-left: var(--rule-hairline) solid var(--color-rule); }
 .source-findings article { min-width: 0; padding: var(--space-lg); border-right: var(--rule-hairline) solid var(--color-rule); border-bottom: var(--rule-hairline) solid var(--color-rule); }
 .source-findings span { color: var(--color-accent); font-weight: 700; }
+.source-findings .card-index { color: var(--color-accent-ink); font-weight: 700; }
 .source-findings h3 { margin: var(--space-md) 0 var(--space-sm); font: 600 var(--text-lg)/1.5 var(--font-display); }
 .source-findings p { margin: 0; color: var(--color-ink-muted); line-height: 1.85; }
 
 .source-index-head { padding: var(--space-md) 0 var(--space-lg); }
-.source-index-title-row { width: max-content; max-width: 100%; display: inline-flex; align-items: center; justify-content: flex-start; gap: clamp(1rem, 1.8vw, 1.75rem); }
+.source-index-title-row { width: max-content; max-width: 100%; min-height: 2.75rem; display: flex; align-items: flex-start; justify-content: flex-start; gap: var(--space-lg); }
+.source-index-title-row h3 { margin: 0; display: flex; align-items: center; color: var(--color-ink); font: 600 var(--text-xl)/1.2 var(--font-display); }
 .source-index-head p { margin: var(--space-xs) 0 0; color: var(--color-ink-muted); }
 .source-index-head label { width: min(24rem, 100%); color: var(--color-ink-muted); font-size: var(--text-xs); }
 .source-search-wrap { position: relative; width: 100%; margin-top: var(--space-xs); display: grid; align-items: center; }
@@ -2104,8 +2064,7 @@ body,
 .source-card-map-link:hover { color: var(--color-accent); }
 .source-card-map-link:active { color: var(--color-accent-dark); }
 .source-empty { grid-column: 1 / -1; padding: var(--space-xl); color: var(--color-ink-muted); text-align: center; border-right: var(--rule-hairline) solid var(--color-rule); border-bottom: var(--rule-hairline) solid var(--color-rule); }
-.source-index-title-row { margin-bottom: var(--space-sm); }
-.source-index-more { position: relative; top: -.45rem; margin: 0; min-height: 2.75rem; padding: 0 .85rem; display: inline-flex; align-items: center; gap: .75rem; color: var(--color-accent-ink); border: 1px solid var(--color-accent-dark); background: var(--color-accent) !important; cursor: var(--cursor-pointer) !important; font: inherit; font-weight: 500; transition: color var(--motion-header-tool-hover) var(--ease-out), border-color var(--motion-header-tool-hover) var(--ease-out), background-color var(--motion-header-tool-hover) var(--ease-out); }
+.source-index-more { position: relative; top: -.85rem; margin: 0; min-height: 2.75rem; padding: 0 .85rem; display: inline-flex; align-items: center; gap: .75rem; flex: 0 0 auto; color: var(--color-accent-ink); border: 1px solid var(--color-accent-dark); background: var(--color-accent) !important; cursor: var(--cursor-pointer) !important; font: inherit; font-weight: 500; transition: color var(--motion-header-tool-hover) var(--ease-out), border-color var(--motion-header-tool-hover) var(--ease-out), background-color var(--motion-header-tool-hover) var(--ease-out); }
 .source-index-more > span:first-child { font: 1.625rem Georgia, serif; transform: rotate(-18deg); }
 .source-index-more:hover { color: var(--color-accent-ink); border-color: var(--color-accent-dark); background: var(--color-accent-dark) !important; transform: translateY(-2px); box-shadow: 0 1rem 2rem rgba(116,35,31,.3), 0 0.25rem 0.5rem rgba(0, 0, 0, .1); }
 .source-index-more:active { transform: scale(.95); box-shadow: 0 .5rem 1rem rgba(116,35,31,.2); }
@@ -2188,8 +2147,8 @@ body,
 
 @media (max-width: 47.5rem) {
   .map-layout { box-shadow: 0 1.2rem 2.5rem rgba(35,48,42,.1); }
-  .map-knowledge { margin-top: var(--space-sm); padding-top: var(--space-xs); }
-  .source-index-block { margin-bottom: var(--space-lg); }
+  .map-knowledge { margin-top: 0; padding-top: 0; }
+  .source-index-block { margin-top: 0; margin-bottom: var(--space-lg); }
   .source-index-head { padding-block: var(--space-sm) var(--space-md); }
   .map-knowledge-head h3 { font-size: var(--text-xl); }
   .map-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -2203,12 +2162,12 @@ body,
   .source-index { grid-template-columns: minmax(0, 1fr); }
   .source-photo { border-right: 0; border-bottom: var(--rule-hairline) solid var(--color-rule); }
   .source-findings article { padding: var(--space-lg) var(--space-md); }
-  .source-index-title-row { width: 100%; align-items: center; flex-wrap: wrap; gap: var(--space-sm); }
+  .source-index-title-row { width: 100%; align-items: stretch; flex-direction: column; gap: var(--space-sm); }
+  .source-index-more { top: 0; }
   .source-index-head label { width: 100%; }
 }
 
 /* ==================== 16. 长页面紧凑间距：控制各板块上下留白 ==================== */
-.research,
 .knowledge,
 .stories,
 .collection,
@@ -2218,13 +2177,11 @@ body,
 .creative-section,
 .ai-section,
 .quiz-section { padding-block: 4rem; }
-.research-grid,
 .collection-grid,
 .course-layout,
-.research-grid article { min-height: 12.5rem; }
+.collection-grid { min-height: 12.5rem; }
 .story-grid { margin-top: var(--space-xl); }
 .artifact-strip { margin-block: var(--space-xl); }
-.knowledge-values { margin-top: var(--space-xl); }
 .relic-info p { min-height: 4.5rem; }
 .video-shell { min-height: 21rem; }
 .ai-section { gap: clamp(2.5rem, 6vw, 6rem); }
@@ -2233,7 +2190,6 @@ body,
 
 @media (max-width: 47.5rem) {
   .product-3d-section { padding-bottom: 2.75rem !important; }
-  .research,
   .knowledge,
   .stories,
   .collection,
@@ -2243,7 +2199,6 @@ body,
   .creative-section,
   .ai-section,
   .quiz-section { padding-block: 2.75rem; }
-  .research-grid article,
   .video-shell { min-height: 14rem; }
   .ai-console { min-height: 32rem; }
 }
@@ -2476,7 +2431,6 @@ body,
 
 /* ==================== 18. 全站字体分工：榜书标题、宋体阅读、黑体界面 ==================== */
 .brand strong,
-.knowledge-lead h3,
 .story-card h3,
 .story-details h3,
 .relic-info h3,
@@ -2508,12 +2462,9 @@ body,
 .hero-lead,
 .heading-note,
 .map-heading > p,
-.research-grid p,
-.research-note,
 .story-card p,
 .scroll-copy p,
 .story-details p,
-.knowledge-values dd,
 .relic-info p,
 .site-panel > p:not(.site-city),
 .featured-course-copy p,
@@ -2606,30 +2557,24 @@ body,
 }
 
 /* 19.3 各类序号的古印章外观 */
-.research-grid span,
-.story-index,
-.course-list button > span,
-.course-lesson-tabs button > span {
+.card-index {
   display: inline-grid;
   place-items: center;
   width: 2.1rem;
   height: 2.1rem;
-  font-family: var(--font-display);
-  font-size: 0.95rem !important;
-  font-weight: 700;
+  flex: 0 0 2.1rem;
   color: var(--color-accent-ink) !important;
+  font: 700 .95rem/1 var(--font-display);
+  font-weight: 700;
   background: var(--color-accent);
   border: 1px solid var(--color-accent-dark);
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2), 0 2px 5px rgba(0, 0, 0, 0.15);
-  margin-bottom: 0.5rem;
+  margin: 0 0 .5rem;
   border-radius: 2px;
   position: relative;
 }
 
-.research-grid span::after,
-.story-index::after,
-.course-list button > span::after,
-.course-lesson-tabs button > span::after {
+.card-index::after {
   content: "";
   position: absolute;
   inset: 2px;
@@ -2638,8 +2583,6 @@ body,
 }
 
 /* 19.4 并列介绍内容统一使用独立卡片；实时 3D 倾斜由 app.js 写入变量。 */
-.research-grid,
-.knowledge-values dl,
 .story-grid,
 .story-details,
 .source-findings,
@@ -2648,8 +2591,6 @@ body,
   border: 0;
 }
 
-.research-grid article,
-.knowledge-values dl div,
 .story-details article,
 .source-findings article,
 .source-index article,
@@ -2659,31 +2600,24 @@ body,
   border: var(--rule-hairline) solid var(--color-rule);
 }
 
-.research-grid article:first-child,
 .source-stats div:first-child {
   padding-left: var(--space-lg);
 }
 
-.research-grid article:last-child,
-.knowledge-values dl div:nth-child(odd),
-.knowledge-values dl div:nth-child(even),
 .story-details article,
 .source-findings article,
 .source-index article {
   border: var(--rule-hairline) solid var(--color-rule);
 }
 
-.knowledge-values dl div,
-.knowledge-values dl div:nth-child(even) { padding: var(--space-md); }
-.research-grid article,
-.research-grid article:first-child { padding: var(--space-lg); }
 .course-list { display: grid; gap: var(--space-sm); border: 0; }
 .course-list button { border-bottom: var(--rule-hairline) solid var(--color-rule); }
 
 .relic-card,
 .story-card,
-.research-grid article,
-.knowledge-values dl div,
+.knowledge-functions article,
+.source-stats div,
+.evidence-pair figure,
 .story-details article,
 .course-list button,
 .source-findings article,
@@ -2698,8 +2632,9 @@ body,
 
 .relic-card:hover,
 .story-card:hover,
-.research-grid article:hover,
-.knowledge-values dl div:hover,
+.knowledge-functions article:hover,
+.source-stats div:hover,
+.evidence-pair figure:hover,
 .story-details article:hover,
 .course-list button:hover,
 .source-findings article:hover,
@@ -2712,8 +2647,9 @@ body,
 @media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
   .relic-card,
   .story-card,
-  .research-grid article,
-  .knowledge-values dl div,
+  .knowledge-functions article,
+  .source-stats div,
+  .evidence-pair figure,
   .story-details article,
   .course-list button,
   .source-findings article,
@@ -2783,9 +2719,11 @@ body,
 }
 
 /* 网格子元素使用不同延迟，避免所有卡片同时出现。 */
-.research-grid article,
 .collection-grid .relic-card,
 .story-grid .story-card,
+.knowledge-functions article,
+.source-stats div,
+.evidence-pair figure,
 .source-findings article,
 .source-index article {
   opacity: 0;
@@ -2794,20 +2732,24 @@ body,
   transition-delay: calc(var(--i, 0) * var(--motion-stagger-step));
 }
 
-.is-visible .research-grid article,
 .is-visible .collection-grid .relic-card,
 .is-visible .story-grid .story-card,
+.is-visible .knowledge-functions article,
+.is-visible .source-stats div,
+.is-visible .evidence-pair figure,
 .is-visible .source-findings article,
 .is-visible .source-index article,
-.is-visible.research-grid article,
 .is-visible.collection-grid .relic-card,
 .is-visible.story-grid .story-card,
+.is-visible.knowledge-functions article {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* 卡片进入动画结束后，恢复备份版本的 350ms 实时倾斜响应，避免被 900ms 渐显过渡覆盖。 */
-.is-visible .research-grid article,
 .is-visible .collection-grid .relic-card,
 .is-visible .story-grid .story-card,
-.is-visible .knowledge-values dl div,
+.is-visible .knowledge-functions article,
 .is-visible .story-details article,
 .is-visible .course-list button,
 .is-visible .source-findings article,
@@ -2879,6 +2821,46 @@ main > section:first-of-type {
   border-top: 0 !important;
 }
 
+/* 手机地图筛选最终覆盖：确保所有窄屏断点都使用完整可见的两层布局。 */
+@media (max-width: 47.5rem) {
+  .map-toolbar {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: .35rem;
+    overflow: visible !important;
+  }
+
+  .map-toolbar > .filter-chip[data-period] {
+    width: 100%;
+    min-width: 0;
+    padding-inline: .5rem;
+    white-space: nowrap;
+  }
+
+  .map-toolbar-spacer { display: none !important; }
+
+  .map-mode-switch {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: .35rem;
+    margin: 0;
+    padding: .35rem 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .map-mode-switch .map-mode-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 /* 牌具是全宽展区，AI 是限宽内容区；用全视口分割线连接两个栏目。 */
 .creative-section + .ai-section::after {
   content: "";
@@ -2897,12 +2879,6 @@ main > section:first-of-type {
   }
 
   /* 移动端最终覆盖：统一卡片内边距，避免首项桌面规则再次把内容推向右侧。 */
-  .research-grid article,
-  .research-grid article:first-child,
-  .knowledge-values dl div,
-  .knowledge-values dl div:nth-child(even) {
-    padding: var(--space-md);
-  }
 }
 
 /* 20. 趣味问答：原生单选控件、明确判题状态和稳定的移动端布局。 */

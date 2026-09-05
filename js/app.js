@@ -361,8 +361,18 @@
   }
 
   function renderRelics(items) {
-    $("#collectionGrid").innerHTML = items.length ? items.map((item) => `<article class="relic-card" data-relic-card="${escapeHtml(item.id)}" tabindex="-1">${createRelicVisual(item)}<div class="relic-info"><div><span>${escapeHtml(item.period)}</span><span>${escapeHtml(item.value)}</span></div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><button type="button" data-relic-id="${escapeHtml(item.id)}">查看调研档案 <span>→</span></button></div></article>`).join("") : '<div class="empty-state"><strong>暂未找到相关封泥</strong><p>换一个名称、年代或地点试试。</p></div>';
+    $("#collectionGrid").innerHTML = items.length ? items.map((item) => {
+      const archiveLabel = item.id === "NMX-001" ? "在图录中定位" : "打开完整图录";
+      return `<article class="relic-card" data-relic-card="${escapeHtml(item.id)}" tabindex="-1">${createRelicVisual(item)}<div class="relic-info"><div><span>${escapeHtml(item.period)}</span><span>${escapeHtml(item.value)}</span></div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><button type="button" data-relic-id="${escapeHtml(item.id)}">${archiveLabel} <span>→</span></button></div></article>`;
+    }).join("") : '<div class="empty-state"><strong>暂未找到相关封泥</strong><p>换一个名称、年代或地点试试。</p></div>';
   }
+
+  const relicArchiveLinks = {
+    "NMX-001": { query: "临淄守印", siteId: 114 },
+    "NMX-002": { query: "墓印篆" },
+    "NMX-003": { query: "仓府" },
+    "NMX-004": { query: "齐北船丞" }
+  };
 
   // 点击地图点位后，把该地点的信息写入右侧详情面板。
   function updateSitePanel(site, index = 0) {
@@ -563,7 +573,7 @@
     courses = items;
     $("#courseLessonTabs").innerHTML = items.map((course, index) => {
       const label = Number(course.lesson) === 3 ? "手绘实践" : course.title.split("：")[0];
-      return `<button type="button" role="tab" aria-selected="${index === 0}" aria-controls="courseSlideViewport" data-course-id="${escapeHtml(course.id)}" tabindex="${index === 0 ? 0 : -1}"><span>0${Number(course.lesson) || 0}</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(course.duration)}</small></button>`;
+      return `<button type="button" role="tab" aria-selected="${index === 0}" aria-controls="courseSlideViewport" data-course-id="${escapeHtml(course.id)}" tabindex="${index === 0 ? 0 : -1}"><span class="card-index">0${Number(course.lesson) || 0}</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(course.duration)}</small></button>`;
     }).join("");
     configureCoursePackLinks();
     selectCourse(items[0]?.id);
@@ -605,7 +615,7 @@
   function renderSourceFindings() {
     const knowledge = getKnowledge();
     if (!knowledge || !knowledge.findings) return;
-    $("#sourceFindings").innerHTML = knowledge.findings.map((item, index) => `<article><span>${String(index + 1).padStart(2, "0")}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></article>`).join("");
+    $("#sourceFindings").innerHTML = knowledge.findings.map((item, index) => `<article><span class="card-index">${String(index + 1).padStart(2, "0")}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></article>`).join("");
   }
 
   // 补充史料全部来自本地数据文件，图片、目录与证据栏均在浏览器端生成。
@@ -750,7 +760,7 @@
     animateSourceSupplementDetails(summary.parentElement, !summary.parentElement.open);
   }
 
-  // 页面只展示前三处；完整筛选结果只在弹窗中渲染。
+  // 页面只展示三处精选；完整筛选结果只在弹窗中渲染，数量文案跟随数据变化。
   function renderSourcePreview() {
     const sites = getKnowledge()?.sites || [];
     const featuredIds = [120, 129, 138];
@@ -759,6 +769,9 @@
       .filter(Boolean);
     const previewSites = featuredSites.length ? featuredSites : sites.slice(0, 3);
     renderSourceCards($("#sourceIndex"), previewSites);
+    const remaining = Math.max(0, sites.length - previewSites.length);
+    const moreLabel = $("#sourceIndexMoreLabel");
+    if (moreLabel) moreLabel.textContent = remaining ? `查看其余 ${remaining} 处` : "查看完整图录";
   }
 
   function renderSourceDialogIndex(keyword = "") {
@@ -1075,6 +1088,14 @@
     if (openingLoaderProgress) openingLoaderProgress.style.width = `${clamped}%`;
     if (openingProgressPercent) openingProgressPercent.textContent = `${Math.round(clamped)}%`;
 
+    // 卷轴开始向两侧展开时，立即移除中间捆扎线。
+    if (scrollCord) scrollCord.classList.toggle("cord-snapped", clamped >= 55);
+    // 粒子必须在公共阶段触发，避免进度直接跳到 100% 时错过 55%~80% 分支。
+    if (clamped >= 55 && sealParticleEngine && !shatterParticlesPlayed) {
+      sealParticleEngine.createDebris(openingLoaderConfig.debrisCount.finalBurst, true);
+      shatterParticlesPlayed = true;
+    }
+
     // 阶段1：0% ~ 25% (初始准备与封泥产生张力)
     if (clamped < 25) {
       if (scrollPaperContainer) scrollPaperContainer.style.width = "0px";
@@ -1101,17 +1122,11 @@
     // 阶段3：55% ~ 80% (封泥大面积破损脱落，丝绳崩断，卷轴微张)
     else if (clamped < 80) {
       const expandRatio = (clamped - 55) / 25; // 0 ~ 1
-      if (scrollCord) scrollCord.classList.add("cord-snapped");
       if (sealCracksSvg) sealCracksSvg.style.opacity = "1";
       if (claySealEntity) {
         claySealEntity.classList.add("shaking");
         claySealEntity.style.transform = `scale(${1 - expandRatio * 0.15})`;
       }
-      if (sealParticleEngine && !shatterParticlesPlayed) {
-        sealParticleEngine.createDebris(openingLoaderConfig.debrisCount.finalBurst, true);
-        shatterParticlesPlayed = true;
-      }
-
       // 卷轴开始轻度向两侧微扩
       const isMobile = window.innerWidth < openingLoaderConfig.mobileBreakpoint;
       const maxHalfWidth = isMobile ? openingLoaderConfig.earlyExpandHalfWidth.mobile : openingLoaderConfig.earlyExpandHalfWidth.desktop;
@@ -1123,6 +1138,7 @@
     // 阶段4：80% ~ 100% (封泥彻底碎裂四散飞落，卷轴完全展开，露出典雅内容)
     else {
       const openRatio = (clamped - 80) / 20; // 0 ~ 1
+      // 最终进度可能从准备阶段直接跳到 100%，这里也必须收起封缄绳线。
       if (claySealEntity) {
         claySealEntity.classList.remove("shaking");
         claySealEntity.style.opacity = `${Math.max(0, 1 - openRatio * 2.5)}`;
@@ -1183,6 +1199,13 @@
       openingLoader.remove();
       return;
     }
+    // 开屏层不能因为字体、图片或移动端模拟器的 load 状态卡住。
+    // 从动画开始计时，超过上限直接淡出，避免 100% 后仍遮住正文。
+    openingFallbackTimer = window.setTimeout(() => {
+      if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
+      openingLoader.classList.add("is-closing");
+      window.setTimeout(() => openingLoader?.remove(), openingLoaderConfig.removeDelayMs);
+    }, 9000);
     sealParticleEngine = initSealParticles();
     wakeProgressAnimation();
 
@@ -1237,7 +1260,20 @@
     stageIndex = openingLoaderConfig.stages.length - 1;
     if (!success) openingLoaderStatus.textContent = "展厅已打开，部分资料稍后加载";
     targetProgressVal = 100;
+    // 保留当前进度，让进度条用原有缓动自然追到 100%，避免突然跳满。
     wakeProgressAnimation();
+
+    await new Promise((resolve) => {
+      const startedAt = performance.now();
+      const waitForProgress = (timestamp) => {
+        if (!openingLoader?.isConnected || currentProgressVal >= 99.5 || timestamp - startedAt > 1800) {
+          resolve();
+          return;
+        }
+        window.requestAnimationFrame(waitForProgress);
+      };
+      window.requestAnimationFrame(waitForProgress);
+    });
 
     // 100% 状态先完整展示片刻，再开始淡出，避免最终文案一闪而过。
     const removeOpeningLoader = () => {
@@ -1251,22 +1287,8 @@
       }, openingLoaderConfig.removeDelayMs);
     };
 
-    const checkFullOpenAndExit = async () => {
-      const paperWidth = scrollPaper?.offsetWidth || 704;
-      const containerWidth = scrollPaperContainer?.offsetWidth || 0;
-      const contentVisible = scrollContent?.classList.contains("is-visible");
-      const fullyOpen = currentProgressVal >= 99.5 && containerWidth >= paperWidth && contentVisible;
-      if (!fullyOpen) {
-        requestAnimationFrame(checkFullOpenAndExit);
-        return;
-      }
-
-      await waitForPageReady();
-      await new Promise((resolve) => window.setTimeout(resolve, openingLoaderConfig.completedHoldMs));
-      removeOpeningLoader();
-    };
-
-    checkFullOpenAndExit();
+    await new Promise((resolve) => window.setTimeout(resolve, openingLoaderConfig.completedHoldMs));
+    removeOpeningLoader();
   }
 
   async function init() {
@@ -1553,6 +1575,27 @@
     const index = visibleSites.findIndex((site) => site.id === Number(marker.dataset.siteId));
     if (index >= 0) updateSitePanel(visibleSites[index], index);
   });
+  $("#openCurrentSiteArchive")?.addEventListener("click", () => {
+    const activeMarker = $("#mapMarkers .map-marker.active");
+    const siteId = Number(activeMarker?.dataset.siteId);
+    if (!siteId) return;
+    const site = visibleSites.find((item) => Number(item.id) === siteId);
+    const county = String(site?.city || "").split(" · ")[1] || String(site?.city || "");
+    renderSourceDialogIndex(county);
+    sourceDialog?.classList.remove("is-closing");
+    sourceDialog?.showModal();
+    openModalAnimation(sourceDialogPanel);
+    sourceDialogSearch.value = county;
+    window.setTimeout(() => {
+      const target = $(`#sourceDialogIndex [data-source-card="${siteId}"]`);
+      if (target) {
+        target.classList.add("search-target");
+        target.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
+        window.setTimeout(() => target.classList.remove("search-target"), visualEffects.searchHighlightLifetime);
+      }
+      sourceDialogSearch.focus();
+    }, 80);
+  });
   const sourceDialog = $("#sourceDialog");
   const sourceDialogPanel = sourceDialog?.querySelector(".source-dialog-panel");
   const sourceDialogSearch = $("#sourceDialogSearch");
@@ -1567,6 +1610,28 @@
     }
     sourceDialog.classList.remove("is-closing");
     sourceDialog.close();
+  }
+
+  async function openRelicArchive(relicId) {
+    const link = relicArchiveLinks[relicId] || {};
+    renderSourceDialogIndex(link.query || "");
+    sourceDialog.classList.remove("is-closing");
+    sourceDialog.showModal();
+    openModalAnimation(sourceDialogPanel);
+    sourceDialogSearch.value = link.query || "";
+    window.setTimeout(() => {
+      const target = link.siteId
+        ? $(`#sourceDialogIndex [data-source-card="${link.siteId}"]`)
+        : null;
+      if (target) {
+        target.classList.add("search-target");
+        target.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
+        window.setTimeout(() => target.classList.remove("search-target"), visualEffects.searchHighlightLifetime);
+      } else {
+        showToast(link.query ? `完整图录中暂未找到“${link.query}”同名条目` : "完整图录已打开");
+      }
+      sourceDialogSearch.focus();
+    }, 80);
   }
 
   // 主列表和完整弹窗都通过 data-source-site 跳转地图地点。
@@ -1818,15 +1883,40 @@
   $("#clearChat").addEventListener("click", () => { $("#chatMessages").innerHTML = '<div class="chat-message assistant">小黑板擦干净啦！重新开始吧，想聊封泥或别的小问题都可以。</div>'; aiSessionId = ""; window.sessionStorage.removeItem(aiSessionStorageKey); clearSelectedImages(); });
 
   // ==================== 08. 通用点击提示和藏品详情 ====================
+  function revealRelicCard(relicId) {
+    const target = $(`[data-relic-card="${CSS.escape(String(relicId))}"]`);
+    if (!target) return;
+    revealTarget(target);
+    window.history.pushState(null, "", "#collection");
+  }
+
+  $$("[data-artifact-relic-id]").forEach((artifact) => artifact.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    revealRelicCard(artifact.dataset.artifactRelicId);
+  }));
+
   document.addEventListener("click", async (event) => {
+    const artifact = event.target.closest("[data-artifact-relic-id]");
+    if (artifact) {
+      revealRelicCard(artifact.dataset.artifactRelicId);
+      return;
+    }
     const notice = event.target.closest("[data-notice]"); if (notice) showToast(notice.dataset.notice);
-    const detail = event.target.closest("[data-relic-id]"); if (detail) { const relic = await ApiService.getRelicById(detail.dataset.relicId); if (relic) showToast(`${relic.name}：${relic.inscription}，${relic.location}`); }
+    const detail = event.target.closest("[data-relic-id]"); if (detail) { event.preventDefault(); await openRelicArchive(detail.dataset.relicId); }
   });
 
   // ==================== 09. 滚动观察：导航高亮和板块渐显 ====================
   const navLinks = $$("#mainNav a");
   const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) navLinks.forEach((link) => link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`)); }), { rootMargin: "-35% 0px -55%" });
   $$('main section[id]').forEach((section) => observer.observe(section));
+  const hero = $(".hero");
+  if (hero) {
+    const heroObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) navLinks.forEach((link) => link.classList.remove("active"));
+    }, { threshold: 0.55 });
+    heroObserver.observe(hero);
+  }
   // 栏目进入时播放出现动画，完全离开后按离开方向消失；再次进入会重新播放。
   const revealObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
     const section = entry.target;
@@ -1962,8 +2052,8 @@
   /* 3. 3D 卡片倾斜：计算和复位方式与 Web-backup 中的原函数保持一致。 */
   if (window.matchMedia("(pointer: fine)").matches) {
     const cardSelector = [
-      ".relic-card", ".story-card", ".research-grid article",
-      ".knowledge-values dl div", ".story-details article",
+      ".relic-card", ".story-card",
+      ".knowledge-functions article", ".story-details article",
       ".course-list button", ".source-findings article", ".source-index article"
     ].join(", ");
 

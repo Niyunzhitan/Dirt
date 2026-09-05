@@ -40,7 +40,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  // 3D 牌具展厅不使用投影阴影，避免模型下方出现深色阴影块。
+  // 封泥牌具不使用投影阴影，避免模型下方出现深色阴影块。
   renderer.shadowMap.enabled = false;
   renderer.setClearColor(0x000000, 0);
 
