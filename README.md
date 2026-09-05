@@ -1,6 +1,6 @@
 # 泥云智探
 
-“泥云智探”是一个面向公众、学生和传统文化爱好者的齐鲁封泥智慧人文平台。网站把文物调研、金石资料、文化地图、开源课程、3D 牌具、趣味问答和“印小灵”AI 导览放在同一个浏览体验中。
+齐鲁封泥智慧人文平台，面向封泥文物传播、数字化保护与公众研学。项目已经整理为可直接部署到阿里云函数计算 FC 的 Node.js Web 服务。
 
 项目已开源：[Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。普通访客可以先阅读 [网站使用说明](./docs/User-Safari.md)。
 
@@ -8,7 +8,7 @@
 
 - 封泥实物、印文、年代、出土地与史料价值展示
 - 山东 3D 地形图和简化平面图，支持 45 处现代区县资料检索
-- 数字手卷、封泥故事与开源研学课程
+- 数字手卷、封泥故事、单一活动回顾视频与三课时数字课卷
 - 可替换 Photoshop 贴图的扑克牌、麻将 3D 展厅
 - “印小灵”文字问答和多图辅助观察
 - 每轮随机十题、逐题判定的趣味问答
@@ -16,7 +16,7 @@
 
 ## 项目结构
 
-前端使用原生 HTML、CSS 和 JavaScript，并在本地保存 Vue 与 Three.js 依赖。`server.js` 同时提供静态文件、AI 代理和可选的 MySQL 数据接口。
+前端主体使用原生 HTML、CSS 和 JavaScript；答题系统使用 Vue 3 + JavaScript 单文件组件，并由 Vite 编译。`server.js` 同时提供静态文件、AI 代理和可选的 MySQL 数据接口。
 
 数据有两种来源：
 
@@ -39,7 +39,7 @@ npm install
 npm start
 ```
 
-打开 `http://127.0.0.1:3000`。运行语法检查：
+打开 Vite 显示的本地地址，通常是 `http://localhost:5173`。答题系统使用 `.vue` 单文件组件，需要通过 Vite 启动；Node 服务仍可单独用 `npm start` 启动 API 和静态资源。构建完成后，也可以直接双击根目录的 `index.html`，它会打开 `dist/index.html` 离线版本。运行语法检查：
 
 ```powershell
 npm run check
@@ -104,9 +104,9 @@ DB_CONNECTION_LIMIT=5
 
 ## 媒体与 3D 资源
 
-课程视频、封面、背景音乐和 3D 贴图的公开路径统一写在 [data/media-config.js](./data/media-config.js)。
+课程课件、教案学习单、活动总结视频、背景音乐和 3D 贴图的公开路径统一写在 [data/media-config.js](./data/media-config.js)。
 
-1. 课程视频和封面放入 `assets/media/courses/`。
+1. 三课时课件、教案学习单和活动总结视频放入 `assets/`，并在 `courses` 与 `coursePack` 中登记路径。
 2. 背景音乐放入 `assets/media/music/`。
 3. 扑克牌和麻将贴图放入 `assets/textures/`。
 4. 使用新文件名时修改 `data/media-config.js`；同名覆盖不需要改代码。
@@ -115,7 +115,7 @@ DB_CONNECTION_LIMIT=5
 
 相关说明：
 
-- [课程视频与封面](./assets/media/courses/README.md)
+- [课程媒体目录说明](./assets/media/courses/README.md)
 - [3D 牌具贴图](./assets/textures/README.md)
 - [山东 DEM 数据](./assets/terrain/README.md)
 
@@ -190,3 +190,4 @@ DB_CONNECTION_LIMIT     连接池上限
 FRONTEND_ORIGIN         允许跨域调用 API 的正式前端地址
 ENABLE_HSTS             HTTPS 稳定后设为 true
 ```
+

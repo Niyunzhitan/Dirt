@@ -1,26 +1,32 @@
-# 课程视频与封面
+# 课程资源配置
 
-课程媒体文件放在本目录，网页中的公开路径统一配置在 [data/media-config.js](../../../data/media-config.js)。不需要修改 `js/app.js`。
+网页中的课程课件、教案、活动记录和可选媒体路径统一配置在 [data/media-config.js](../../../data/media-config.js)，不需要修改 `js/app.js`。当前三课时原文件保存在 `assets/`，逐页预览图位于 `assets/course-slides/`。本目录留作以后补充教学视频或课程封面。
 
 示例：
 
 ```js
 "COURSE-01": {
-  videoUrl: "./assets/media/courses/course-01.mp4",
-  posterUrl: "./assets/media/courses/course-01.webp"
+  resourceUrl: "./assets/第一课时.pdf",
+  resourceType: "PDF",
+  resourceName: "第一课时教学课件",
+  resourceFileName: "第一课时.pdf",
+  slideBasePath: "./assets/course-slides/course-01",
+  slideCount: 24
 }
 ```
 
 课程 ID 必须与 `data/mock-data.js` 或数据库中的课程 ID 一致。
 
-## 建议格式
+整套课程的教案学习单和支教活动回顾配置在 `coursePack` 中。活动回顾视频不应写入某一课的 `videoUrl`。
+
+## 可选媒体格式
 
 - 视频：MP4（H.264 + AAC），兼容性最好
 - 备选视频：WebM
 - 封面：WebP 或 PNG
 - 文件名：只使用英文字母、数字、短横线和点，例如 `course-01.mp4`
 
-视频开始播放时，页面会暂停背景音乐；视频暂停或结束后，如果音乐之前正在播放，页面会恢复音乐。
+如果以后加入真正的教学视频，可以继续使用 `videoUrl` 和 `posterUrl` 字段。
 
 ## 外部视频
 

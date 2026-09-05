@@ -4,6 +4,11 @@
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
   let courses = [];
+  let activeCourse = null;
+  let activeCourseSlideIndex = 0;
+  const courseSlideMarkupCache = new Map();
+  let courseRenderRequest = 0;
+  let courseSlideRequest = 0;
   let visibleSites = [];
   let selectedImages = [];
   // 改名后启用新的会话命名空间，避免旧会话带回历史 AI 名称。
@@ -395,28 +400,205 @@
     if (sites.length) updateSitePanel(sites[0]);
   }
 
-  // 切换当前选中的课程，并同步更新主课程区域。
-  function selectCourse(id) {
+  // 课程原文件、教案和活动视频均从公开媒体配置中读取。
+  function configureCourseLink(link, value, options = {}) {
+    if (!link) return;
+    const resourceUrl = safeResourceUrl(value);
+    link.hidden = !resourceUrl;
+    if (!resourceUrl) {
+      link.removeAttribute("href");
+      return;
+    }
+    link.href = resourceUrl;
+    if (options.downloadName) link.setAttribute("download", options.downloadName);
+    else link.removeAttribute("download");
+    if (options.openInNewTab) {
+      link.target = "_blank";
+      link.rel = "noopener";
+    } else {
+      link.removeAttribute("target");
+      link.removeAttribute("rel");
+    }
+  }
+
+  function configureCoursePackLinks() {
+    const pack = window.MEDIA_CONFIG?.coursePack || {};
+    configureCourseLink($("#courseGuideLink"), pack.guideUrl, { downloadName: pack.guideFileName || "封泥教案与学习单.docx" });
+    const recapVideo = $("#courseRecapVideo");
+    const recapVideoUrl = safeResourceUrl(pack.recapVideoUrl);
+    if (recapVideo && recapVideoUrl) {
+      recapVideo.src = recapVideoUrl;
+      recapVideo.hidden = false;
+    } else if (recapVideo) {
+      recapVideo.hidden = true;
+      recapVideo.removeAttribute("src");
+    }
+  }
+
+  function courseLessonLabel(course) {
+    const lesson = Number(course?.lesson) || 1;
+    const numeral = ["一", "二", "三"][lesson - 1] || String(lesson);
+    return `第${numeral}课时`;
+  }
+
+  function courseSlideCount(course = activeCourse) {
+    return Math.max(0, Number(course?.slideCount) || 0);
+  }
+
+  function syncCourseLessonPanelHeight() {
+    const panel = $(".course-lesson-panel");
+    const content = $("#courseScroll");
+    if (!panel || !content) return;
+    if (window.matchMedia("(max-width: 47.5rem)").matches) {
+      panel.style.removeProperty("min-height");
+      return;
+    }
+    panel.style.minHeight = `${Math.ceil(content.getBoundingClientRect().height)}px`;
+  }
+
+  async function prepareCourseSlide(index) {
+    const panels = $$(".course-slide", $("#courseSlideTrack"));
+    const image = panels[index]?.querySelector("img");
+    if (!image) return;
+    if (!image.complete) {
+      await new Promise((resolve) => {
+        image.addEventListener("load", resolve, { once: true });
+        image.addEventListener("error", resolve, { once: true });
+      });
+    }
+    if (image.decode) await image.decode().catch(() => {});
+  }
+
+  async function updateCourseSlideState(index) {
+    const count = courseSlideCount();
+    if (!count || !activeCourse) return;
+    const nextIndex = Math.max(0, Math.min(index, count - 1));
+    const requestId = ++courseSlideRequest;
+    await prepareCourseSlide(nextIndex);
+    if (requestId !== courseSlideRequest || !activeCourse) return;
+    activeCourseSlideIndex = nextIndex;
+    const panels = $$(".course-slide", $("#courseSlideTrack"));
+    panels.forEach((panel, panelIndex) => panel.toggleAttribute("data-current", panelIndex === activeCourseSlideIndex));
+    $("#courseSlideStatus").innerHTML = `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(activeCourseSlideIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
+    $("#courseSlideProgress").style.transform = `scaleX(${(activeCourseSlideIndex + 1) / count})`;
+    $("#courseSlidePrev").disabled = activeCourseSlideIndex === 0;
+    $("#courseSlideNext").disabled = activeCourseSlideIndex === count - 1;
+  }
+
+  function getCourseSlideMarkup(course) {
+    const count = Number(course.slideCount) || 0;
+    const basePath = String(course.slideBasePath || "").replace(/\/$/, "");
+    if (courseSlideMarkupCache.has(course.id)) return courseSlideMarkupCache.get(course.id);
+    const markup = count && basePath
+      ? Array.from({ length: count }, (_, index) => {
+          const number = String(index + 1).padStart(2, "0");
+          const source = safeResourceUrl(`${basePath}/slide-${number}.webp`);
+          return `<figure class="course-slide" data-course-slide="${index}"><img src="${escapeHtml(source)}" alt="${escapeHtml(courseLessonLabel(course))}课件第 ${index + 1} 页" loading="eager" decoding="async" draggable="false"></figure>`;
+        }).join("")
+      : '<div class="empty-state"><strong>课件预览暂不可用</strong><p>请点击下方按钮打开原始 PDF。</p></div>';
+    courseSlideMarkupCache.set(course.id, markup);
+    return markup;
+  }
+
+  async function renderCourseSlides(course) {
+    const track = $("#courseSlideTrack");
+    const viewport = $("#courseSlideViewport");
+    if (!track || !viewport) return;
+    const requestId = ++courseRenderRequest;
+    courseSlideRequest += 1;
+    // 先在脱离文档的临时容器中准备新课件，避免清空旧画面后露出黑色背景。
+    const staging = document.createElement("div");
+    staging.innerHTML = getCourseSlideMarkup(course);
+    const firstImage = staging.querySelector(".course-slide img");
+    if (firstImage && !firstImage.complete) {
+      await new Promise((resolve) => {
+        firstImage.addEventListener("load", resolve, { once: true });
+        firstImage.addEventListener("error", resolve, { once: true });
+      });
+    }
+    if (firstImage?.decode) await firstImage.decode().catch(() => {});
+    if (requestId !== courseRenderRequest) return;
+    activeCourse = course;
+    activeCourseSlideIndex = 0;
+    track.replaceChildren(...Array.from(staging.children));
+    updateCourseSlideState(0);
+  }
+
+  function selectCourse(id, options = {}) {
     const course = courses.find((item) => item.id === id) || courses[0];
     if (!course) return;
     $("#courseMeta").textContent = `第 ${course.lesson} 课 · ${course.duration}`;
-    $("#courseTitle").textContent = course.title;
+    const lessonProgress = $("#courseLessonProgress");
+    if (lessonProgress) lessonProgress.textContent = `${String(course.lesson).padStart(2, "0")} / ${String(courses.length || 3).padStart(2, "0")}`;
+    $("#courseScrollTitle").textContent = course.title;
     $("#courseDescription").textContent = course.description;
-    $$("[data-course-id]").forEach((button) => button.classList.toggle("active", button.dataset.courseId === course.id));
-    const player = $("#coursePlayer");
-    const videoUrl = safeResourceUrl(course.videoUrl);
-    const posterUrl = safeResourceUrl(course.posterUrl);
-    player.dataset.videoUrl = videoUrl;
-    player.style.backgroundImage = "";
-    player.innerHTML = videoUrl
-      ? `<video class="course-video" controls playsinline preload="metadata"${posterUrl ? ` poster="${escapeHtml(posterUrl)}"` : ""} src="${escapeHtml(videoUrl)}"></video>`
-      : '<div class="video-placeholder"><button id="playCourse" type="button" aria-label="播放课程"><span aria-hidden="true">▶</span></button><p>课程视频素材待接入</p></div>';
+    $$("[data-course-id]").forEach((button) => {
+      const active = button.dataset.courseId === course.id;
+      button.classList.toggle("active", active);
+      if (active) {
+        button.classList.remove("is-switching");
+        window.requestAnimationFrame(() => button.classList.add("is-switching"));
+        window.setTimeout(() => button.classList.remove("is-switching"), 240);
+      }
+      button.setAttribute("aria-selected", String(active));
+      button.tabIndex = active ? 0 : -1;
+    });
+    const resourceLink = $("#courseResourceLink");
+    const isPdf = String(course.resourceType || "").toUpperCase() === "PDF";
+    resourceLink.textContent = isPdf ? "打开原始 PDF" : "下载原始 PPTX";
+    configureCourseLink(resourceLink, course.resourceUrl, {
+      downloadName: isPdf ? "" : course.resourceFileName,
+      openInNewTab: isPdf
+    });
+    renderCourseSlides(course);
+    if (options.scrollToContent) {
+      window.requestAnimationFrame(() => {
+        const content = $("#courseScroll");
+        content?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+      });
+    }
   }
 
   function renderCourses(items) {
     courses = items;
-    $("#courseList").innerHTML = items.map((course) => `<button type="button" data-course-id="${escapeHtml(course.id)}"><span>0${Number(course.lesson) || 0}</span><div><strong>${escapeHtml(course.title)}</strong><small>${escapeHtml(course.duration)} · 开源研学课程</small></div><i>→</i></button>`).join("");
+    $("#courseLessonTabs").innerHTML = items.map((course, index) => {
+      const label = Number(course.lesson) === 3 ? "手绘实践" : course.title.split("：")[0];
+      return `<button type="button" role="tab" aria-selected="${index === 0}" aria-controls="courseSlideViewport" data-course-id="${escapeHtml(course.id)}" tabindex="${index === 0 ? 0 : -1}"><span>0${Number(course.lesson) || 0}</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(course.duration)}</small></button>`;
+    }).join("");
+    configureCoursePackLinks();
     selectCourse(items[0]?.id);
+    syncCourseLessonPanelHeight();
+  }
+
+  function initCourseScroll() {
+    const viewport = $("#courseSlideViewport");
+    const tabs = $("#courseLessonTabs");
+    if (!viewport || !tabs) return;
+    tabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-course-id]");
+      if (button) selectCourse(button.dataset.courseId, { scrollToContent: true });
+    });
+    tabs.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      event.preventDefault();
+      const tabButtons = $$("[data-course-id]", tabs);
+      const current = tabButtons.findIndex((button) => button.getAttribute("aria-selected") === "true");
+      const next = (current + (event.key === "ArrowRight" ? 1 : -1) + tabButtons.length) % tabButtons.length;
+      tabButtons[next].focus();
+      selectCourse(tabButtons[next].dataset.courseId, { scrollToContent: true });
+    });
+    $("#courseSlidePrev").addEventListener("click", () => updateCourseSlideState(activeCourseSlideIndex - 1));
+    $("#courseSlideNext").addEventListener("click", () => updateCourseSlideState(activeCourseSlideIndex + 1));
+    viewport.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") { event.preventDefault(); updateCourseSlideState(activeCourseSlideIndex - 1); }
+      if (event.key === "ArrowRight") { event.preventDefault(); updateCourseSlideState(activeCourseSlideIndex + 1); }
+      if (event.key === "Home") { event.preventDefault(); updateCourseSlideState(0); }
+      if (event.key === "End") { event.preventDefault(); updateCourseSlideState(courseSlideCount() - 1); }
+    });
+    window.addEventListener("resize", () => {
+      updateCourseSlideState(activeCourseSlideIndex);
+      syncCourseLessonPanelHeight();
+    });
   }
 
   function renderCreativeWorks(items) {
@@ -1095,6 +1277,7 @@
     renderRelics(relics.items);
     await yieldToBrowser();
     renderCourses(courseItems);
+    initCourseScroll();
     renderCreativeWorks(creativeItems);
     await yieldToBrowser();
     renderSourceFindings();
@@ -1362,7 +1545,6 @@
     const index = visibleSites.findIndex((site) => site.id === Number(marker.dataset.siteId));
     if (index >= 0) updateSitePanel(visibleSites[index], index);
   });
-  $("#courseList").addEventListener("click", (event) => { const button = event.target.closest("[data-course-id]"); if (button) selectCourse(button.dataset.courseId); });
   const sourceDialog = $("#sourceDialog");
   const sourceDialogPanel = sourceDialog?.querySelector(".source-dialog-panel");
   const sourceDialogSearch = $("#sourceDialogSearch");
@@ -1418,11 +1600,6 @@
     renderSourceDialogIndex();
     replayClearFeedback(sourceDialogSearch, ".source-search-wrap");
   });
-  $("#coursePlayer").addEventListener("click", (event) => {
-    if (!event.target.closest("#playCourse")) return;
-    showToast("课程视频接口已预留，请在 data/media-config.js 中填写 videoUrl");
-  });
-
   // ==================== 06. 全站搜索弹窗 ====================
   const searchDialog = $("#searchDialog");
   const searchInput = $("#searchInput");
@@ -1747,7 +1924,8 @@
 
   /* 2. Interactive Tactile Stamp Ripple on Clickable Buttons */
   document.addEventListener("click", (event) => {
-    const target = event.target.closest(".button, .filter-chip, .search-row button, .chat-form button, .scroll-story-controls button, .quick-prompts button");
+    const eventTarget = event.target instanceof Element ? event.target : null;
+    const target = eventTarget?.closest(".button, .filter-chip, .search-row button, .chat-form button, .scroll-story-controls button, .course-scroll-controls button, .quick-prompts button");
     if (!target) return;
     const rect = target.getBoundingClientRect();
     const ripple = document.createElement("span");
@@ -1760,6 +1938,19 @@
     window.setTimeout(() => ripple.remove(), visualEffects.rippleLifetime);
   });
 
+  document.addEventListener("pointerdown", (event) => {
+    const eventTarget = event.target instanceof Element ? event.target : null;
+    const target = eventTarget?.closest(".course-scroll-controls button");
+    if (!target || target.disabled) return;
+    target.classList.add("is-pressing");
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach((eventName) => {
+    document.addEventListener(eventName, (event) => {
+      const eventTarget = event.target instanceof Element ? event.target : null;
+      eventTarget?.closest(".course-scroll-controls button")?.classList.remove("is-pressing");
+    });
+  });
+
   /* 3. 3D 卡片倾斜：计算和复位方式与 Web-backup 中的原函数保持一致。 */
   if (window.matchMedia("(pointer: fine)").matches) {
     const cardSelector = [
@@ -1769,7 +1960,8 @@
     ].join(", ");
 
     document.addEventListener("mousemove", (event) => {
-      const card = event.target.closest(cardSelector);
+      const eventTarget = event.target instanceof Element ? event.target : null;
+      const card = eventTarget?.closest(cardSelector);
       if (!card) return;
       if (userSettings.tiltDegrees === 0) { card.style.transform = ""; return; }
       const rect = card.getBoundingClientRect();
@@ -1783,7 +1975,8 @@
     });
 
     document.addEventListener("mouseout", (event) => {
-      const card = event.target.closest(cardSelector);
+      const eventTarget = event.target instanceof Element ? event.target : null;
+      const card = eventTarget?.closest(cardSelector);
       if (card && (!event.relatedTarget || !card.contains(event.relatedTarget))) {
         card.style.transform = "";
       }
@@ -1914,9 +2107,9 @@
     const compassOuter = $(".compass-outer-ring", heroVisualArea);
 
     const speechGreetings = [
-      "有幸相会！我是印小灵，邀你共探两千年前的泥上春秋~ ✨",
-      "从临淄到琅琊，一方小小的泥块，封存着秦汉的大智慧~",
-      "今天想了解哪一方齐鲁封泥？随时在下方问我！"
+      "你好，我是印小灵。我们一起看看两千年前的封泥吧。",
+      "临淄、琅琊等地留下了不少封泥，我们可以从一方小泥块讲起。",
+      "今天想了解哪一方齐鲁封泥？你可以到下面的 AI 导览中问我。"
     ];
     let speechIndex = 0;
 

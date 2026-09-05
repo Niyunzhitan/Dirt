@@ -21,13 +21,19 @@
   // 未配置数据库时保留模拟数据，便于本地做页面开发；上线时打开 USE_DATABASE。
   const delay = (value, ms = 120) => new Promise((resolve) => setTimeout(() => resolve(value), ms));
   const copyItems = (items) => items.map((item) => ({ ...item }));
-  // 常用媒体配置按课程 id 覆盖数据库或 mock 地址，换视频时不用改业务代码。
+  // 常用媒体配置按课程 id 补充视频、课件等公开资源，数据库和 mock 模式共用。
   const applyCourseMedia = (items) => items.map((course) => {
     const media = window.MEDIA_CONFIG?.courses?.[course.id] || {};
     return {
       ...course,
       videoUrl: media.videoUrl || course.videoUrl || "",
-      posterUrl: media.posterUrl || course.posterUrl || ""
+      posterUrl: media.posterUrl || course.posterUrl || "",
+      resourceUrl: media.resourceUrl || course.resourceUrl || "",
+      resourceType: media.resourceType || course.resourceType || "",
+      resourceName: media.resourceName || course.resourceName || "",
+      resourceFileName: media.resourceFileName || course.resourceFileName || "",
+      slideBasePath: media.slideBasePath || course.slideBasePath || "",
+      slideCount: Number(media.slideCount || course.slideCount) || 0
     };
   });
   function shuffle(items) {

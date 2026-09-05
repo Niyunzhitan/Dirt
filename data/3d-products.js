@@ -17,7 +17,7 @@ window.SEAL_3D_PRODUCTS = {
         suit: "♠",
         title: "临淄守印",
         subtitle: "官制与权力 · 西汉",
-        description: "以临淄官署封泥为黑桃 K 的核心纹样，牌面贴图可由 Photoshop 导出后直接替换。",
+        description: "这张黑桃 K 使用临淄官署封泥作为主要纹样。你可以从 Photoshop 导出新设计，再直接替换牌面贴图。",
         front: texturePath("pokerSpadeKFront", "./assets/textures/poker/front/spade-k.webp"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       },
@@ -27,7 +27,7 @@ window.SEAL_3D_PRODUCTS = {
         suit: "♦",
         title: "齐北船丞",
         subtitle: "仓储与漕运 · 汉代",
-        description: "以齐北船丞所代表的水陆运输与仓储制度构成方片花色样张。",
+        description: "这张方片 J 取材于齐北船丞封泥，牌面文字对应汉代的水运和船政事务。",
         front: texturePath("pokerDiamondJFront", "./assets/textures/poker/front/diamond-j.webp"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       }
@@ -42,7 +42,7 @@ window.SEAL_3D_PRODUCTS = {
         code: "一万",
         title: "官署封泥",
         subtitle: "万子 · 官制谱系",
-        description: "保留标准一万识别结构，以官署封泥印面和朱砂文字建立文化层次。",
+        description: "这张牌保留了常见的“一万”结构，再把官署封泥印面和朱砂色文字融入牌面。",
         front: texturePath("mahjongWan1Front", "./assets/textures/mahjong/front/wan-1.webp"),
         back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp"),
         side: texturePath("mahjongDefaultSide", "./assets/textures/mahjong/side/default.webp")
@@ -52,7 +52,7 @@ window.SEAL_3D_PRODUCTS = {
         code: "东",
         title: "齐都临淄",
         subtitle: "风牌 · 齐鲁地理",
-        description: "东风牌以齐都临淄为主题，文字仍保持麻将实战所需的高识别度。",
+        description: "这张东风牌以齐都临淄为主题，同时保留清楚易认的麻将文字。",
         front: texturePath("mahjongEastFront", "./assets/textures/mahjong/front/east.webp"),
         back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp"),
         side: texturePath("mahjongDefaultSide", "./assets/textures/mahjong/side/default.webp")

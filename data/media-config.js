@@ -34,20 +34,44 @@ window.MEDIA_CONFIG = {
     // "cdn.example.com"
   ],
 
-  // 【位置 1：课程视频和封面】课程 id 必须与 mock 数据或数据库中的 id 相同。
+  // 【位置 1：三课时课程资料】课程 id 必须与 mock 数据或数据库中的 id 相同。
   courses: {
     "COURSE-01": {
       videoUrl: "",
-      posterUrl: ""
+      posterUrl: "",
+      resourceUrl: "./assets/第一课时.pdf",
+      resourceType: "PDF",
+      resourceName: "第一课时教学课件 PDF",
+      resourceFileName: "第一课时.pdf",
+      slideBasePath: "./assets/course-slides/course-01",
+      slideCount: 24
     },
     "COURSE-02": {
       videoUrl: "",
-      posterUrl: ""
+      posterUrl: "",
+      resourceUrl: "./assets/第二课时 ppt.pdf",
+      resourceType: "PDF",
+      resourceName: "第二课时教学课件 PDF",
+      resourceFileName: "第二课时 ppt.pdf",
+      slideBasePath: "./assets/course-slides/course-02",
+      slideCount: 31
     },
     "COURSE-03": {
       videoUrl: "",
-      posterUrl: ""
+      posterUrl: "",
+      resourceUrl: "./assets/第三课时（1）.pdf",
+      resourceType: "PDF",
+      resourceName: "第三课时教学课件",
+      resourceFileName: "第三课时（1）.pdf",
+      slideBasePath: "./assets/course-slides/course-03",
+      slideCount: 22
     }
+  },
+
+  coursePack: {
+    guideUrl: "./assets/教案+学习单(2).docx",
+    guideFileName: "封泥教案+学习单.docx",
+    recapVideoUrl: "./assets/视频.mp4"
   },
 
   // 【位置 2：Three.js 贴图】保留文件名时只覆盖 assets 中的同名文件即可。

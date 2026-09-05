@@ -34,10 +34,11 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/tokens.css">
-  <link rel="stylesheet" href="./css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  
+  <link rel="stylesheet" href="./css/tokens.css?v=mtnvfa5b">
+  <link rel="stylesheet" href="./css/styles.css?v=mtnvfa5b">
 </head>
 <body>
   <!-- 开馆加载层：古卷封泥解封与展开动画，纯矢量SVG与Canvas设计，真实呈现卷轴展开与封泥破裂脱落过程 -->
@@ -81,7 +82,7 @@
                 <p class="scroll-sub-title">齐鲁封泥智慧人文平台</p>
               </div>
               <!-- 开屏 IP 复用首页透明人物图，仅作卷轴右侧装饰。 -->
-              <img class="opening-scroll-ip" src="./assets/mascot.png" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
+              <img class="opening-scroll-ip" src="./assets/mascot-ROGptBE0.png" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
               <div class="scroll-seal-mark" aria-hidden="true">
                 <svg viewBox="0 0 60 60" width="44" height="44">
                   <rect x="4" y="4" width="52" height="52" rx="4" fill="none" stroke="#a8332a" stroke-width="2.5" stroke-dasharray="4 2"/>
@@ -213,7 +214,7 @@
       <a href="#collection">齐鲁封泥文化</a>
       <a href="#map">调研足迹</a>
       <a href="#mission">我们的工作</a>
-      <a href="#courses">支教开源课程</a>
+      <a href="#courses">支教课程资源</a>
       <a href="#creative">封泥牌具</a>
       <a href="#ai-guide">问问AI</a>
       <a href="#quiz">趣味问答</a>
@@ -233,7 +234,7 @@
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-copy">
         <h1 id="heroTitle" class="seal-title" aria-label="泥云智探"><span aria-hidden="true">泥</span><span aria-hidden="true">云</span><span aria-hidden="true">智</span><span aria-hidden="true">探</span></h1>
-        <p class="hero-lead">从齐鲁大地的一方泥印出发，以调研建档、数字识读、开源课程与文创设计，让战国秦汉的封缄智慧与金石印蜕重新走进今天的生活。</p>
+        <p class="hero-lead">我们从齐鲁大地留存的一方方泥印出发，整理文物档案，尝试数字识读，也把研究成果做成课程和文创，让更多人了解战国秦汉时期的封缄方式与金石印蜕。</p>
         <div class="hero-actions">
           <a class="button primary" href="#research">走近调研文物 <span aria-hidden="true">→</span></a>
           <a class="button text-button" href="#ai-guide">问问“印小灵”</a>
@@ -241,7 +242,7 @@
         <dl class="hero-stats" aria-label="平台数据概览">
           <div><dt id="statRelics">--</dt><dd>调研文物</dd></div>
           <div><dt id="statSites">--</dt><dd>齐鲁点位</dd></div>
-          <div><dt id="statCourses">--</dt><dd>开源课程</dd></div>
+          <div><dt id="statCourses">--</dt><dd>课程课时</dd></div>
         </dl>
       </div>
       <div class="hero-object museum-object" aria-label="封泥实物主题视觉" id="heroVisualArea">
@@ -288,11 +289,11 @@
         <figure class="hero-relic hero-relic-main hero-relic-soft" id="heroMascotFigure" data-parallax="10">
           <!-- 角色悬停温润印光 -->
           <div class="mascot-aura" aria-hidden="true"></div>
-          <img src="./assets/mascot.png" alt="印小灵角色形象" loading="lazy">
+          <img src="./assets/mascot-ROGptBE0.png" alt="印小灵角色形象" loading="lazy">
           <figcaption>印小灵 · 齐鲁封泥导览</figcaption>
           <!-- 互动问候气泡 -->
           <div class="hero-mascot-speech" id="heroMascotSpeech" aria-hidden="true">
-            <span>有幸相会！我是印小灵，邀你共探两千年前的泥上春秋~ ✨</span>
+            <span>你好，我是印小灵。我们一起看看两千年前的封泥吧。</span>
           </div>
         </figure>
         <span class="hero-orbit" aria-hidden="true"></span>
@@ -303,14 +304,14 @@
     <!-- 文物调研：介绍资料采集、场馆走访和数字建档流程。 -->
     <section class="research section-shell exhibit-section" id="research" data-reveal>
       <div class="section-heading split-heading">
-        <div><p class="eyebrow">文物调研</p><h2>先看实物，再把每一方封泥的来路理清</h2></div>
-        <p class="heading-note">我们走进博物馆和考古现场，也翻查金石著录与发掘报告，把泥质、印文、出土地和相关文献放在一起核对。</p>
+        <div><p class="eyebrow">文物调研</p><h2>我们从实物和文献入手，理清封泥来路</h2></div>
+        <p class="heading-note">我们走访文博场馆和金石研究机构，并对照《齐鲁封泥集存》《封泥考略》等典籍与考古发掘报告。实物信息和文献记录相互核验后，封泥档案才经得起查证。</p>
       </div>
       <div class="research-grid">
-        <article style="--i: 0;"><span>01</span><h3>先把实物看仔细</h3><p>留意泥质、印面凹凸、残损、绳痕和背面留下的细节，尽量保留它原来的样子。</p></article>
-        <article style="--i: 1;"><span>02</span><h3>去现场找线索</h3><p>走访博物馆、考古馆和文字研究机构，对照不同馆藏，看看同类封泥之间有什么联系。</p></article>
-        <article style="--i: 2;"><span>03</span><h3>把字和历史对起来</h3><p>一边辨认小篆、缪篆，一边查《汉书》等文献，看看印文对应的是哪种官职和地方制度。</p></article>
-        <article style="--i: 3;"><span>04</span><h3>整理成大家能用的资料</h3><p>把调研结果放进地图、课程、展陈和 AI 导览里，让线索不只停留在纸面上。</p></article>
+        <article style="--i: 0;"><span>01</span><h3>先看文物本身</h3><p>我们记录封泥的泥质、印面凹凸、自然残损、绳痕和背面指纹，尽量保留它原有的样子与封缄细节。</p></article>
+        <article style="--i: 1;"><span>02</span><h3>再到场馆核对</h3><p>我们走访济南市博物馆、济南考古馆、山东博物馆、中国文字博物馆和齐文化博物馆等场馆，对照不同馆藏查找线索。</p></article>
+        <article style="--i: 2;"><span>03</span><h3>把印文放回历史中</h3><p>辨认小篆、缪篆时，我们也会查阅《汉书·百官公卿表》《地理志》，确认印文对应的官职和郡国制度。</p></article>
+        <article style="--i: 3;"><span>04</span><h3>整理成数字档案</h3><p>最后，我们把调研结果整理为结构化资料，供文化地图、研学课程、数字展陈和 AI 导览使用。</p></article>
       </div>
       <p class="research-note">已关注场馆：济南市博物馆 · 济南考古馆 · 青州市博物馆 · 济南章丘博物馆 · 山东博物馆 · 中国文字博物馆 · 齐文化博物馆</p>
     </section>
@@ -318,8 +319,8 @@
     <!-- 认识封泥：包含可横向翻阅的数字手卷和封泥知识说明。 -->
     <section class="knowledge section-shell exhibit-section" id="knowledge" data-reveal>
       <div class="section-heading split-heading">
-        <div><p class="eyebrow">认识封泥</p><h2>一团湿泥，怎样替古人守住文书？</h2></div>
-        <p class="heading-note">封泥不是印章，而是填在结绳处、再盖上官印的防拆凭信。文书送到以后，先验泥上的印痕，再破泥读信。</p>
+        <div><p class="eyebrow">认识封泥</p><h2>封泥为什么被称为“简牍之锁”？</h2></div>
+        <p class="heading-note">它不是印章本身。古人捆好简牍文书或物品后，会在绳结处覆上湿泥，再钤盖官印。泥封一旦被破坏，就说明封缄可能遭人拆动。</p>
       </div>
       <div class="scroll-story" id="sealScrollStory" aria-labelledby="scrollStoryTitle">
         <div class="scroll-story-bar">
@@ -335,53 +336,53 @@
           <div class="scroll-track" id="scrollTrack">
             <article class="scroll-panel scroll-opening" data-scroll-title="引首">
               <div class="scroll-inscription" aria-hidden="true"><span>封</span><span>泥</span><span>启</span><span>卷</span></div>
-              <div class="scroll-copy"><span>引首 · 从右向左展卷</span><h3>泥土为什么能守住秘密？</h3><p>跟着这方小泥印往前看，你会看到一封古代公文怎样写下、封好、送出，最后又怎样被后人重新发现。</p></div>
+              <div class="scroll-copy"><span>引首 · 从右向左展卷</span><h3>泥土为什么能守住秘密？</h3><p>这段手卷讲的不是印章本身，而是一封古代公文如何写成、封好、送达，又怎样在清末被金石学者重新辨认。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="书写">
               <div class="scroll-scene scene-slips" aria-hidden="true"><i></i><i></i><i></i><i></i><span>临菑守印</span></div>
-              <div class="scroll-copy"><span>第一幕 · 简册编联</span><h3>文字落在竹木之间</h3><p>官方文书写在竹简或木牍之上，依序以丝绳编联成册，合上护齿封检，准备进行封缄。</p></div>
+              <div class="scroll-copy"><span>第一幕 · 简册编联</span><h3>文字落在竹木之间</h3><p>官吏把公文写在竹简或木牍上，再按顺序用丝绳编成一册，盖好封检，准备封缄。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="系绳">
               <div class="scroll-scene scene-cord" aria-hidden="true"><i></i><i></i><b></b><span>绳结穿过封泥槽</span></div>
-              <div class="scroll-copy"><span>第二幕 · 削槽系绳</span><h3>先把绳结稳稳扣住</h3><p>文书盖上封检，绳子交叉穿过方形槽道，再把绳结压进槽底，为后面的封泥留出位置。</p></div>
+              <div class="scroll-copy"><span>第二幕 · 削槽系绳</span><h3>绳结先藏进封泥槽</h3><p>文书盖上封检后，绳子会交叉穿过方形槽道，绳结则被压进槽底。这样既能固定文书，也为覆泥留出位置。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="覆泥">
               <div class="scroll-scene scene-clay" aria-hidden="true"><span>泥</span><i></i><b></b></div>
-              <div class="scroll-copy"><span>第三幕 · 填覆澄泥</span><h3>一团细腻湿泥封住绳结</h3><p>选用淘洗沉淀的纯净澄泥团，塞入槽内严实包裹绳结。湿泥柔软易塑，风干后坚硬易碎。</p></div>
+              <div class="scroll-copy"><span>第三幕 · 填覆澄泥</span><h3>湿泥包住绳结</h3><p>古人把淘洗沉淀后的澄泥填入槽中，让它紧紧包住绳结。湿泥容易塑形，干燥后则坚硬而易碎。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="钤印">
-              <figure class="scroll-relic"><img src="./assets/seal-linzi.png" alt="临淄守印封泥实物资料图"><figcaption>临淄守印 · 传世实物资料</figcaption></figure>
-              <div class="scroll-copy"><span>第四幕 · 官印钤压</span><h3>权力与责任反印入泥</h3><p>发件官员将随身铜印或玉印按入湿泥中，形成凸起阳文印蜕。印文彰显职权，泥面完好证明未被私拆。</p></div>
+              <figure class="scroll-relic"><img src="./assets/seal-linzi-DdSF-FBe.png" alt="临淄守印封泥实物资料图"><figcaption>临淄守印 · 传世实物资料</figcaption></figure>
+              <div class="scroll-copy"><span>第四幕 · 官印钤压</span><h3>官印在泥上留下凭证</h3><p>发件官员把铜印或玉印按入湿泥，留下凸起的阳文印蜕。印文说明文书来自哪个官署，完整的泥面则表明封缄没有被拆动。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="传递">
               <div class="scroll-scene scene-route" aria-hidden="true"><i></i><i></i><i></i><span>官署</span><b>驿路</b><em>收件地</em></div>
-              <div class="scroll-copy"><span>第五幕 · 驿路封送</span><h3>携者可送达，中途不可窥</h3><p>驿使快马传递文书，但在不破坏坚硬泥封与内裹绳结的前提下无法开启，建立起跨地域的公信链条。</p></div>
+              <div class="scroll-copy"><span>第五幕 · 驿路封送</span><h3>驿使送信，却不能私拆</h3><p>驿使负责把文书送到目的地。途中若想打开它，就难免破坏已经干硬的泥封和里面的绳结。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="验封">
               <div class="scroll-scene scene-open" aria-hidden="true"><span>验</span><i></i><b></b></div>
-              <div class="scroll-copy"><span>第六幕 · 验封破泥</span><h3>先验印，再打开文书</h3><p>收件官署先看看印文和泥封有没有被动过，确认无误后才破泥读信，碎掉的封泥也因此留在了遗址里。</p></div>
+              <div class="scroll-copy"><span>第六幕 · 验封破泥</span><h3>验过泥封，才能读信</h3><p>收件官署会先核对印文，检查泥封是否完整。确认无误后，官吏才会破开封泥，取出公文阅读。</p></div>
             </article>
             <article class="scroll-panel scroll-ending" data-scroll-title="考古">
-              <figure class="scroll-relic"><img src="./assets/rubbing-linzi-cheng.png" alt="临淄官署印蜕拓本"><figcaption>《齐鲁封泥集存》临淄官署印蜕拓本</figcaption></figure>
-              <div class="scroll-copy"><span>第七幕 · 金石重光</span><h3>碎掉的泥块，又被读了出来</h3><p>纸张普及后，封泥慢慢退出日常。到了清末，吴式芬、罗振玉、王国维等学者重新辨认它，才让这些泥块再次讲起秦汉的官制和地理。</p></div>
+              <figure class="scroll-relic"><img src="./assets/rubbing-linzi-cheng-J9xwqeH0.png" alt="临淄官署印蜕拓本"><figcaption>《齐鲁封泥集存》临淄官署印蜕拓本</figcaption></figure>
+              <div class="scroll-copy"><span>第七幕 · 金石重光</span><h3>被丢弃的泥块重新受到重视</h3><p>魏晋以后，纸张逐渐普及，封泥也随之退出日常使用。到了清末，吴式芬、罗振玉、王国维等学者经过考订，纠正了把封泥视作“印模”的旧说，并用它研究秦汉官制与历史地理。</p></div>
             </article>
           </div>
         </div>
         <p class="scroll-story-hint">拖动手卷、使用滚轮或方向键继续展卷</p>
       </div>
       <div class="artifact-strip" aria-label="封泥实物对照">
-        <figure><img src="./assets/seal-qin-mu.png" alt="秦代墓印篆资料图"><figcaption><span>秦</span>墓印篆封泥</figcaption></figure>
-        <figure><img src="./assets/seal-han.png" alt="汉代缪篆封泥资料图"><figcaption><span>汉</span>汉缪篆封泥</figcaption></figure>
-        <figure><img src="./assets/seal-linzi.png" alt="临淄守印资料图"><figcaption><span>齐</span>临淄守印</figcaption></figure>
-        <figure><img src="./assets/seal-qibei.png" alt="齐北船丞资料图"><figcaption><span>齐</span>齐北船丞</figcaption></figure>
+        <figure><img src="./assets/seal-qin-mu-D2Pi9URj.png" alt="秦代墓印篆资料图"><figcaption><span>秦</span>墓印篆封泥</figcaption></figure>
+        <figure><img src="./assets/seal-han-BZY_s2mt.png" alt="汉代缪篆封泥资料图"><figcaption><span>汉</span>汉缪篆封泥</figcaption></figure>
+        <figure><img src="./assets/seal-linzi-DdSF-FBe.png" alt="临淄守印资料图"><figcaption><span>齐</span>临淄守印</figcaption></figure>
+        <figure><img src="./assets/seal-qibei-CqlulhGc.png" alt="齐北船丞资料图"><figcaption><span>齐</span>齐北船丞</figcaption></figure>
       </div>
       <div class="knowledge-values">
-        <div class="knowledge-lead"><small>泥土留下的冷门绝学</small><h3>封泥虽小，却能补正史籍、考释文字、重构古代空间。</h3></div>
+        <div class="knowledge-lead"><small>泥土留下的冷门绝学</small><h3>一方封泥，能帮我们读懂哪些历史？</h3></div>
         <dl>
-          <div><dt>考补《汉书》官制</dt><dd>印文直接反映两汉三级官署与辅佐职掌（如相、丞、尉、司马），补订《百官公卿表》遗漏之职官。</dd></div>
-          <div><dt>汉代地理建置</dt><dd>古地名与出土点位相互印证，厘清西汉齐国、琅琊、千乘等郡国辖境变迁与《地理志》县邑分布。</dd></div>
-          <div><dt>古文字与印学演变</dt><dd>忠实保留秦小篆、汉缪篆的真实章法与笔触，纠正后世摹刻讹变，是研究古文字演进的标准器。</dd></div>
-          <div><dt>社会与仓储经济</dt><dd>仓府、市丞、盐官等特种封泥，真实反映汉代物资流通、市场监管与盐铁国家专营的管理链条。</dd></div>
+          <div><dt>考补《汉书》官制</dt><dd>印文中的相、丞、尉、司马等职官，可以补充《百官公卿表》没有详细记下的官署和分工。</dd></div>
+          <div><dt>汉代地理建置</dt><dd>把古地名、出土地点和《地理志》放在一起看，我们可以梳理齐国、琅琊、千乘等郡国的辖境变化。</dd></div>
+          <div><dt>古文字与印学演变</dt><dd>封泥保留了秦小篆和汉缪篆当时的字形与章法，也能帮助我们辨别后世摹刻中出现的讹误。</dd></div>
+          <div><dt>社会与仓储经济</dt><dd>仓府、市丞、盐官等封泥，留下了物资入库、市场管理和盐铁经营的具体线索。</dd></div>
         </dl>
       </div>
     </section>
@@ -389,28 +390,28 @@
     <!-- 封泥故事：故事目录和四篇对应的简短正文。 -->
     <section class="stories section-shell exhibit-section" id="stories" data-reveal>
       <div class="section-heading split-heading">
-        <div><p class="eyebrow">封泥故事</p><h2>泥块碎了，里面的故事才露出来</h2></div>
-        <p class="heading-note">从几方小小的封泥出发，看看古人怎样传公文、管地方，也看看后来的学者怎样把这些线索重新读出来。</p>
+        <div><p class="eyebrow">封泥故事</p><h2>四个故事，看看封泥留下了什么</h2></div>
+        <p class="heading-note">我们根据金石考据和考古发掘材料，把封泥放回两千年前的齐鲁社会。透过这些小泥块，可以看到公文如何传递，也能了解当时的官署、城市与物资往来。</p>
       </div>
       <div class="story-grid">
-        <a class="story-card" style="--i: 0;" href="#story-detail-01"><span class="story-index">01</span><div><small>文书制度</small><h3>简牍之锁：一封不可私拆的汉代诏令</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
-        <a class="story-card" style="--i: 1;" href="#story-detail-02"><span class="story-index">02</span><div><small>金石考证</small><h3>从“印模”到“封泥”的学术定名</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
-        <a class="story-card" style="--i: 2;" href="#story-detail-03"><span class="story-index">03</span><div><small>齐都故城</small><h3>齐故城出土封泥中的汉代官署网</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
-        <a class="story-card" style="--i: 3;" href="#story-detail-04"><span class="story-index">04</span><div><small>经济漕运</small><h3>一枚“左盐”封泥背后的齐鲁物产</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
+        <a class="story-card" style="--i: 0;" href="#story-detail-01"><span class="story-index">01</span><div><small>文书制度</small><h3>封泥三重职能：保密、防伪与身份凭证</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
+        <a class="story-card" style="--i: 1;" href="#story-detail-02"><span class="story-index">02</span><div><small>金石考证</small><h3>陈介祺与齐鲁封泥学脉的重光</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
+        <a class="story-card" style="--i: 2;" href="#story-detail-03"><span class="story-index">03</span><div><small>齐都故城</small><h3>齐地出土封泥与秦汉篆刻嬗变</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
+        <a class="story-card" style="--i: 3;" href="#story-detail-04"><span class="story-index">04</span><div><small>经济漕运</small><h3>封泥形制研究与当代文创转化路径</h3><span class="story-link">阅读故事 <b aria-hidden="true">↓</b></span></div></a>
       </div>
       <div class="story-details" aria-label="封泥故事正文">
-        <article id="story-detail-01" tabindex="-1"><span>01 · 文书制度</span><h3>简牍之锁：一封不可私拆的汉代诏令</h3><p>汉代公文通过封检刻槽、结绳填泥后钤盖官印，驿使虽经历千山万水，亦无法在不破坏印蜕泥纹的情况下窥看文书，确保政令精准传达与行政追责。</p><a href="#stories">返回故事目录 ↑</a></article>
-        <article id="story-detail-02" tabindex="-1"><span>02 · 金石考证</span><h3>从“印模”到“封泥”的学术定名</h3><p>清道光年间出土封泥初被误认为“古印模”或“异兽模”。山东学者吴式芬与刘鹗、罗振玉、王国维等学者结合《续汉书·百官志》等文献，最终确证其为“封缄之泥”，揭开金石学新纪元。</p><a href="#stories">返回故事目录 ↑</a></article>
-        <article id="story-detail-03" tabindex="-1"><span>03 · 齐都故城</span><h3>齐故城出土封泥中的汉代官署网</h3><p>临淄齐故城先后出土大量封泥，包括“临淄守印”“淄川丞相”“临菑市丞”“廣陵鄉印”等50余种，全面还原了齐国郡国官署、治安军事、市场贸易与基层治理的立体图景。</p><a href="#stories">返回故事目录 ↑</a></article>
-        <article id="story-detail-04" tabindex="-1"><span>04 · 经济漕运</span><h3>一枚“左盐”封泥背后的齐鲁物产</h3><p>琅琊出土的“琅琊左盐”封泥，见证了汉武帝时期推行盐铁官营政策在齐鲁沿海的推行；配合“齐北船丞”等印信，勾勒出齐鲁便利的水陆漕运与盐利网络。</p><a href="#stories">返回故事目录 ↑</a></article>
+        <article id="story-detail-01" tabindex="-1"><span>01 · 文书制度</span><h3>封泥三重职能：保密、防伪与身份凭证</h3><p>封泥要与封检、绳结配合使用。官吏把湿泥填进封槽，让它包住绳结；如果有人私拆，干硬的泥块就会破裂。官印留下的印蜕难以原样仿造，而印文中的官署、职官和地名，则说明文书由谁发出、属于哪一级行政机构。</p><a href="#stories">返回故事目录 ↑</a></article>
+        <article id="story-detail-02" tabindex="-1"><span>02 · 金石考证</span><h3>陈介祺与齐鲁封泥学脉的重光</h3><p>清代山东潍县的金石学者陈介祺发现，乡民耕地时找到的带字碎泥并不是普通陶模，而是已经消失一千八百多年的秦汉封缄遗物。他长期搜集、鉴藏和考释这些材料。后来，吴式芬、罗振玉、王国维等学者又结合《续汉书·百官志》《地理志》等文献继续研究，齐鲁封泥研究由此逐渐形成体系。</p><a href="#stories">返回故事目录 ↑</a></article>
+        <article id="story-detail-03" tabindex="-1"><span>03 · 齐都故城</span><h3>齐地出土封泥与秦汉篆刻嬗变</h3><p>临淄齐故城和齐鲁郡国遗址出土的封泥，保留了秦小篆向汉缪篆变化的痕迹。秦印多见规整对称的字形和匀净线条；汉印逐渐变得方正饱满，笔画也更圆润。到了清代，邓石如、丁敬等篆刻家又从秦汉印文中吸收字法与刀法，形成各自的风格。</p><a href="#stories">返回故事目录 ↑</a></article>
+        <article id="story-detail-04" tabindex="-1"><span>04 · 经济漕运</span><h3>封泥形制研究与当代文创转化路径</h3><p>盐铁运输和仓府收发物资时，都可能用封泥核验凭信。今天做文创时，我们可以借鉴官印、私印的泥形差异，以及不规则边缘和残损纹理；祥云纹、回纹等传统纹样，也可以与赭色、泥黄、青灰等颜色搭配。设计既可以接近出土实物，也可以保留封泥特点后重新创作。</p><a href="#stories">返回故事目录 ↑</a></article>
       </div>
     </section>
 
     <!-- 藏品展示：collectionGrid 的卡片由 js/app.js 根据 mock-data.js 动态生成。 -->
     <section class="collection section-shell exhibit-section" id="collection" data-reveal>
       <div class="section-heading split-heading">
-        <div><p class="eyebrow">齐鲁封泥文化</p><h2>几方泥印，能告诉我们什么？</h2></div>
-        <p class="heading-note">从官职、仓储、地名和文字几条线索入手，看看封泥怎样帮助我们认识齐鲁的制度与日常。</p>
+        <div><p class="eyebrow">齐鲁封泥文化</p><h2>从几方封泥，读齐鲁的官制与地理</h2></div>
+        <p class="heading-note">我们选取齐鲁地区有代表性的职官、仓府和地名封泥，整理它们的印文、所属郡国与出土信息。每张卡片都说明这方封泥能为历史研究补充什么。</p>
       </div>
       <div class="collection-grid" id="collectionGrid" aria-live="polite"></div>
     </section>
@@ -418,7 +419,7 @@
     <!-- 补充史料：由 supplementary-sources.js 在浏览器端渲染，不访问后端。 -->
     <section class="map-section exhibit-section" id="map" data-reveal>
       <div class="section-shell map-shell">
-        <div class="section-heading map-heading"><div><p class="eyebrow">资料分布</p><h2>沿着地图，找回封泥走过的地方</h2></div><p>这里收录山东45处现代区县的出土和著录线索。点开一个地方，可以看看它留下了哪些印文，以及这些名字在汉代属于哪里。</p></div>
+        <div class="section-heading map-heading"><div><p class="eyebrow">资料分布</p><h2>沿着封泥线索，看齐鲁古郡国的分布</h2></div><p>我们整理了山东45处现代区县的出土与金石著录资料。点击地图上的点位，可以查看代表印文、汉代行政归属和古县沿革；现代坐标只用于帮助检索。</p></div>
         <div class="map-toolbar" role="group" aria-label="汉代行政体系筛选">
           <button class="filter-chip active" type="button" data-period="全部">全部</button><button class="filter-chip" type="button" data-period="青州">青州体系</button><button class="filter-chip" type="button" data-period="兖州">兖州体系</button><button class="filter-chip" type="button" data-period="徐州">徐州体系</button><button class="filter-chip" type="button" data-period="其他">其他标注</button>
           <span class="map-toolbar-spacer" aria-hidden="true"></span>
@@ -430,7 +431,7 @@
         <div class="map-layout">
           <div class="shandong-map" id="shandongMap" aria-label="齐鲁封泥调研地图">
             <canvas class="shandong-terrain-canvas" id="shandongTerrainCanvas" aria-hidden="true"></canvas>
-            <img class="shandong-flat-map-image" id="shandongFlatMapImage" src="./assets/shandong-map-flat.png" alt="山东封泥调研简化平面地图" aria-hidden="true">
+            <img class="shandong-flat-map-image" id="shandongFlatMapImage" src="./assets/shandong-map-flat-DPb8yLwL.png" alt="山东封泥调研简化平面地图" aria-hidden="true">
             <img class="map-source-image" id="mapSourceImage" alt="齐鲁封泥调研地图资料图" hidden>
             <div class="map-watermark">山东</div><div class="map-routes" aria-hidden="true"><i></i><i></i><i></i></div><div id="mapMarkers"></div>
             <p class="map-terrain-status" id="mapTerrainStatus">正在准备山东 3D 地貌…</p>
@@ -451,7 +452,7 @@
           </aside>
         </div>
         <div class="map-knowledge">
-          <div class="map-knowledge-head"><h3>地图上的点，连着一套古代地方制度</h3><p>这份资料把现代地点、封泥上的字和汉代的郡国县名放在一起。遇到异体字或读不准的地方，也会把原来的疑问保留下来。</p></div>
+          <div class="map-knowledge-head"><h3>这些点位背后，是怎样的古代行政网络？</h3><p>我们依据《山东省封泥分布谱系与金石文献集成》整理资料，并保留传世拓本的释文、异体字和存疑考订。遇到暂时读不准的地方，页面也会如实注明。</p></div>
           <dl class="source-stats" aria-label="文献图录与调研谱系概览">
             <div><dt>45</dt><dd>现代区县索引</dd></div>
             <div><dt>133</dt><dd>不重复印文标签</dd></div>
@@ -459,17 +460,17 @@
             <div><dt>5+</dt><dd>涉及刺史部辖区</dd></div>
           </dl>
           <div class="evidence-pair">
-            <figure class="source-photo"><img src="./assets/ppt-seal-source-photo.png" alt="馆藏封泥实物剖面与形制特征"><figcaption>实物特征：观察澄泥质感、封泥槽截面、绳结压痕与破封断面</figcaption></figure>
+            <figure class="source-photo"><img src="./assets/ppt-seal-source-photo-zcRqh7zQ.png" alt="馆藏封泥实物剖面与形制特征"><figcaption>实物特征：观察澄泥质感、封泥槽截面、绳结压痕与破封断面</figcaption></figure>
             <div class="rubbing-group" aria-label="经典官署印蜕拓片">
-              <figure><img src="./assets/rubbing-linzi-cheng.png" alt="临淄官署印蜕拓本"><figcaption>临淄官署印蜕拓本</figcaption></figure>
-              <figure><img src="./assets/rubbing-linzi-xiang.png" alt="临淄乡级印蜕拓本"><figcaption>临淄乡级印蜕拓本</figcaption></figure>
-              <figure><img src="./assets/rubbing-langya.png" alt="琅琊职官印蜕拓本"><figcaption>琅琊职官印蜕拓本</figcaption></figure>
-              <figure><img src="./assets/rubbing-jibei.png" alt="济北守印印蜕拓本"><figcaption>郡守级印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/rubbing-linzi-cheng-J9xwqeH0.png" alt="临淄官署印蜕拓本"><figcaption>临淄官署印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/rubbing-linzi-xiang-CNmn_u8-.png" alt="临淄乡级印蜕拓本"><figcaption>临淄乡级印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/rubbing-langya-4hNrugtK.png" alt="琅琊职官印蜕拓本"><figcaption>琅琊职官印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/rubbing-jibei-7VJuFT61.png" alt="济北守印印蜕拓本"><figcaption>郡守级印蜕拓本</figcaption></figure>
             </div>
           </div>
           <div class="source-findings" id="sourceFindings"></div>
           <div class="source-index-head">
-            <div><h3>45处地方，慢慢查</h3><p>可以输入今天的区县名、古地名、印文或郡国名称，找找它们之间的联系。</p></div>
+            <div><h3>45区县金石图录索引</h3><p>你可以输入现代区县、古地名、官印印文或行政归属，查找相关资料。</p></div>
             <p class="source-preview-note" id="sourceSearchFeedback" aria-live="polite">显示精选 3 处区县资料</p>
           </div>
           <div class="source-index" id="sourceIndex" aria-live="polite"></div>
@@ -480,31 +481,61 @@
 
     <!-- 我们的工作：说明项目的调研、转译和公众传播目标。 -->
     <section class="intro section-shell exhibit-section" id="mission" data-reveal>
-      <div class="section-heading compact-heading"><p class="eyebrow">我们的工作</p><h2>把不容易读懂的封泥，讲给更多人听</h2></div>
-      <div class="intro-copy"><p>封泥很小，字也不容易认，但它留下了古代文书、官署和地方往来的痕迹。我们把实地调研、资料整理和数字工具放在一起，做成更容易亲近的内容。</p></div>
+      <div class="section-heading compact-heading"><p class="eyebrow">我们的工作</p><h2>我们怎样整理和传播封泥文化</h2></div>
+      <div class="intro-copy"><p>封泥个头很小，上面的文字又不容易辨认，因此很少有人有机会深入了解它。我们把实地调研、资料建档和数字识读结合起来，再将研究内容做成课程、地图和文创，让专业知识更容易读懂。</p></div>
       <div class="value-grid">
-        <article><span class="index">01</span><h3>把资料记清楚</h3><p>记录名称、年代、印文、泥色、出土地和文献出处，让线索以后还能查得到。</p></article>
-        <article><span class="index">02</span><h3>把专业话说明白</h3><p>把古文字、官职和历史地理的关系，换成更容易理解的图文和故事。</p></article>
-        <article><span class="index">03</span><h3>让大家都能参与</h3><p>用地图、课程、AI导览和文创设计，给不同年龄的人留一个认识封泥的入口。</p></article>
+        <article><span class="index">01</span><h3>调研建档</h3><p>我们记录每方封泥的名称、年代、印文、泥色、出土地和保存状况，同时注明相关金石文献。</p></article>
+        <article><span class="index">02</span><h3>知识转译</h3><p>我们把小篆、缪篆、郡国官制和历史地理等专业内容，整理成更容易理解的图文说明。</p></article>
+        <article><span class="index">03</span><h3>公众传播</h3><p>文化地图、研学课程、AI 导览和文创设计，为不同年龄的访客提供了认识封泥的入口。</p></article>
       </div>
     </section>
 
-    <!-- 开源课程：课程列表由 JavaScript 生成，当前视频地址为预留字段。 -->
+    <!-- 支教课程资源：左侧统一展示课程内容，右侧切换三课时。 -->
     <section class="course-section section-shell exhibit-section" id="courses" data-reveal>
-      <div class="section-heading split-heading"><div><p class="eyebrow">开源研学课程</p><h2>把封泥带进课堂，也带回家</h2></div><p class="heading-note">从封泥的制作和使用讲起，带着学生和公众认识古文字、历史地图，以及一方小泥印背后的生活。</p></div>
-      <div class="course-layout">
-        <article class="featured-course">
-          <div class="video-shell" id="coursePlayer"><div class="video-placeholder"><button id="playCourse" type="button" aria-label="播放课程"><span aria-hidden="true">▶</span></button><p>课程视频素材待接入</p></div></div>
-          <div class="featured-course-copy"><span id="courseMeta">第 1 课 · 12 分钟</span><h3 id="courseTitle">一方澄泥，如何锁住两千年文书？</h3><p id="courseDescription">从古代简牍公文的保密机制出发，深入解析封泥的制作、系绳、填泥与破封全过程。</p></div>
-        </article>
-        <div class="course-list" id="courseList" aria-label="开源课程列表"></div>
+      <div class="section-heading split-heading"><div><p class="eyebrow">支教课程资源</p><h2>齐鲁封泥三课时课程包</h2></div><p class="heading-note">这套课程面向中小学生，共三课时。学生先认识封泥的用途与历史，再观察秦汉印文和残缺之美，最后用纸笔完成自己的封泥设计。</p></div>
+      <div class="course-browser">
+        <div class="course-browser-main">
+          <article class="course-recap-feature">
+            <div class="course-recap-media"><video id="courseRecapVideo" controls playsinline preload="metadata" aria-label="支教活动总结视频"></video></div>
+            <div class="course-recap-copy"><span>支教活动回顾</span><h3>封泥课程走进支教课堂</h3><p>这段视频记录课程开展和学生参与的过程，也可以继续查看右侧课时中的完整教学课件。</p></div>
+          </article>
+          <div class="course-scroll" id="courseScroll" aria-labelledby="courseScrollTitle">
+            <div class="course-scroll-bar">
+              <div><span>数字课卷</span><strong id="courseScrollTitle">泥藏千年：初识齐鲁封泥，了解来源与作用</strong></div>
+              <div class="course-scroll-controls">
+                <button id="courseSlidePrev" type="button" aria-label="查看上一页课件">←</button>
+                <p id="courseSlideStatus" aria-live="polite"><span>第一课时</span><b>01 / 24</b></p>
+                <button id="courseSlideNext" type="button" aria-label="查看下一页课件">→</button>
+              </div>
+            </div>
+            <div class="course-scroll-progress" aria-hidden="true"><i id="courseSlideProgress"></i></div>
+            <div class="course-slide-viewport" id="courseSlideViewport" tabindex="0" aria-label="课程 PDF 课件，可使用方向键或前后按钮翻页">
+              <div class="course-slide-track" id="courseSlideTrack"></div>
+            </div>
+            <div class="course-scroll-footer">
+              <div><span id="courseMeta">第 1 课 · 45 分钟</span><p id="courseDescription">第一课从古文字猜读进入封泥主题，讲清封泥怎样用于保密、防伪和确认身份，并结合麋圈、橘官等故事认识秦汉社会。</p></div>
+              <div class="course-scroll-actions">
+                <a class="button primary" id="courseResourceLink" href="#" hidden>下载本课课件</a>
+                <a class="button text-button" id="courseGuideLink" href="#" hidden>下载教案与学习单</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="course-lesson-panel" aria-label="选择课程课时">
+          <div class="course-lesson-panel-head">
+            <p class="course-lesson-panel-label">课程路线</p>
+            <p class="course-lesson-panel-intro">从认识封泥的用途，到读懂印文之美，再完成自己的创意设计。</p>
+          </div>
+          <div class="course-lesson-tabs" id="courseLessonTabs" role="tablist" aria-label="选择课时"></div>
+          <div class="course-lesson-panel-foot"><span>课程进度</span><strong id="courseLessonProgress">01 / 03</strong></div>
+        </aside>
       </div>
     </section>
 
     <!-- 3D 牌具展厅：模型由 Three.js 生成，表面贴图路径统一写在 data/3d-products.js。 -->
     <section class="creative-section product-3d-section exhibit-section" id="creative" data-reveal>
       <div class="section-shell product-3d-heading">
-        <div class="section-heading map-heading"><div><p class="eyebrow">封泥牌具设计</p><h2>把熟悉的牌具，换成齐鲁的印文</h2></div><p>这里先看看扑克牌和麻将的 3D 样机。以后换上新的贴图，就能把临淄守印、齐北船丞等文字带到日常使用中。</p></div>
+        <div class="section-heading map-heading"><div><p class="eyebrow">封泥牌具设计</p><h2>把封泥印文带进日常牌具</h2></div><p>你可以在线查看扑克牌和麻将的 3D 样机。以后从 Photoshop 导出新设计时，只需替换对应的 PNG 或 WebP 贴图，不必重新制作模型。</p></div>
       </div>
       <div class="product-3d-showcase" id="product3dShowcase">
         <div class="product-3d-stage">
@@ -539,7 +570,7 @@
 
     <!-- AI 助手：前端只收集问题和图片，真正的模型调用由 server.js/云端 FC 完成。 -->
     <section class="ai-section section-shell exhibit-section" id="ai-guide" data-reveal>
-        <div class="ai-intro"><p class="eyebrow">AI吉祥物</p><h2>看不懂印文？<br>让“印小灵”陪你认一认</h2><p>把封泥图片或问题交给印小灵，它会陪你看看字形、猜猜官职，再把相关的齐鲁故事讲给你听。它的回答适合用来入门和找线索，重要判断还要回到专业资料。</p><ul><li>上传图片，一起看看印面和残缺</li><li>对照金石资料，试着认认小篆与缪篆</li><li>聊聊两汉官职、齐鲁古城和封泥的用法</li></ul></div>
+        <div class="ai-intro"><p class="eyebrow">AI吉祥物</p><h2>看不懂印文？<br>让“印小灵”陪你认一认</h2><p>印小灵会结合封泥资料和图像识别结果，帮你观察印面、尝试辨认文字，并解释相关的官职与历史背景。它给出的释读只是研学线索，遇到残缺或有争议的文字时，还需要专业人员复核。</p><ul><li>你可以上传图片，看看印面和残损细节</li><li>它会参照金石著录，解释小篆与缪篆候选字</li><li>你也可以问它两汉职官、齐鲁古城和封缄工艺</li></ul></div>
       <div class="ai-console">
         <div class="ai-console-head"><div class="mascot-mark" aria-hidden="true"><span>泥</span></div><div><strong>印小灵</strong><small id="aiStatus"><i></i> 正在悄悄连接知识库……</small></div><button id="clearChat" type="button" aria-label="清空对话" title="把对话擦干净">↻</button></div>
         <div class="chat-messages" id="chatMessages" aria-live="polite"><div class="chat-message assistant">你好呀，我是印小灵！封泥、古文字和齐鲁故事都可以问我，偶尔想聊点别的，我也会认真听你说。</div></div>
@@ -572,13 +603,16 @@
       <a href="#collection">齐鲁封泥文化</a>
       <a href="#map">调研足迹</a>
       <a href="#mission">我们的工作</a>
-      <a href="#courses">支教开源课程</a>
+      <a href="#courses">支教课程资源</a>
       <a href="#creative">封泥牌具</a>
       <a href="#ai-guide">问问AI</a>
       <a href="#quiz">趣味问答</a>
     </div>
-    <p class="footer-contact">联系我们：<a href="mailto:3519936734@qq.com">3519936734@qq.com</a></p>
-    <p class="copyright">© 2026 泥云智探 齐鲁封泥智慧人文平台. 旨在传承弘扬中华优秀传统金石文化与古文字学.</p>
+    <div class="footer-compliance">
+      <p class="footer-contact">联系我们：<a href="mailto:3519936734@qq.com">3519936734@qq.com</a></p>
+      <p class="footer-icp">ICP备案号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">XXX</a></p>
+      <p class="copyright">© 2026 泥云智探 齐鲁封泥智慧人文平台. 版权归网站运营方所有。</p>
+    </div>
   </footer>
 
   <!-- 全站搜索弹窗：搜索行为在 js/app.js 中绑定。 -->
@@ -718,6 +752,7 @@
     </div>
   </dialog>
 
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <aside class="ai-pet" id="aiPet" aria-label="印小灵常驻助手">
@@ -730,8 +765,8 @@
     <button class="ai-pet-toggle" type="button" data-pet-toggle aria-label="打开印小灵快捷对话" aria-expanded="false">
       <span class="ai-pet-greeting">来找我呀</span>
       <div class="ai-pet-stage">
-        <img class="ai-pet-layer is-active" draggable="false" src="./assets/idling.png" alt="印小灵猫形宠物">
-        <img class="ai-pet-layer is-next" draggable="false" src="./assets/idling.png" alt="印小灵猫形宠物" aria-hidden="true">
+        <img class="ai-pet-layer is-active" draggable="false" src="./assets/idling-DTWvgU5M.png" alt="印小灵猫形宠物">
+        <img class="ai-pet-layer is-next" draggable="false" src="./assets/idling-DTWvgU5M.png" alt="印小灵猫形宠物" aria-hidden="true">
       </div>
     </button>
   </aside>
@@ -752,14 +787,13 @@
   <script src="./data/shandong-prefectures.js"></script>
   <script src="./js/config.js"></script>
   <script src="./js/api.js"></script>
-  <script src="./js/media-coordinator.js"></script>
-  <script src="./js/vendor/vue.global.prod.js"></script>
-  <script src="./js/quiz-app.js"></script>
+  <script src="./js/media-coordinator.js"></script>
   <script src="./js/ai-service.js"></script>
   <script src="./js/app.js"></script>
   <script src="./js/ai-pet.js"></script>
   <script src="./js/vendor/three.min.js"></script>
   <script src="./js/three-map.js"></script>
   <script src="./js/three-showcase.js"></script>
+  <script src="./assets/quiz-bundle.js"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ const { createPool, query, isDatabaseConfigured } = require("./server/db");
 // API Key 只从服务器环境变量读取，不能写进前端文件或提交到代码仓库。
 const PORT = Number(process.env.PORT || process.env.FC_SERVER_PORT || process.env.AI_SERVER_PORT || 3000);
 const WEB_ROOT = __dirname;
+const BUILD_ROOT = path.join(__dirname, "dist");
 const API_KEY = process.env.DASHSCOPE_API_KEY || "";
 const APP_ID = process.env.DASHSCOPE_APP_ID || "c786fc9824414081980b6aa3258bb787";
 const VISION_MODEL = process.env.QWEN_VL_MODEL || "qwen-vl-plus";
@@ -63,6 +64,9 @@ const MIME_TYPES = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".svg": "image/svg+xml",
+  ".pdf": "application/pdf",
+  ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ".mp4": "video/mp4",
   ".webm": "video/webm"
 };
@@ -72,7 +76,10 @@ const MIME_TYPES = {
 function serveStatic(request, response) {
   const requestPath = decodeURIComponent(new URL(request.url, "http://127.0.0.1").pathname);
   const relativePath = requestPath === "/" ? "index.html" : requestPath.replace(/^\/+/, "");
-  const filePath = path.resolve(WEB_ROOT, relativePath);
+  // 首页和 Vite 构建产物从 dist 读取；旧页面脚本、数据和媒体继续从项目根目录读取。
+  const buildPath = path.resolve(BUILD_ROOT, relativePath);
+  const sourcePath = path.resolve(WEB_ROOT, relativePath);
+  const filePath = relativePath === "index.html" || fs.existsSync(buildPath) ? buildPath : sourcePath;
   if (!filePath.startsWith(`${WEB_ROOT}${path.sep}`)) return sendJson(response, 403, { error: "禁止访问" });
   // 源码、配置和版本目录不能通过公网静态下载，即使误被部署包带入也要拒绝访问。
   const blockedFile = /(^|[\\/])(?:\.env(?:\..*)?|\.git|server(?:[\\/]db)?\.js|package(?:-lock)?\.json|.*\.sql)$/i.test(relativePath);
@@ -104,7 +111,7 @@ function readJson(request) {
     request.on("data", (chunk) => {
       size += chunk.length;
       if (size > MAX_BODY_BYTES) {
-        reject(new Error("请求内容过大"));
+        const error = new Error("请求内容过大"); error.errorCode = "AI_REQUEST_TOO_LARGE"; error.httpStatus = 413; reject(error);
         request.destroy();
         return;
       }
@@ -113,7 +120,7 @@ function readJson(request) {
     request.setTimeout(REQUEST_TIMEOUT, () => reject(new Error("请求超时")));
     request.on("end", () => {
       try { resolve(JSON.parse(Buffer.concat(chunks).toString("utf8"))); }
-      catch { reject(new Error("请求数据格式不正确")); }
+      catch { const error = new Error("请求数据格式不正确"); error.errorCode = "AI_INVALID_JSON"; error.httpStatus = 400; reject(error); }
     });
     request.on("error", reject);
   });
@@ -121,15 +128,15 @@ function readJson(request) {
 
 // 图片数量、类型、单张大小和 Data URL 格式必须同时符合要求。
 function validateImages(images) {
-  if (!Array.isArray(images)) throw new Error("images 必须是数组");
-  if (images.length > MAX_IMAGES) throw new Error(`一次最多上传 ${MAX_IMAGES} 张图片`);
+  if (!Array.isArray(images)) { const error = new Error("images 必须是数组"); error.errorCode = "AI_INVALID_IMAGES"; error.httpStatus = 400; throw error; }
+  if (images.length > MAX_IMAGES) { const error = new Error(`一次最多上传 ${MAX_IMAGES} 张图片`); error.errorCode = "AI_TOO_MANY_IMAGES"; error.httpStatus = 400; throw error; }
   images.forEach((image) => {
-    if (!["image/jpeg", "image/png", "image/webp"].includes(image.type)) throw new Error(`${image.name || "文件"} 不是支持的图片格式`);
+    if (!["image/jpeg", "image/png", "image/webp"].includes(image.type)) { const error = new Error(`${image.name || "文件"} 不是支持的图片格式`); error.errorCode = "AI_UNSUPPORTED_IMAGE_TYPE"; error.httpStatus = 400; throw error; }
     const dataUrl = String(image.dataUrl || "");
     const encoded = dataUrl.match(/^data:image\/(?:jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/);
-    if (!encoded) throw new Error("图片数据格式不正确");
+    if (!encoded) { const error = new Error("图片数据格式不正确"); error.errorCode = "AI_INVALID_IMAGE_DATA"; error.httpStatus = 400; throw error; }
     const actualBytes = Math.floor(encoded[1].length * 3 / 4) - (encoded[1].endsWith("==") ? 2 : encoded[1].endsWith("=") ? 1 : 0);
-    if (actualBytes > MAX_IMAGE_BYTES) throw new Error(`${image.name || "图片"} 超过 5MB`);
+    if (actualBytes > MAX_IMAGE_BYTES) { const error = new Error(`${image.name || "图片"} 超过 5MB`); error.errorCode = "AI_IMAGE_TOO_LARGE"; error.httpStatus = 400; throw error; }
   });
 }
 
@@ -156,7 +163,17 @@ function isAiRateLimited(request) {
 function publicError(error, fallback = "请求处理失败") {
   // 详细错误只写入服务日志，避免把数据库地址或上游响应泄露给访客。
   console.error(error);
-  return fallback;
+  return error?.publicMessage || fallback;
+}
+
+function publicAiError(error, fallback = "AI 请求失败") {
+  console.error(error);
+  return {
+    message: error?.publicMessage || fallback,
+    errorCode: error?.errorCode || "INTERNAL_ERROR",
+    upstreamCode: error?.upstreamCode || null,
+    requestId: error?.requestId || null
+  };
 }
 
 function databaseUnavailable(response) {
@@ -249,19 +266,36 @@ async function answerQuizQuestion(questionId, selectedAnswer) {
 
 // 两类模型请求共用鉴权、JSON 解析和错误处理，各模型函数只负责请求体与结果格式。
 async function requestDashScope(url, body, errorLabel) {
-  const upstream = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(60 * 1000)
-  });
+  let upstream;
+  try {
+    upstream = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(60 * 1000)
+    });
+  } catch (error) {
+    error.errorCode = error.name === "TimeoutError" || error.name === "AbortError"
+      ? "AI_UPSTREAM_TIMEOUT"
+      : "AI_UPSTREAM_NETWORK_ERROR";
+    error.publicMessage = error.errorCode === "AI_UPSTREAM_TIMEOUT"
+      ? `${errorLabel}请求超时，请稍后重试`
+      : `${errorLabel}网络连接失败，请检查服务器网络或代理配置`;
+    throw error;
+  }
   const data = await upstream.json().catch(() => ({}));
   if (!upstream.ok) {
     const reason = data.error?.message || data.message || `${errorLabel}返回 ${upstream.status}`;
-    throw new Error(reason);
+    const error = new Error(reason);
+    error.publicMessage = reason;
+    error.errorCode = `UPSTREAM_HTTP_${upstream.status}`;
+    error.upstreamCode = data.code || data.error?.code || null;
+    error.requestId = data.request_id || data.requestId || upstream.headers.get("x-request-id") || null;
+    error.httpStatus = upstream.status;
+    throw error;
   }
   aiStatusCache = { checkedAt: Date.now(), connected: true };
   return data;
@@ -420,23 +454,29 @@ const server = http.createServer(async (request, response) => {
 
   // AI 聊天主接口：有图片走视觉模型，没有图片走百炼应用。
   if (request.method === "POST" && request.url === "/api/ai/chat") {
-    if (!API_KEY) return sendJson(response, 503, { error: "尚未设置 DASHSCOPE_API_KEY" });
-    if (!APP_ID) return sendJson(response, 503, { error: "尚未设置 DASHSCOPE_APP_ID" });
-    if (isAiRateLimited(request)) return sendJson(response, 429, { error: "请求过于频繁，请稍后再试" });
+    if (!API_KEY) return sendJson(response, 503, { error: "尚未设置 DASHSCOPE_API_KEY", errorCode: "AI_CONFIG_MISSING_API_KEY" });
+    if (!APP_ID) return sendJson(response, 503, { error: "尚未设置 DASHSCOPE_APP_ID", errorCode: "AI_CONFIG_MISSING_APP_ID" });
+    if (isAiRateLimited(request)) return sendJson(response, 429, { error: "请求过于频繁，请稍后再试", errorCode: "AI_RATE_LIMITED" });
     try {
       const body = await readJson(request);
-      if (!body || typeof body !== "object" || Array.isArray(body)) return sendJson(response, 400, { error: "请求数据格式不正确" });
+      if (!body || typeof body !== "object" || Array.isArray(body)) return sendJson(response, 400, { error: "请求数据格式不正确", errorCode: "AI_INVALID_REQUEST" });
       const message = String(body.message || "").trim();
       const images = body.images || [];
-      if (message.length > MAX_MESSAGE_LENGTH) return sendJson(response, 400, { error: `问题不能超过 ${MAX_MESSAGE_LENGTH} 个字符` });
+      if (message.length > MAX_MESSAGE_LENGTH) return sendJson(response, 400, { error: `问题不能超过 ${MAX_MESSAGE_LENGTH} 个字符`, errorCode: "AI_MESSAGE_TOO_LONG" });
       validateImages(images);
-      if (!message && images.length === 0) return sendJson(response, 400, { error: "请输入问题或上传图片" });
+      if (!message && images.length === 0) return sendJson(response, 400, { error: "请输入问题或上传图片", errorCode: "AI_EMPTY_INPUT" });
       const result = images.length
         ? await askQwenVision({ message, images })
         : await askBailianApplication({ message, sessionId: body.sessionId });
       return sendJson(response, 200, result);
     } catch (error) {
-      return sendJson(response, 400, { error: publicError(error) });
+      const detail = publicAiError(error);
+      return sendJson(response, error.httpStatus && error.httpStatus >= 400 && error.httpStatus < 600 ? error.httpStatus : 502, {
+        error: detail.message,
+        errorCode: detail.errorCode,
+        upstreamCode: detail.upstreamCode,
+        requestId: detail.requestId
+      });
     }
   }
 

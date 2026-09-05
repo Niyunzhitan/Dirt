@@ -1,7 +1,7 @@
 const knowledgeSource = window.SEAL_KNOWLEDGE || window.PPT_KNOWLEDGE;
 
 window.MOCK_DATA = {
-  stats: { relics: 86, sites: knowledgeSource ? knowledgeSource.sites.length : 45, courses: 8 },
+  stats: { relics: 86, sites: knowledgeSource ? knowledgeSource.sites.length : 45, courses: 3 },
   mapImageUrl: "",
   sites: (knowledgeSource ? knowledgeSource.sites : []).map((site) => ({
     ...site,
@@ -18,7 +18,7 @@ window.MOCK_DATA = {
       tone: "clay",
       value: "官制与史料价值",
       imageUrl: "./assets/seal-linzi.png",
-      summary: "汉代齐郡郡守级重要凭信，缪篆方正严整，边栏残缺自然，反映汉初郡国并行体制下齐国官署的极高规格，可补《汉书·百官公卿表》之阙。"
+      summary: "这枚封泥是汉代齐郡郡守级官署使用的凭信。它的缪篆方正严整，边栏留有自然残缺，也为研究汉初郡国并行制度和补充《汉书·百官公卿表》的记载提供了实物线索。"
     },
     {
       id: "NMX-002",
@@ -30,7 +30,7 @@ window.MOCK_DATA = {
       tone: "ink",
       value: "古文字学价值",
       imageUrl: "./assets/seal-qin-mu.png",
-      summary: "典型秦代小篆体势，结体纵势微长，笔画圆劲挺拔，带有秦代标准“田”字界格痕迹，是研究秦代文字统一与官印制度的标准实物。"
+      summary: "这方封泥保留了典型的秦代小篆形态：字形略长，笔画圆劲挺拔，印面还能看到“田”字界格。研究者可以借它观察秦代文字统一和官印制度。"
     },
     {
       id: "NMX-003",
@@ -42,7 +42,7 @@ window.MOCK_DATA = {
       tone: "bronze",
       value: "社会经济价值",
       imageUrl: "./assets/seal-han.png",
-      summary: "用于粮食与物资出入库的防拆封缄，反映两汉完备的仓储物资核验、转运责任追溯体系，是汉代宏观经济调控与微观治理的实物见证。"
+      summary: "这类封泥用于粮食和其他物资出入库时的封缄。泥封上的印记可以帮助官署核验物资、追查转运责任，也留下了两汉仓储管理的实物资料。"
     },
     {
       id: "NMX-004",
@@ -54,18 +54,18 @@ window.MOCK_DATA = {
       tone: "sand",
       value: "历史地理与漕运",
       imageUrl: "./assets/seal-qibei.png",
-      summary: "掌管齐地北方水运漕路与船政事务的官署印信，佐证了齐国及汉初环渤海、黄海便利的水运商路与盐铁物资调配网络。"
+      summary: "“齐北船丞”是与齐地北方水运和船政事务有关的官署印信。它为研究齐国及汉初环渤海、黄海的水运商路和盐铁物资调配提供了线索。"
     }
   ],
   courses: [
-    { id: "COURSE-01", title: "一方澄泥，如何锁住两千年文书？", lesson: 1, duration: "12 分钟", description: "从古代简牍公文的保密机制出发，深入解析封泥的制作、系绳、填泥与破封全过程。", videoUrl: "", posterUrl: "" },
-    { id: "COURSE-02", title: "封泥地理志：跟着泥印寻访齐鲁古城", lesson: 2, duration: "15 分钟", description: "结合《汉书·地理志》与出土点位，探索临淄、即墨、琅邪、胶东等古郡国的空间治理格局。", videoUrl: "", posterUrl: "" },
-    { id: "COURSE-03", title: "金石微观：封泥上的小篆与缪篆之美", lesson: 3, duration: "18 分钟", description: "从线条刀感、布白严密到印面残缺肌理，赏析秦汉文字从书写到钤印的古雅之变。", videoUrl: "", posterUrl: "" }
+    { id: "COURSE-01", title: "泥藏千年：初识齐鲁封泥，了解来源与作用", lesson: 1, duration: "45 分钟", description: "第一课从古文字猜读进入封泥主题，讲清封泥怎样用于保密、防伪和确认身份，并结合麋圈、橘官等故事认识秦汉社会。", videoUrl: "", posterUrl: "" },
+    { id: "COURSE-02", title: "字印藏韵：聆听封泥故事，鉴赏千年美学", lesson: 2, duration: "40 分钟", description: "第二课介绍封泥的发现与传承，比较秦印和汉印的文字风格。学生还会从文字、手工痕迹与自然残损中理解封泥的美。", videoUrl: "", posterUrl: "" },
+    { id: "COURSE-03", title: "纸笔创泥：手绘创意封泥，实践传统文化", lesson: 3, duration: "45 分钟", description: "第三课先认识私印封泥，再从外形、篆文、纹饰和配色入手完成手绘作品。学生可以选择古韵复刻，也可以加入自己的创意。", videoUrl: "", posterUrl: "" }
   ],
   creativeWorks: [
-    { id: "CREATIVE-01", name: "印小灵 IP 形象", category: "角色设计", mark: "印", description: "以古朴封泥轮廓与朱砂印面为灵感，塑造温润亲和的封泥文化数字导览吉祥物。" },
-    { id: "CREATIVE-02", name: "齐鲁金石拓片纸品", category: "纸品设计", mark: "印", description: "提取临淄守印、齐北船丞等经典印文，转化为具备传统手作质感的现代文创纸品。" },
-    { id: "CREATIVE-03", name: "模拟封缄研学教具", category: "研学教具", mark: "封", description: "配合公益文化普及课堂，动手体验削检、穿绳、覆泥、钤印的古法封缄技艺。" }
+    { id: "CREATIVE-01", name: "印小灵 IP 形象", category: "角色设计", mark: "印", description: "印小灵的外形参考了封泥轮廓和朱砂印面。我们希望它以亲切的方式陪伴访客阅读封泥资料。" },
+    { id: "CREATIVE-02", name: "齐鲁金石拓片纸品", category: "纸品设计", mark: "印", description: "我们从临淄守印、齐北船丞等印文中提取字形和纹理，再把它们用于带有手作质感的纸品设计。" },
+    { id: "CREATIVE-03", name: "模拟封缄研学教具", category: "研学教具", mark: "封", description: "这套教具用于文化普及课程。学习者可以亲手完成削检、穿绳、覆泥和钤印，理解古人怎样封好一份文书。" }
   ],
   questions: [
     { id: 1, difficulty: "简单", question: "封泥在古代最主要的用途是什么？", optionA: "装饰陶器", optionB: "封缄文书或物品", optionC: "制作钱币", optionD: "记录天气", correctAnswer: "B", explanation: "封泥通常与绳结、封检和印章配合，用于封缄简牍文书、容器或货物。" },
