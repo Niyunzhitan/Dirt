@@ -690,11 +690,12 @@ img[loading="lazy"].loaded {
 
 .opening-did-you-know {
   margin-top: 1.1rem;
-  width: 100%;
+  width: calc(100% - 2.75rem);
+  margin-inline: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.7rem;
+  gap: 0.45rem;
   text-align: center;
 }
 
@@ -713,9 +714,11 @@ img[loading="lazy"].loaded {
 }
 
 .did-you-know-text {
+  position: relative;
+  height: 1.6em;
   min-height: 1.6em;
   min-width: 0;
-  max-width: 100%;
+  max-width: calc(100% - 5.5rem);
   margin: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -723,6 +726,7 @@ img[loading="lazy"].loaded {
   color: var(--theme-opening-subtitle);
   font: 500 0.84rem/1.6 var(--opening-font-display);
   letter-spacing: 0.02em;
+  text-align: left;
   transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -777,7 +781,7 @@ img[loading="lazy"].loaded {
   }
     .opening-did-you-know {
       margin-top: 0.95rem;
-      gap: 0.55rem;
+      gap: 0.4rem;
     }
     .did-you-know-tag {
       font-size: 0.72rem;

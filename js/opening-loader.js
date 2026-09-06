@@ -6,7 +6,7 @@
       // 开屏动画只负责展示层；正文数据加载完成后由 app.js 调用 finish() 让它退场。
       const config = {
         // “你知道吗”轮换节奏（毫秒）：改这里即可，数字越大换得越慢。
-        didYouKnowIntervalMs: 3200,
+        didYouKnowIntervalMs: 3800,
         didYouKnowFadeMs: 220,
         stages: [
           { text: "正在辨识战国秦汉封泥……", progress: 15 },
@@ -173,6 +173,16 @@
         return { createDebris };
       }
 
+      function startDidYouKnow() {
+        if (!didYouKnowText || !didYouKnowFacts.length) return;
+        didYouKnowIndex = Math.floor(Math.random() * didYouKnowFacts.length);
+        setDidYouKnowText(didYouKnowFacts[didYouKnowIndex], true);
+        didYouKnowTimer = window.setInterval(() => {
+          didYouKnowIndex = nextDidYouKnowIndex();
+          setDidYouKnowText(didYouKnowFacts[didYouKnowIndex]);
+        }, config.didYouKnowIntervalMs);
+      }
+
       function nextDidYouKnowIndex() {
         if (didYouKnowFacts.length < 2) return 0;
         let nextIndex = didYouKnowIndex;
@@ -196,16 +206,6 @@
           didYouKnowText.classList.remove("is-switching");
           didYouKnowSwitchTimer = null;
         }, config.didYouKnowFadeMs);
-      }
-
-      function startDidYouKnow() {
-        if (!didYouKnowText || !didYouKnowFacts.length) return;
-        didYouKnowIndex = Math.floor(Math.random() * didYouKnowFacts.length);
-        setDidYouKnowText(didYouKnowFacts[didYouKnowIndex], true);
-        didYouKnowTimer = window.setInterval(() => {
-          didYouKnowIndex = nextDidYouKnowIndex();
-          setDidYouKnowText(didYouKnowFacts[didYouKnowIndex]);
-        }, config.didYouKnowIntervalMs);
       }
 
       function stopDidYouKnow() {

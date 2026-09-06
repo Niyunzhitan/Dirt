@@ -50,10 +50,13 @@
         updateClock();
         window.setInterval(updateClock, interfaceConfig.clockRefreshInterval);
         const navLinks = $$("#mainNav a");
+        const setActiveNav = (sectionId) => navLinks.forEach((link) => {
+          link.classList.toggle("active", link.getAttribute("href") === `#${sectionId}`);
+        });
         const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) navLinks.forEach((link) => link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`)); }), { rootMargin: "-35% 0px -55%" });
         $$('main section[id]').forEach((section) => observer.observe(section));
         const hero = $(".hero");
-        if (hero) new IntersectionObserver(([entry]) => { if (entry.isIntersecting) navLinks.forEach((link) => link.classList.remove("active")); }, { threshold: .55 }).observe(hero);
+        if (hero) new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setActiveNav(hero.id); }, { threshold: .55 }).observe(hero);
         const reveal = new IntersectionObserver((entries) => entries.forEach((entry) => {
           const section = entry.target;
           if (entry.isIntersecting) { section.classList.remove("is-exiting-up", "is-exiting-down"); section.classList.add("is-visible"); return; }

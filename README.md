@@ -27,6 +27,7 @@
 - [js/course-browser.js](./js/course-browser.js)：课程课时切换、课件横向阅读、连续拖动和页码定位。
 - [js/scroll-story.js](./js/scroll-story.js)：数字手卷的展卷、滚轮、拖动和章节导航。
 - [js/opening-loader.js](./js/opening-loader.js)：开屏卷轴展开、进度缓动、封泥裂解和碎片粒子效果。
+- [js/seal-glyph-paths.js](./js/seal-glyph-paths.js)：开屏封泥“泥云智探”四字的 SVG 轮廓路径，避免首帧等待字体或出现替代字体。
 - [js/search-dialog.js](./js/search-dialog.js)：全站搜索弹窗、藏品定位和图录定位。
 - [js/ai-chat.js](./js/ai-chat.js)：AI 对话、图片上传、会话保存和状态显示。
 - [js/page-effects.js](./js/page-effects.js)：页面总进度条、拖动、按钮波纹和按压反馈。
@@ -78,6 +79,8 @@ npm run build
 ```
 
 `index.html` 是唯一的页面源文件。构建完成后仍可直接双击它测试；趣味问答会读取 `dist/assets/quiz-bundle.js`。如果刚修改过 Vue 问答代码，请先重新运行 `npm run build`。直接打开文件时，数据库和 AI 接口可能不可用。
+
+开屏封泥四字已经转换为 SVG 路径，公网部署不要求访客安装 `YiShanBeiZhuanTi.ttf`。该字体文件保留在 `assets/fonts/` 作为字形来源；部署时应一并发布 `js/seal-glyph-paths.js`，通常直接部署完整 `dist/` 目录即可。
 
 ## AI 配置
 
