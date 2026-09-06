@@ -1,18 +1,18 @@
 # 课程资源配置
 
-课程课件、教案、活动视频和其他媒体的路径统一配置在 [data/media-config.js](../../../data/media-config.js)。替换同名文件时不需要修改页面代码。
+课程课件、教案、活动视频和其他媒体的路径统一配置在 [data/media-config.js](../../data/media-config.js)。替换同名文件时不需要修改页面代码。
 
-当前三课时原文件位于 `assets/`，逐页预览图位于 `assets/course-slides/`。本目录用于以后补充课程视频或封面。
+当前三课时原文件位于 `assets/courses/`，逐页预览图位于 `assets/courses/course-slides/`。本目录用于以后补充课程视频或封面。
 
 ## 配置示例
 
 ```js
 "COURSE-01": {
-  resourceUrl: "./assets/第一课时.pdf",
+  resourceUrl: "./assets/courses/第一课时.pdf",
   resourceType: "PDF",
   resourceName: "第一课时教学课件",
   resourceFileName: "第一课时.pdf",
-  slideBasePath: "./assets/course-slides/course-01",
+  slideBasePath: "./assets/courses/course-slides/course-01",
   slideCount: 24
 }
 ```

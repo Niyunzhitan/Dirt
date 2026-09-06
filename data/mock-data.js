@@ -17,7 +17,7 @@ window.MOCK_DATA = {
       category: "职官封泥",
       tone: "clay",
       value: "官制与史料价值",
-      imageUrl: "./assets/seal-linzi.png",
+      imageUrl: "./assets/relics/seal-linzi.png",
       summary: "这枚封泥是汉代齐郡郡守级官署使用的凭信。它的缪篆方正严整，边栏留有自然残缺，也为研究汉初郡国并行制度和补充《汉书·百官公卿表》的记载提供了实物线索。"
     },
     {
@@ -29,7 +29,7 @@ window.MOCK_DATA = {
       category: "职官封泥",
       tone: "ink",
       value: "古文字学价值",
-      imageUrl: "./assets/seal-qin-mu.png",
+      imageUrl: "./assets/relics/seal-qin-mu.png",
       summary: "这方封泥保留了典型的秦代小篆形态：字形略长，笔画圆劲挺拔，印面还能看到“田”字界格。研究者可以借它观察秦代文字统一和官印制度。"
     },
     {
@@ -41,7 +41,7 @@ window.MOCK_DATA = {
       category: "机构仓储封泥",
       tone: "bronze",
       value: "社会经济价值",
-      imageUrl: "./assets/seal-han.png",
+      imageUrl: "./assets/relics/seal-han.png",
       summary: "这类封泥用于粮食和其他物资出入库时的封缄。泥封上的印记可以帮助官署核验物资、追查转运责任，也留下了两汉仓储管理的实物资料。"
     },
     {
@@ -53,7 +53,7 @@ window.MOCK_DATA = {
       category: "漕运水利封泥",
       tone: "sand",
       value: "历史地理与漕运",
-      imageUrl: "./assets/seal-qibei.png",
+      imageUrl: "./assets/relics/seal-qibei.png",
       summary: "“齐北船丞”是与齐地北方水运和船政事务有关的官署印信。它为研究齐国及汉初环渤海、黄海的水运商路和盐铁物资调配提供了线索。"
     }
   ],

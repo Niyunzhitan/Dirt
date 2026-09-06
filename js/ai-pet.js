@@ -119,14 +119,14 @@
       happy: "嘿嘿，帮上忙啦",
       error: "小脑袋好像打了个结"
     }[state] || "来找我玩呀");
-    const targetSrc = config.states?.[state] || config.states?.idle || "./assets/idling.png";
+    const targetSrc = config.states?.[state] || config.states?.idle || "./assets/branding/idling.png";
     switchTexture(targetSrc);
     updateGreeting(state);
   }
 
   layers.forEach((layer) => {
     layer.addEventListener("error", () => {
-      const fallback = config.states?.idle || "./assets/idling.png";
+      const fallback = config.states?.idle || "./assets/branding/idling.png";
       if (layer.src.endsWith(fallback)) return;
       layer.src = fallback;
     });

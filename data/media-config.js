@@ -39,39 +39,39 @@ window.MEDIA_CONFIG = {
     "COURSE-01": {
       videoUrl: "",
       posterUrl: "",
-      resourceUrl: "./assets/第一课时.pdf",
+      resourceUrl: "./assets/courses/第一课时.pdf",
       resourceType: "PDF",
       resourceName: "第一课时教学课件 PDF",
       resourceFileName: "第一课时.pdf",
-      slideBasePath: "./assets/course-slides/course-01",
+      slideBasePath: "./assets/courses/course-slides/course-01",
       slideCount: 24
     },
     "COURSE-02": {
       videoUrl: "",
       posterUrl: "",
-      resourceUrl: "./assets/第二课时 ppt.pdf",
+      resourceUrl: "./assets/courses/第二课时 ppt.pdf",
       resourceType: "PDF",
       resourceName: "第二课时教学课件 PDF",
       resourceFileName: "第二课时 ppt.pdf",
-      slideBasePath: "./assets/course-slides/course-02",
+      slideBasePath: "./assets/courses/course-slides/course-02",
       slideCount: 31
     },
     "COURSE-03": {
       videoUrl: "",
       posterUrl: "",
-      resourceUrl: "./assets/第三课时（1）.pdf",
+      resourceUrl: "./assets/courses/第三课时（1）.pdf",
       resourceType: "PDF",
       resourceName: "第三课时教学课件",
       resourceFileName: "第三课时（1）.pdf",
-      slideBasePath: "./assets/course-slides/course-03",
+      slideBasePath: "./assets/courses/course-slides/course-03",
       slideCount: 22
     }
   },
 
   coursePack: {
-    guideUrl: "./assets/教案+学习单(2).docx",
+    guideUrl: "./assets/courses/教案+学习单(2).docx",
     guideFileName: "封泥教案+学习单.docx",
-    recapVideoUrl: "./assets/视频.mp4"
+    recapVideoUrl: "./assets/courses/视频.mp4"
   },
 
   // 【位置 2：Three.js 贴图】保留文件名时只覆盖 assets 中的同名文件即可。

@@ -60,7 +60,7 @@ npm run check
 npm run build
 ```
 
-构建完成后，可以直接双击项目根目录的 `index.html`。这种方式适合浏览静态内容，但数据库和 AI 接口可能不可用。
+`index.html` 是唯一的页面源文件。构建完成后仍可直接双击它测试；趣味问答会读取 `dist/assets/quiz-bundle.js`。如果刚修改过 Vue 问答代码，请先重新运行 `npm run build`。直接打开文件时，数据库和 AI 接口可能不可用。
 
 ## AI 配置
 
@@ -112,7 +112,7 @@ DB_CONNECTION_LIMIT=5
 
 课程课件、教案、视频、音乐和牌具贴图的公开路径集中在 [data/media-config.js](./data/media-config.js)。
 
-- 课程文件放入 `assets/`，并登记到 `courses` 或 `coursePack`。
+- 课程文件放入 `assets/courses/`，并登记到 `courses` 或 `coursePack`。
 - 音乐放入 `assets/media/music/`。
 - 封泥牌具贴图放入 `assets/textures/`。
 - 同名替换不需要改代码；换文件名时修改 `media-config.js`。
@@ -120,7 +120,7 @@ DB_CONNECTION_LIMIT=5
 
 相关说明：
 
-- [课程资源配置](./assets/media/courses/README.md)
+- [课程资源配置](./assets/courses/README.md)
 - [封泥牌具贴图](./assets/textures/README.md)
 - [山东 DEM 地形数据](./assets/terrain/README.md)
 
@@ -158,8 +158,7 @@ POST /api/quiz/answer
 
 ```text
 Web/
-├─ index.html              离线页面入口
-├─ index.template.html     Vite 页面模板
+├─ index.html              页面源码和本地双击入口
 ├─ server.js               静态网站和 API 服务
 ├─ assets/                 图片、字体、音乐、视频和贴图
 ├─ css/                    设计变量和页面样式

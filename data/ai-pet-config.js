@@ -12,12 +12,12 @@ window.AI_PET_CONFIG = {
   defaultState: "idle",
   imageAlt: "印小灵猫形宠物",
   states: {
-    idle: "./assets/idling.png",
-    hover: "./assets/hovering.png",
-    listening: "./assets/hovering.png",
-    thinking: "./assets/thinking.png",
-    answering: "./assets/thinking.png",
-    happy: "./assets/idling.png",
-    error: "./assets/idling.png"
+    idle: "./assets/branding/idling.png",
+    hover: "./assets/branding/hovering.png",
+    listening: "./assets/branding/hovering.png",
+    thinking: "./assets/branding/thinking.png",
+    answering: "./assets/branding/thinking.png",
+    happy: "./assets/branding/idling.png",
+    error: "./assets/branding/idling.png"
   }
 };

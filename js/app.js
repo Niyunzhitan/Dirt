@@ -800,6 +800,7 @@
       const image = document.createElement("img");
       image.className = "scroll-custom-image";
       image.alt = illustration.getAttribute("aria-label") || "数字手卷配图";
+      image.draggable = false;
       image.loading = "lazy";
       image.decoding = "async";
       image.src = imagePath;
@@ -1200,11 +1201,11 @@
       return;
     }
     // 开屏层不能因为字体、图片或移动端模拟器的 load 状态卡住。
-    // 从动画开始计时，超过上限直接淡出，避免 100% 后仍遮住正文。
+    // 超过上限后走同一套完成流程，先展开卷轴再退场。
     openingFallbackTimer = window.setTimeout(() => {
       if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
-      openingLoader.classList.add("is-closing");
-      window.setTimeout(() => openingLoader?.remove(), openingLoaderConfig.removeDelayMs);
+      openingFallbackTimer = null;
+      finishOpeningLoader(false, true);
     }, 9000);
     sealParticleEngine = initSealParticles();
     wakeProgressAnimation();
@@ -1235,21 +1236,21 @@
     });
   }
 
-  function finishOpeningLoader(success = true) {
+  function finishOpeningLoader(success = true, skipResourceWait = false) {
     if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
     if (openingFinishPromise) return openingFinishPromise;
-    openingFinishPromise = finishOpeningLoaderWhenReady(success);
+    openingFinishPromise = finishOpeningLoaderWhenReady(success, skipResourceWait);
     return openingFinishPromise;
   }
 
-  async function finishOpeningLoaderWhenReady(success) {
+  async function finishOpeningLoaderWhenReady(success, skipResourceWait) {
     if (!openingLoader?.isConnected || openingLoader.classList.contains("is-closing")) return;
     if (openingIntervalTimer) window.clearInterval(openingIntervalTimer);
     if (openingFallbackTimer) window.clearTimeout(openingFallbackTimer);
 
     // 把资源准备时间放在最终破碎前，避免破碎结束后主页面还在加载。
     openingLoaderStatus.textContent = "封泥将裂，展厅正在备妥……";
-    await waitForPageReady();
+    if (!skipResourceWait) await waitForPageReady();
     // 提前完成最终阶段会用到的尺寸测量，避免破碎第一帧同时触发布局计算。
     if (!cachedPaperWidth && scrollPaper) cachedPaperWidth = scrollPaper.getBoundingClientRect().width || 704;
     if (openingLoaderConfig.preBreakHoldMs > 0) {
@@ -1266,7 +1267,13 @@
     await new Promise((resolve) => {
       const startedAt = performance.now();
       const waitForProgress = (timestamp) => {
-        if (!openingLoader?.isConnected || currentProgressVal >= 99.5 || timestamp - startedAt > 1800) {
+        if (!openingLoader?.isConnected || currentProgressVal >= 99.5) {
+          resolve();
+          return;
+        }
+        if (timestamp - startedAt > 1800) {
+          currentProgressVal = 100;
+          updateLoaderVisuals(100);
           resolve();
           return;
         }

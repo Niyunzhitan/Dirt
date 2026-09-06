@@ -34,11 +34,13 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
 
   
-  <link rel="stylesheet" href="./css/tokens.css?v=mtoltxfg">
-  <link rel="stylesheet" href="./css/styles.css?v=mtoltxfg">
+  <link rel="stylesheet" href="./css/tokens.css">
+  <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
   <!-- 开馆加载层：古卷封泥解封与展开动画，纯矢量SVG与Canvas设计，真实呈现卷轴展开与封泥破裂脱落过程 -->
@@ -82,7 +84,7 @@
                 <p class="scroll-sub-title">齐鲁封泥智慧人文平台</p>
               </div>
               <!-- 开屏 IP 复用首页透明人物图，仅作卷轴右侧装饰。 -->
-              <img class="opening-scroll-ip" src="./assets/mascot-ROGptBE0.png" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
+              <img class="opening-scroll-ip" src="./assets/branding/mascot.png" alt="" aria-hidden="true" decoding="async" fetchpriority="high">
               <div class="scroll-seal-mark" aria-hidden="true">
                 <svg viewBox="0 0 60 60" width="44" height="44">
                   <rect x="4" y="4" width="52" height="52" rx="4" fill="none" stroke="#a8332a" stroke-width="2.5" stroke-dasharray="4 2"/>
@@ -287,7 +289,7 @@
         <figure class="hero-relic hero-relic-main hero-relic-soft" id="heroMascotFigure" data-parallax="10">
           <!-- 角色悬停温润印光 -->
           <div class="mascot-aura" aria-hidden="true"></div>
-          <img src="./assets/mascot-ROGptBE0.png" alt="印小灵角色形象" loading="lazy">
+          <img src="./assets/branding/mascot.png" alt="印小灵角色形象" loading="lazy">
           <figcaption>印小灵 · 齐鲁封泥导览</figcaption>
           <!-- 互动问候气泡 -->
           <div class="hero-mascot-speech" id="heroMascotSpeech" aria-hidden="true">
@@ -334,7 +336,7 @@
               <div class="scroll-copy"><span>第三幕 · 覆上湿泥</span><h3>泥土包住绳结</h3><p>湿泥被填到绳结处，包住封检。它容易塑形，干燥后却会变硬、变脆，正好让拆阅留下明显痕迹。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="钤印">
-              <figure class="scroll-relic"><img src="./assets/seal-linzi-DdSF-FBe.png" alt="临淄守印封泥实物资料图"><figcaption>临淄守印 · 传世实物资料</figcaption></figure>
+              <figure class="scroll-relic"><img src="./assets/relics/seal-linzi.png" alt="临淄守印封泥实物资料图" draggable="false"><figcaption>临淄守印 · 传世实物资料</figcaption></figure>
               <div class="scroll-copy"><span>第四幕 · 官印钤压</span><h3>印文留下身份凭证</h3><p>官员把印章按入湿泥，留下独一无二的印蜕。它告诉收件方：这份文书来自哪里，由谁发出。</p></div>
             </article>
             <article class="scroll-panel" data-scroll-title="传递">
@@ -346,7 +348,7 @@
               <div class="scroll-copy"><span>第六幕 · 验封破泥</span><h3>先验封，再拆阅</h3><p>收件官署先核对印文和泥封是否完整，确认没有被拆动后，才破开封泥，取出文书阅读。</p></div>
             </article>
             <article class="scroll-panel scroll-ending" data-scroll-title="考古">
-              <figure class="scroll-relic"><img src="./assets/rubbing-linzi-cheng-J9xwqeH0.png" alt="临淄官署印蜕拓本"><figcaption>《齐鲁封泥集存》临淄官署印蜕拓本</figcaption></figure>
+              <figure class="scroll-relic"><img src="./assets/relics/rubbing-linzi-cheng.png" alt="临淄官署印蜕拓本" draggable="false"><figcaption>《齐鲁封泥集存》临淄官署印蜕拓本</figcaption></figure>
               <div class="scroll-copy"><span>第七幕 · 后世重见</span><h3>封泥退出日常，又回到人们眼前</h3><p>纸张普及后，封泥逐渐退出日常使用。两千多年后，带字泥块重新出土，学者开始辨认和整理。陈介祺的考证故事，见下方“封泥故事”。</p></div>
             </article>
           </div>
@@ -359,10 +361,10 @@
         <article><span class="card-index">03</span><div><h3>身份凭证</h3><p>官署、职官和地名留在印文里，像校园卡或工作证，说明这份文书来自哪里、由谁发出。</p></div></article>
       </div>
       <div class="artifact-strip" aria-label="封泥实物对照">
-        <figure class="artifact-link" data-artifact-relic-id="NMX-002" role="button" tabindex="0" aria-label="查看墓印篆封泥的齐鲁封泥图鉴介绍"><img src="./assets/seal-qin-mu-D2Pi9URj.png" alt="秦代墓印篆资料图"><figcaption><span>秦</span>墓印篆封泥</figcaption></figure>
-        <figure class="artifact-link" data-artifact-relic-id="NMX-003" role="button" tabindex="0" aria-label="查看汉缪篆封泥的齐鲁封泥图鉴介绍"><img src="./assets/seal-han-BZY_s2mt.png" alt="汉代缪篆封泥资料图"><figcaption><span>汉</span>汉缪篆封泥</figcaption></figure>
-        <figure class="artifact-link" data-artifact-relic-id="NMX-001" role="button" tabindex="0" aria-label="查看临淄守印封泥的齐鲁封泥图鉴介绍"><img src="./assets/seal-linzi-DdSF-FBe.png" alt="临淄守印资料图"><figcaption><span>齐</span>临淄守印</figcaption></figure>
-        <figure class="artifact-link" data-artifact-relic-id="NMX-004" role="button" tabindex="0" aria-label="查看齐北船丞封泥的齐鲁封泥图鉴介绍"><img src="./assets/seal-qibei-CqlulhGc.png" alt="齐北船丞资料图"><figcaption><span>齐</span>齐北船丞</figcaption></figure>
+        <figure class="artifact-link" data-artifact-relic-id="NMX-002" role="button" tabindex="0" aria-label="查看墓印篆封泥的齐鲁封泥图鉴介绍"><img src="./assets/relics/seal-qin-mu.png" alt="秦代墓印篆资料图"><figcaption><span>秦</span>墓印篆封泥</figcaption></figure>
+        <figure class="artifact-link" data-artifact-relic-id="NMX-003" role="button" tabindex="0" aria-label="查看汉缪篆封泥的齐鲁封泥图鉴介绍"><img src="./assets/relics/seal-han.png" alt="汉代缪篆封泥资料图"><figcaption><span>汉</span>汉缪篆封泥</figcaption></figure>
+        <figure class="artifact-link" data-artifact-relic-id="NMX-001" role="button" tabindex="0" aria-label="查看临淄守印封泥的齐鲁封泥图鉴介绍"><img src="./assets/relics/seal-linzi.png" alt="临淄守印资料图"><figcaption><span>齐</span>临淄守印</figcaption></figure>
+        <figure class="artifact-link" data-artifact-relic-id="NMX-004" role="button" tabindex="0" aria-label="查看齐北船丞封泥的齐鲁封泥图鉴介绍"><img src="./assets/relics/seal-qibei.png" alt="齐北船丞资料图"><figcaption><span>齐</span>齐北船丞</figcaption></figure>
       </div>
     </section>
 
@@ -410,7 +412,7 @@
         <div class="map-layout">
           <div class="shandong-map" id="shandongMap" aria-label="齐鲁封泥调研地图">
             <canvas class="shandong-terrain-canvas" id="shandongTerrainCanvas" aria-hidden="true"></canvas>
-            <img class="shandong-flat-map-image" id="shandongFlatMapImage" src="./assets/shandong-map-flat-DPb8yLwL.png" alt="山东封泥调研简化平面地图" aria-hidden="true">
+            <img class="shandong-flat-map-image" id="shandongFlatMapImage" src="./assets/maps/shandong-map-flat.png" alt="山东封泥调研简化平面地图" aria-hidden="true">
             <img class="map-source-image" id="mapSourceImage" alt="齐鲁封泥调研地图资料图" hidden>
             <div class="map-watermark">山东</div><div class="map-routes" aria-hidden="true"><i></i><i></i><i></i></div><div id="mapMarkers"></div>
             <p class="map-terrain-status" id="mapTerrainStatus">正在准备山东 3D 地貌…</p>
@@ -448,12 +450,12 @@
             <div><dt>5+</dt><dd>涉及刺史部辖区</dd></div>
           </dl>
           <div class="evidence-pair">
-            <figure class="source-photo"><img src="./assets/ppt-seal-source-photo-zcRqh7zQ.png" alt="馆藏封泥实物剖面与形制特征"><figcaption>实物特征：观察澄泥质感、封泥槽截面、绳结压痕与破封断面</figcaption></figure>
+            <figure class="source-photo"><img src="./assets/relics/ppt-seal-source-photo.png" alt="馆藏封泥实物剖面与形制特征"><figcaption>实物特征：观察澄泥质感、封泥槽截面、绳结压痕与破封断面</figcaption></figure>
             <div class="rubbing-group" aria-label="经典官署印蜕拓片">
-              <figure><img src="./assets/rubbing-linzi-cheng-J9xwqeH0.png" alt="临淄官署印蜕拓本"><figcaption>临淄官署印蜕拓本</figcaption></figure>
-              <figure><img src="./assets/rubbing-linzi-xiang-CNmn_u8-.png" alt="临淄乡级印蜕拓本"><figcaption>临淄乡级印蜕拓本</figcaption></figure>
-              <figure><img src="./assets/rubbing-langya-4hNrugtK.png" alt="琅琊职官印蜕拓本"><figcaption>琅琊职官印蜕拓本</figcaption></figure>
-              <figure><img src="./assets/rubbing-jibei-7VJuFT61.png" alt="济北守印印蜕拓本"><figcaption>郡守级印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/relics/rubbing-linzi-cheng.png" alt="临淄官署印蜕拓本"><figcaption>临淄官署印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/relics/rubbing-linzi-xiang.png" alt="临淄乡级印蜕拓本"><figcaption>临淄乡级印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/relics/rubbing-langya.png" alt="琅琊职官印蜕拓本"><figcaption>琅琊职官印蜕拓本</figcaption></figure>
+              <figure><img src="./assets/relics/rubbing-jibei.png" alt="济北守印印蜕拓本"><figcaption>郡守级印蜕拓本</figcaption></figure>
             </div>
           </div>
           <div class="source-findings" id="sourceFindings"></div>
@@ -734,8 +736,8 @@
     <button class="ai-pet-toggle" type="button" data-pet-toggle aria-label="打开印小灵快捷对话" aria-expanded="false">
       <span class="ai-pet-greeting">来找我呀</span>
       <div class="ai-pet-stage">
-        <img class="ai-pet-layer is-active" draggable="false" src="./assets/idling-DTWvgU5M.png" alt="印小灵猫形宠物">
-        <img class="ai-pet-layer is-next" draggable="false" src="./assets/idling-DTWvgU5M.png" alt="印小灵猫形宠物" aria-hidden="true">
+        <img class="ai-pet-layer is-active" draggable="false" src="./assets/branding/idling.png" alt="印小灵猫形宠物">
+        <img class="ai-pet-layer is-next" draggable="false" src="./assets/branding/idling.png" alt="印小灵猫形宠物" aria-hidden="true">
       </div>
     </button>
   </aside>
@@ -756,13 +758,14 @@
   <script src="./data/shandong-prefectures.js"></script>
   <script src="./js/config.js"></script>
   <script src="./js/api.js"></script>
-  <script src="./js/media-coordinator.js"></script>
+  <script src="./js/media-coordinator.js"></script>
+
   <script src="./js/ai-service.js"></script>
   <script src="./js/app.js"></script>
   <script src="./js/ai-pet.js"></script>
   <script src="./js/vendor/three.min.js"></script>
   <script src="./js/three-map.js"></script>
   <script src="./js/three-showcase.js"></script>
-  <script src="./assets/quiz-bundle.js"></script>
+  <script src="./dist/assets/quiz-bundle.js"></script>
 </body>
 </html>
