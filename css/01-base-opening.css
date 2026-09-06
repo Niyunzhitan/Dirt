@@ -1,0 +1,827 @@
+/* Hallmark · macrostructure: Digital Museum Scroll · tone: Qilu epigraphy · anchor hue: cinnabar */
+/* Hallmark · pre-emit critique: P5 H4 E5 S5 R4 V4 · contrast: pass · mobile: pass */
+/*
+ * 泥云智探主样式表
+ * 阅读顺序：全局基础 -> 顶部导航 -> 首屏 -> 各内容板块 -> 弹窗/页脚 -> 响应式 -> 视觉增强。
+ * tokens.css 管理可复用设计变量；本文件管理具体元素如何排版和显示。
+ *
+ * 视觉修改速查：
+ * - 改全站颜色、字体、内容宽度、栏目留白：css/tokens.css 顶部
+ * - 改栏目进入/消失速度和位移：--motion-reveal-* 与 --motion-child-*
+ * - 改按钮等小交互速度：--dur-short / --dur-medium / --dur-long
+ * - 改某个具体板块的布局：查找本文件中的“==================== 板块名”注释
+ */
+
+/* ==================== 01. 全局基础：字体、颜色、光标和页面背景 ==================== */
+@font-face {
+  font-family: "Sanji Bangshu Web";
+  src: url("../assets/fonts/sanji-bangshu.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* 仿古朱砂印章光标 */
+:root {
+  --cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect x='2' y='2' width='24' height='24' rx='3' fill='%238f2821' stroke='%23f5eee2' stroke-width='1.5'/%3E%3Crect x='4.5' y='4.5' width='19' height='19' fill='none' stroke='%23f5eee2' stroke-width='1' stroke-dasharray='2 1.5'/%3E%3Ctext x='14' y='19' font-family='serif' font-weight='bold' font-size='12' fill='%23f5eee2' text-anchor='middle'%3E泥%3C/text%3E%3C/svg%3E") 6 6, auto;
+  --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Crect x='2' y='2' width='24' height='24' rx='3' fill='%237b1d16' stroke='%23f5eee2' stroke-width='1.5'/%3E%3Crect x='4.5' y='4.5' width='19' height='19' fill='none' stroke='%23d4af37' stroke-width='1'/%3E%3Ctext x='14' y='19' font-family='serif' font-weight='bold' font-size='12' fill='%23f5eee2' text-anchor='middle'%3E印%3C/text%3E%3C/svg%3E") 6 6, pointer;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+/* 全局平滑滚动 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 尊重用户的无障碍偏好：禁用动效时也禁用平滑滚动 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* 图片懒加载样式：加载前模糊，加载后清晰 */
+img[loading="lazy"] {
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+img[loading="lazy"]:not(.loaded) {
+  opacity: 0.6;
+  filter: blur(8px);
+}
+
+img[loading="lazy"].loaded {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* 首屏开馆层：古卷封泥解封与卷轴展开动画 */
+.opening-loader {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  color: var(--color-ink, #292722);
+  background-color: var(--theme-opening-bg);
+  background-image:
+    radial-gradient(circle at 50% 45%, var(--theme-opening-center) 0%, var(--theme-opening-middle) 55%, var(--theme-opening-edge) 100%),
+    radial-gradient(var(--theme-opening-dot) 1px, transparent 1px);
+  background-size: auto, 24px 24px;
+  opacity: 1;
+  overflow: hidden;
+  transition: opacity 1.05s cubic-bezier(0.16, 1, 0.3, 1), transform 1.05s cubic-bezier(0.16, 1, 0.3, 1);
+  /* 确保在 JavaScript 加载前可见 */
+  visibility: visible;
+}
+.skip-opening-loader #openingLoader {
+  display: none !important;
+}
+.opening-loader.is-closing {
+  opacity: 0;
+  transform: scale(1.025) translateY(-.35rem);
+  pointer-events: none;
+}
+.opening-loader.is-closing .opening-loader-stage {
+  animation: opening-stage-retreat .9s cubic-bezier(.65, 0, .35, 1) both;
+}
+.opening-loader.is-closing .opening-loader-ambient {
+  animation: opening-ambient-retreat .9s ease-out both;
+}
+
+.opening-loader-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 典雅中心呼吸光晕 */
+.ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 52rem;
+  height: 34rem;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center, var(--theme-opening-glow) 0%, var(--theme-opening-glow-secondary) 40%, transparent 72%);
+  filter: blur(46px);
+  animation: ambient-pulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-pulse {
+  0% { transform: translate(-50%, -50%) scale(0.96); opacity: 0.75; }
+  100% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+}
+
+/* 宣纸古法帘纹与细密网格暗纹 */
+.opening-ambient-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: var(--theme-opening-pattern-opacity);
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0, transparent 27px, var(--theme-opening-pattern-strong) 27px, var(--theme-opening-pattern-strong) 28px),
+    repeating-linear-gradient(90deg, transparent 0, transparent 3px, var(--theme-opening-pattern-soft) 3px, var(--theme-opening-pattern-soft) 4px);
+}
+
+/* 背景两翼古代金石印蜕大暗纹（齊 / 泥 篆书拓印，左右对称） */
+.opening-seal-watermark {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-monument, "Sanji Bangshu Web", serif);
+  font-size: clamp(6.5rem, 11vw, 12rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--theme-opening-watermark);
+  user-select: none;
+  pointer-events: none;
+  letter-spacing: 0;
+  text-shadow: 0 0 24px var(--theme-opening-watermark-glow);
+}
+.opening-seal-watermark.left {
+  left: 6vw;
+}
+.opening-seal-watermark.right {
+  right: 6vw;
+}
+
+/* 背景四角仿古金石回纹框饰 */
+.opening-corner-frame {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-color: var(--theme-opening-corner);
+  border-style: solid;
+  pointer-events: none;
+}
+.opening-corner-frame.top-left {
+  top: 2rem;
+  left: 2rem;
+  border-width: 2px 0 0 2px;
+}
+.opening-corner-frame.top-left::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  border-top: 1px solid var(--theme-opening-corner-inner);
+  border-left: 1px solid var(--theme-opening-corner-inner);
+}
+.opening-corner-frame.top-right {
+  top: 2rem;
+  right: 2rem;
+  border-width: 2px 2px 0 0;
+}
+.opening-corner-frame.top-right::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-top: 1px solid var(--theme-opening-corner-inner);
+  border-right: 1px solid var(--theme-opening-corner-inner);
+}
+.opening-corner-frame.bottom-left {
+  bottom: 2rem;
+  left: 2rem;
+  border-width: 0 0 2px 2px;
+}
+.opening-corner-frame.bottom-left::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  border-bottom: 1px solid var(--theme-opening-corner-inner);
+  border-left: 1px solid var(--theme-opening-corner-inner);
+}
+.opening-corner-frame.bottom-right {
+  bottom: 2rem;
+  right: 2rem;
+  border-width: 0 2px 2px 0;
+}
+.opening-corner-frame.bottom-right::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-bottom: 1px solid var(--theme-opening-corner-inner);
+  border-right: 1px solid var(--theme-opening-corner-inner);
+}
+
+.opening-loader-stage {
+  position: relative;
+  width: 100%;
+  max-width: 52rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* 卷轴主体区域 */
+.scroll-wrapper {
+  position: relative;
+  width: 100%;
+  height: 22rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+}
+
+/* 卷轴左右轴杆（合拢时双轴并排呈现真实双轴封缄形态，展开时向两侧对称滑动） */
+.scroll-roller {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2.2rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.1s linear;
+}
+.scroll-roller-left {
+  right: 50%;
+  left: auto;
+  transform: translateX(0);
+}
+.scroll-roller-right {
+  left: 50%;
+  right: auto;
+  transform: translateX(0);
+}
+
+.roller-cap {
+  width: 2.6rem;
+  height: 1.2rem;
+  background: linear-gradient(90deg, #3d2314 0%, #7c4a2d 40%, #a4653e 55%, #4a2813 100%);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.25), 0 3px 6px rgba(0,0,0,0.35);
+}
+.roller-cap.top { margin-bottom: -2px; }
+.roller-cap.bottom { margin-top: -2px; }
+
+.roller-body {
+  flex: 1;
+  width: 1.8rem;
+  background: linear-gradient(90deg, #422513 0%, #855333 30%, #bb8057 50%, #774324 75%, #351c0d 100%);
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(45, 25, 12, 0.35);
+  position: relative;
+}
+.roller-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0, transparent 14px, rgba(0,0,0,0.12) 14px, rgba(0,0,0,0.12) 16px);
+}
+
+.roller-shadow {
+  position: absolute;
+  inset: -4px;
+  background: radial-gradient(circle, rgba(0,0,0,0.25) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 展开的宣纸容器 */
+.scroll-paper-container {
+  position: relative;
+  width: 0;
+  height: 19rem;
+  overflow: hidden;
+  box-shadow: 0 1rem 3rem rgba(40, 30, 20, 0.22);
+  transition: width 0.1s linear;
+  background: var(--color-scroll-paper);
+  border-radius: 2px;
+}
+
+.scroll-paper {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 44rem;
+  height: 100%;
+  transform: translateX(-50%);
+  background-color: var(--color-scroll-paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paper-border-top,
+.paper-border-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: var(--color-scroll-edge);
+  border-top: 1px solid var(--color-scroll-edge);
+  border-bottom: 1px solid var(--color-scroll-edge);
+}
+.paper-border-top { top: 0; }
+.paper-border-bottom { bottom: 0; }
+
+.scroll-content {
+  position: relative;
+  width: 100%;
+  padding: 0 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.scroll-content.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.scroll-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-monument, "Sanji Bangshu Web", serif);
+  font-size: 7.5rem;
+  letter-spacing: 0.5rem;
+  color: rgba(168, 51, 42, 0.04);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.scroll-title-group {
+  position: relative;
+  text-align: left;
+  z-index: 2;
+}
+.scroll-kicker {
+  display: inline-block;
+  color: var(--color-accent, #9f3027);
+  font: 700 0.85rem/1.4 var(--font-display, serif);
+  letter-spacing: 0.25em;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(159, 48, 39, 0.35);
+  padding-bottom: 0.2rem;
+}
+.scroll-main-title {
+  margin: 0;
+  font: 700 clamp(2.4rem, 4vw, 3.4rem)/1.1 var(--font-monument, "Sanji Bangshu Web", serif);
+  color: var(--theme-opening-title);
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.scroll-sub-title {
+  margin: 0.4rem 0 0;
+  color: var(--theme-opening-subtitle);
+  font: 600 1.05rem/1.6 var(--font-display, serif);
+  letter-spacing: 0.1em;
+}
+
+.scroll-seal-mark {
+  position: absolute;
+  right: var(--layout-opening-seal-right);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  opacity: 0.85;
+}
+
+/* 卷轴右侧 IP 不参与正文排版，避免人物出现时挤动标题。 */
+.opening-scroll-ip {
+  position: absolute;
+  z-index: 1;
+  right: var(--layout-opening-ip-right);
+  top: var(--layout-opening-ip-center-y);
+  height: var(--layout-opening-ip-height);
+  width: auto;
+  max-width: 42%;
+  object-fit: contain;
+  object-position: right bottom;
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(-50%);
+  filter: drop-shadow(0 .7rem .8rem rgba(28, 16, 10, .24));
+}
+
+/* 捆扎丝绳 */
+.scroll-cord {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.scroll-cord.cord-snapped {
+  opacity: 0;
+  transform: translateX(32vw) scale(.96);
+  transform-origin: center center;
+  transition: opacity .18s var(--ease-out), transform .18s var(--ease-out);
+}
+.cord-line {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  background: linear-gradient(180deg, #78291f 0%, #a8332a 50%, #541710 100%);
+  border-top: 1px solid rgba(255,255,255,0.3);
+  border-bottom: 1px solid rgba(0,0,0,0.5);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transform: translateY(-50%);
+}
+.cord-line.left {
+  left: 0;
+  width: 50%;
+  transform-origin: left center;
+}
+.cord-line.right {
+  right: 0;
+  width: 50%;
+  transform-origin: right center;
+}
+.cord-ribbon {
+  width: 24px;
+  height: 24px;
+  background: #a8332a;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 1px solid #ffbfb5;
+}
+
+/* 封泥本体容器 */
+.seal-lock-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seal-particles-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 25;
+}
+
+.clay-seal-entity {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 12px 24px rgba(35, 14, 8, 0.55));
+  will-change: transform, opacity;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.clay-seal-entity.shaking {
+  animation: seal-strain-vibrate 0.12s infinite;
+}
+
+@keyframes seal-strain-vibrate {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-2px, 1.5px) rotate(-1deg); }
+  50% { transform: translate(2px, -1.5px) rotate(1deg); }
+  75% { transform: translate(-1.5px, -1px) rotate(-0.5deg); }
+  100% { transform: translate(1px, 2px) rotate(0.5deg); }
+}
+
+.clay-seal-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* SVG 内部裂缝动态展示 */
+.seal-cracks-group {
+  transition: opacity 0.3s ease;
+}
+.crack-path {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.crack-highlight {
+  stroke-dasharray: 180;
+  stroke-dashoffset: 180;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 封泥大碎块在最终爆开脱落时的样式 */
+.seal-fragment {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, #8c3323 0%, #4a180e 100%);
+  border: 1px solid #b3513b;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  will-change: transform, opacity;
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.65s ease;
+}
+.seal-fragment.frag-nw {
+  clip-path: polygon(0 0, 55% 0, 48% 52%, 0 45%);
+}
+.seal-fragment.frag-ne {
+  clip-path: polygon(55% 0, 100% 0, 100% 48%, 48% 52%);
+}
+.seal-fragment.frag-sw {
+  clip-path: polygon(0 45%, 48% 52%, 52% 100%, 0 100%);
+}
+.seal-fragment.frag-se {
+  clip-path: polygon(48% 52%, 100% 48%, 100% 100%, 52% 100%);
+}
+
+.seal-fragment.shatter-nw {
+  opacity: 1;
+  transform: translate(-90px, -90px) rotate(-35deg) scale(0.85);
+}
+.seal-fragment.shatter-ne {
+  opacity: 1;
+  transform: translate(90px, -85px) rotate(32deg) scale(0.85);
+}
+.seal-fragment.shatter-sw {
+  opacity: 1;
+  transform: translate(-85px, 90px) rotate(-28deg) scale(0.85);
+}
+.seal-fragment.shatter-se {
+  opacity: 1;
+  transform: translate(95px, 95px) rotate(42deg) scale(0.85);
+}
+
+/* 底部状态与进度条 */
+.opening-loader-info {
+  margin-top: 2rem;
+  width: min(28rem, 90vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.opening-ceremony-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  width: 100%;
+}
+
+.status-seal-glyph {
+  padding: 0.15rem 0.55rem;
+  background: var(--color-accent, #9f3027);
+  color: #f7efe4;
+  font-family: var(--font-display, serif);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 3px;
+  letter-spacing: 0.12em;
+  box-shadow: 0 2px 6px rgba(159, 48, 39, 0.28);
+  flex-shrink: 0;
+}
+
+.opening-loader-status {
+  min-height: 1.6em;
+  margin: 0;
+  color: var(--theme-opening-status);
+  font: 600 0.95rem/1.6 var(--font-display, serif);
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+
+.opening-loader-meter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.opening-loader-track {
+  flex: 1;
+  height: 6px;
+  background: var(--theme-opening-track);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--theme-opening-track-border);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.track-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #782017 0%, #a8332a 60%, #d47b66 100%);
+  border-radius: 999px;
+  transition: width 0.35s ease-out;
+  position: relative;
+}
+
+.progress-glow-point {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background: #ffe3c9;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ffb396;
+}
+
+.progress-percent {
+  font-family: var(--font-display, serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent, #9f3027);
+  min-width: 2.2rem;
+  text-align: left;
+  line-height: 1;
+}
+
+@keyframes opening-stage-retreat {
+  0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  55% { opacity: .72; transform: translateY(-.65rem) scale(.985); filter: blur(.15px); }
+  100% { opacity: 0; transform: translateY(-1.25rem) scale(.96); filter: blur(3px); }
+}
+@keyframes opening-ambient-retreat {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.14); }
+}
+
+@media (max-width: 640px) {
+  .scroll-wrapper {
+    width: 100%;
+    height: 18rem;
+  }
+  .scroll-paper-container {
+    height: 15rem;
+  }
+  .scroll-paper {
+    width: min(32rem, calc(100vw - 2rem));
+  }
+  .scroll-main-title {
+    font-size: 1.85rem;
+  }
+  .scroll-watermark {
+    font-size: 4.8rem;
+  }
+  .scroll-content { padding-inline: 1.35rem; }
+  .scroll-title-group { max-width: 62%; }
+  .opening-scroll-ip {
+    right: var(--layout-opening-ip-right-mobile);
+    top: var(--layout-opening-ip-center-y-mobile);
+    height: var(--layout-opening-ip-height-mobile);
+    max-width: 36%;
+  }
+  .scroll-seal-mark { display: none; }
+  .clay-seal-entity {
+    width: 130px;
+    height: 130px;
+  }
+  .seal-particles-canvas {
+    width: 280px;
+    height: 280px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-loader,
+  .scroll-roller,
+  .scroll-paper-container,
+  .scroll-content,
+  .opening-scroll-ip,
+  .clay-seal-entity,
+  .crack-path,
+  .seal-fragment,
+  .track-progress-bar,
+  .opening-loader-stage,
+  .opening-loader-ambient {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+html {
+  font-size: clamp(0.875rem, 0.25vw + 0.8125rem, 1.125rem);
+  scroll-behavior: smooth;
+  cursor: var(--cursor-default);
+}
+main > section[id] { scroll-margin-top: calc(var(--layout-header-height) - 0.5rem); }
+a, button, input, [role="button"], .map-marker, .filter-chip {
+  cursor: var(--cursor-pointer) !important;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--section-bg);
+  font-family: var(--sans);
+  letter-spacing: 0;
+  position: relative;
+  overflow-x: hidden;
+  background-image: radial-gradient(circle at 50% 50%, var(--theme-body-glow) 0%, transparent 85%),
+                    repeating-linear-gradient(0deg, transparent 0, transparent 3px, var(--theme-body-texture) 3px, var(--theme-body-texture) 4px);
+  /* 确保 JavaScript 加载前页面不是纯黑 */
+  min-height: 100vh;
+}
+
+/* JavaScript 未加载时，确保开屏动画可见 */
+.opening-loader:not(.is-closing) {
+  display: flex;
+}
+
+/* 背景微尘画布：由 app.js 绘制，只负责装饰，不接收鼠标操作。 */
+#ambientCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 2;
+  opacity: var(--effect-dust-opacity);
+}
+
+/* 保证图片、视频及核心文物实物置于微尘之上，避免被遮挡 */
+img, video, .hero-relic, .relic-visual, .artifact-strip img, .source-photo, .rubbing-group, .shandong-map, .video-shell {
+  position: relative;
+  z-index: 3;
+}
+
+/* 页面顶部阅读进度条 */
+.page-scroll-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(to bottom, rgba(168, 51, 42, 0.08) 0 3px, transparent 3px);
+  z-index: 150;
+  cursor: grab;
+  touch-action: none;
+  outline: 0;
+  user-select: none;
+}
+html.is-page-scrubbing { scroll-behavior: auto; }
+.page-scroll-track::after { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: rgba(168, 51, 42, 0.08); pointer-events: none; }
+.page-scroll-track:hover::after,
+.page-scroll-track:focus-visible::after { background: rgba(168, 51, 42, 0.18); }
+.page-scroll-track:focus-visible { box-shadow: inset 0 0 0 1px var(--color-focus); }
+.page-scroll-track.is-dragging { cursor: grabbing; }
+.page-scroll-bar {
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, #7b1d16, #a8332a, #d47a60);
+  box-shadow: 0 0 10px rgba(168, 51, 42, 0.5);
+  position: relative;
+  transition: width 0.1s ease-out;
+  pointer-events: none;
+}
+.page-scroll-track.is-dragging .page-scroll-bar { transition: none; }
+.page-scroll-knot {
+  position: absolute;
+  right: -5px;
+  top: -4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #a8332a;
+  border: 2px solid #f5eee2;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* 常用元素的统一默认样式 */
+img, video { max-width: 100%; }
+button, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+a { color: inherit; text-decoration: none; }
+button { color: inherit; }
+

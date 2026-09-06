@@ -1,0 +1,60 @@
+/* ==================== 18. 全站字体分工：榜书标题、宋体阅读、黑体界面 ==================== */
+.brand strong,
+.story-card h3,
+.story-details h3,
+.relic-info h3,
+.site-panel h3,
+.map-knowledge-head h3,
+.source-findings h3,
+.source-index-head h3,
+.featured-course-copy h3,
+.source-index strong {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.hero h1,
+.section-heading h2,
+.ai-intro > h2,
+.scroll-story-bar strong,
+.scroll-copy h3,
+.scroll-inscription,
+.scene-slips span,
+.scene-clay span,
+.scene-open span {
+  font-family: var(--font-monument);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.hero-lead,
+.heading-note,
+.map-heading > p,
+.story-card p,
+.scroll-copy p,
+.story-details p,
+.relic-info p,
+.site-panel > p:not(.site-city),
+.featured-course-copy p,
+.ai-intro > p:not(.eyebrow),
+.map-knowledge-head p,
+.source-findings p,
+.source-index-head p,
+.source-index p,
+.source-stats dd,
+.artifact-strip figcaption,
+.evidence-pair figcaption,
+.scroll-relic figcaption,
+.footer-brand p,
+.chat-message {
+  font-family: var(--font-literary);
+}
+
+.brand-seal,
+.mascot-mark,
+.artifact-strip figcaption span {
+  font-family: var(--font-display);
+  font-style: normal;
+}
+

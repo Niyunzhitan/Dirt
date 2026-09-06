@@ -21,6 +21,23 @@
 
 网站主体使用原生 HTML、CSS 和 JavaScript。趣味问答由 Vue 3 单文件组件实现，并通过 Vite 编译。`server.js` 负责提供静态文件、AI 代理和可选的 MySQL 接口。
 
+前端交互按功能拆分为几个经典脚本，脚本通过 `window` 命名空间协作，因此直接双击 `index.html` 也能运行：
+
+- [js/app.js](./js/app.js)：页面初始化、共享工具、地图、图鉴、搜索、AI 和全局交互编排。
+- [js/course-browser.js](./js/course-browser.js)：课程课时切换、课件横向阅读、连续拖动和页码定位。
+- [js/scroll-story.js](./js/scroll-story.js)：数字手卷的展卷、滚轮、拖动和章节导航。
+- [js/opening-loader.js](./js/opening-loader.js)：开屏卷轴展开、进度缓动、封泥裂解和碎片粒子效果。
+- [js/search-dialog.js](./js/search-dialog.js)：全站搜索弹窗、藏品定位和图录定位。
+- [js/ai-chat.js](./js/ai-chat.js)：AI 对话、图片上传、会话保存和状态显示。
+- [js/page-effects.js](./js/page-effects.js)：页面总进度条、拖动、按钮波纹和按压反馈。
+- [js/display-settings.js](./js/display-settings.js)：主题、字号、行距和动效设置。
+- [js/site-navigation.js](./js/site-navigation.js)：导航栏、栏目跳转、时钟和滚动高亮。
+- [js/map-browser.js](./js/map-browser.js)：地图筛选、地图模式和点位选择。
+- [js/source-archive.js](./js/source-archive.js)：完整图录弹窗、资料定位和补充史料展开。
+- 其他 `js/` 文件负责 API、媒体安全、AI、地图和封泥牌具 3D 展示等独立功能。
+
+新功能文件需要在 `index.html` 中先于 `app.js` 加载；`dist/index.html` 由构建脚本自动生成，不要手工维护。
+
 数据可以来自本地文件，也可以来自数据库：
 
 - 本地模式读取 `data/` 中的数据，适合开发、演示和离线浏览。
@@ -161,15 +178,17 @@ Web/
 ├─ index.html              页面源码和本地双击入口
 ├─ server.js               静态网站和 API 服务
 ├─ assets/                 图片、字体、音乐、视频和贴图
-├─ css/                    设计变量和页面样式
+├─ css/                    设计变量和按功能拆分的页面样式
 ├─ data/                   展示数据和媒体配置
 ├─ db/                     数据库结构、迁移和种子脚本
 ├─ docs/                   使用、部署、研究和验收资料
-├─ js/                     页面交互、AI、问答和 Three.js 场景
+├─ js/                     页面交互、功能模块、AI、问答和 Three.js 场景
 └─ templates/              可复用页面模板
 ```
 
 `dist/` 是构建产物，不是源代码。它可以删除，运行 `npm run build` 或 `npm start` 后会重新生成。
+
+CSS 加载顺序固定为：`tokens.css` → `01-base-opening.css` → `02-content-layout.css` → `03-museum-archive.css` → `04-scroll.css` → `05-typography.css` → `06-enhancements.css`。设计变量和主题放在 `tokens.css`，后面的文件按页面结构、展陈视觉、数字手卷、字体和增强动效依次覆盖。不要随意交换这些链接的顺序。
 
 ## 环境变量
 

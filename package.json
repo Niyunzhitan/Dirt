@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/prepare-offline.js",
     "db:seed": "node db/seed.js",
-    "check": "node --check server.js && node --check server/db.js && node --check db/seed.js && node --check js/app.js && node --check js/api.js && node --check js/config.js && node --check js/ai-service.js && node --check js/quiz/main.js && node --check js/quiz/quiz-utils.js && node --check js/three-map.js && node --check js/three-showcase.js && node --check data/shandong-terrain.js && node --check data/3d-products.js"
+    "check": "node --check server.js && node --check server/db.js && node --check db/seed.js && node --check js/app.js && node --check js/course-browser.js && node --check js/scroll-story.js && node --check js/opening-loader.js && node --check js/search-dialog.js && node --check js/ai-chat.js && node --check js/page-effects.js && node --check js/display-settings.js && node --check js/site-navigation.js && node --check js/map-browser.js && node --check js/source-archive.js && node --check js/api.js && node --check js/config.js && node --check js/ai-service.js && node --check js/quiz/main.js && node --check js/quiz/quiz-utils.js && node --check js/three-map.js && node --check js/three-showcase.js && node --check data/shandong-terrain.js && node --check data/3d-products.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
