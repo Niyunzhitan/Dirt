@@ -2,8 +2,7 @@
 
 泥云智探是一个介绍齐鲁封泥的智慧人文网站。网站把封泥实物、印文、出土地和历史背景整理成可浏览的资料，也提供数字手卷、山东文化地图、课程课件、封泥牌具 3D 展示、AI 问答和趣味问答。
 
-主要开发者：[Windy-Field](https://github.com/Windy-Field)
-项目源码：[Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。普通访客可以阅读[网站使用说明](./docs/User-Safari.md)。
+主要开发者：[Windy-Field](https://github.com/Windy-Field)，项目源码：[Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。普通访客可以阅读[网站使用说明](./docs/User-Safari.md)。
 
 ## 功能概览
 
