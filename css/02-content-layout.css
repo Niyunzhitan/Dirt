@@ -217,9 +217,10 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 .dialog-close { position: absolute; z-index: 2; right: 1rem; top: 0.875rem; width: max(2.75rem, 44px); height: max(2.75rem, 44px); display: grid; place-items: center; border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 1.5625rem; line-height: 1; transition: color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
 .dialog-close:hover { color: var(--color-accent); border-color: var(--color-rule); background: var(--color-paper-deep); }
 .search-box label { display: block; margin: 0 0 1.75rem; font: 600 1.875rem var(--serif); }
-.search-row { display: grid; grid-template-columns: 1fr 5rem; border-bottom: 1px solid var(--ink); }
+.search-row { display: grid; grid-template-columns: minmax(0, 1fr) 5rem; align-items: stretch; gap: .75rem; }
 /* 输入框与清除按钮叠放；按钮只在存在搜索文字时显示。 */
-.search-input-wrap { position: relative; min-width: 0; display: grid; align-items: center; }
+.search-input-wrap { position: relative; min-width: 0; display: grid; align-items: center; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-control); background: var(--color-paper-soft); transition: border-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+.search-input-wrap:focus-within { border-color: var(--color-focus); box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-focus) 24%, transparent); }
 .search-row input { width: 100%; min-width: 0; padding: 0.8125rem 3rem 0.8125rem 3px; border: 0; outline: 0; background: transparent; }
 .search-row input::-webkit-search-cancel-button,
 .source-index-head input::-webkit-search-cancel-button { display: none; }
@@ -239,7 +240,7 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 .search-result-group + .search-result-group { margin-top: var(--space-md); }
 .search-result-group h3 { margin: 0; padding: 0.625rem 0; display: flex; justify-content: space-between; color: var(--color-ink-muted); border-bottom: 1px solid var(--color-rule); font: 600 0.75rem var(--font-body); }
 .search-result-group h3 span { min-width: 1.5rem; text-align: right; color: var(--color-accent); }
-.dialog-close:focus-visible, .search-clear:focus-visible, .search-row input:focus-visible, .search-row > button:focus-visible, .search-results button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.dialog-close:focus-visible, .search-clear:focus-visible, .search-row > button:focus-visible, .search-results button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 /* 点击搜索结果后，让对应藏品或图录条目短暂描边，帮助用户确认跳转位置。 */
 .relic-card.search-target, .source-index article.search-target { animation: search-target var(--effect-search-highlight-duration) var(--ease-out); }
 @keyframes search-cleared { 0% { background: var(--color-cinnabar-soft); } 100% { background: transparent; } }

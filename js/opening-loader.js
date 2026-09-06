@@ -5,6 +5,9 @@
     create({ $ }) {
       // 开屏动画只负责展示层；正文数据加载完成后由 app.js 调用 finish() 让它退场。
       const config = {
+        // “你知道吗”轮换节奏（毫秒）：改这里即可，数字越大换得越慢。
+        didYouKnowIntervalMs: 3200,
+        didYouKnowFadeMs: 220,
         stages: [
           { text: "正在辨识战国秦汉封泥……", progress: 15 },
           { text: "封缄受力，封泥渐生细纹……", progress: 38 },
@@ -15,6 +18,7 @@
         preBreakHoldMs: 1400,
         completedHoldMs: 900,
         removeDelayMs: 1100,
+        resourceReadyTimeoutMs: 1200,
         initialProgress: 8,
         progressEase: 0.12,
         progressStopThreshold: 0.2,
@@ -27,6 +31,27 @@
         finalExtraWidth: 96,
         contentRevealRatio: 0.4
       };
+
+      const didYouKnowFacts = [
+        "封泥不是印章，是印章按在湿泥上留下的壳。",
+        "古人寄公文：捆绳、糊泥、按官印，三道关。",
+        "封泥外号“简牍之锁”，是公文的一次性封条。",
+        "山东临淄是封泥大户，单区就有 54 个印文品类。",
+        "清代陈介祺认出了封泥，齐鲁封泥学由此重光。",
+        "史书不写麋圈、橘官，封泥替它们留了名。",
+        "秦印规整，汉印圆润，封泥里藏着篆书演变。",
+        "拆信前先验封：印文对不对，泥面完不完整。",
+        "绳痕、指纹和裂纹，是封泥留下的两千年档案。",
+        "“临淄守印”相当于古代公文的防伪标签。",
+        "纸张普及后，封泥成了“冷门绝学”。",
+        "一枚封泥，能把古地名、官职和出土地对上号。",
+        "昌乐东圈汉墓集中出土了 85 枚“菑川后府”封泥。",
+        "邾国故城官署区出土封泥 821 枚、陶文 243 枚。",
+        "两枚“兰陵丞印”发现于楚王陵瓮、壶附近，提示物资封缄线索。",
+        "秦封泥常见田字格，西汉早期也曾短暂沿用界格。",
+        "“观阳丞印”说明诸侯王国之下仍设有县级官署。",
+        "同一方封泥，要分清印文地名、出土地与历史归属。"
+      ];
 
       const loader = $("#openingLoader");
       const animationEnabled = window.localStorage.getItem("niyun-opening-animation-enabled") !== "false";
@@ -49,8 +74,12 @@
         [$("#fragSW"), "shatter-sw"],
         [$("#fragSE"), "shatter-se"]
       ];
+      const didYouKnowText = $("#openingDidYouKnowText");
 
       let particles = [];
+      let didYouKnowIndex = -1;
+      let didYouKnowTimer = null;
+      let didYouKnowSwitchTimer = null;
       let particleFrame = null;
       let lastParticleFrame = 0;
       let particleEngine = null;
@@ -144,28 +173,64 @@
         return { createDebris };
       }
 
+      function nextDidYouKnowIndex() {
+        if (didYouKnowFacts.length < 2) return 0;
+        let nextIndex = didYouKnowIndex;
+        while (nextIndex === didYouKnowIndex) {
+          nextIndex = Math.floor(Math.random() * didYouKnowFacts.length);
+        }
+        return nextIndex;
+      }
+
+      function setDidYouKnowText(text, immediate = false) {
+        if (!didYouKnowText) return;
+        if (immediate) {
+          didYouKnowText.textContent = text;
+          didYouKnowText.classList.remove("is-switching");
+          return;
+        }
+        if (didYouKnowSwitchTimer) window.clearTimeout(didYouKnowSwitchTimer);
+        didYouKnowText.classList.add("is-switching");
+        didYouKnowSwitchTimer = window.setTimeout(() => {
+          didYouKnowText.textContent = text;
+          didYouKnowText.classList.remove("is-switching");
+          didYouKnowSwitchTimer = null;
+        }, config.didYouKnowFadeMs);
+      }
+
+      function startDidYouKnow() {
+        if (!didYouKnowText || !didYouKnowFacts.length) return;
+        didYouKnowIndex = Math.floor(Math.random() * didYouKnowFacts.length);
+        setDidYouKnowText(didYouKnowFacts[didYouKnowIndex], true);
+        didYouKnowTimer = window.setInterval(() => {
+          didYouKnowIndex = nextDidYouKnowIndex();
+          setDidYouKnowText(didYouKnowFacts[didYouKnowIndex]);
+        }, config.didYouKnowIntervalMs);
+      }
+
+      function stopDidYouKnow() {
+        if (didYouKnowTimer) window.clearInterval(didYouKnowTimer);
+        if (didYouKnowSwitchTimer) window.clearTimeout(didYouKnowSwitchTimer);
+        didYouKnowTimer = null;
+        didYouKnowSwitchTimer = null;
+        didYouKnowText?.classList.remove("is-switching");
+      }
+
       function waitForPageReady() {
         if (pageReadyPromise) return pageReadyPromise;
-        pageReadyPromise = new Promise((resolve) => {
-          const waitForLoad = () => {
-            const fontReady = document.fonts?.ready || Promise.resolve();
-            const viewportImages = [...document.images].filter((image) => {
-              const rect = image.getBoundingClientRect();
-              return rect.top < window.innerHeight && rect.bottom > 0;
-            });
-            const imageReady = Promise.all(viewportImages.map((image) => image.complete
-              ? Promise.resolve()
-              : new Promise((imageResolve) => {
-                  image.addEventListener("load", imageResolve, { once: true });
-                  image.addEventListener("error", imageResolve, { once: true });
-                })));
-            Promise.all([fontReady, imageReady]).then(() => {
-              window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
-            });
-          };
-          if (document.readyState === "complete") waitForLoad();
-          else window.addEventListener("load", waitForLoad, { once: true });
+        const openingImages = loader ? [...loader.querySelectorAll("img")] : [];
+        const imageReady = Promise.all(openingImages.map((image) => image.complete
+          ? Promise.resolve()
+          : new Promise((resolve) => {
+              image.addEventListener("load", resolve, { once: true });
+              image.addEventListener("error", resolve, { once: true });
+            })));
+        const timeout = new Promise((resolve) => {
+          window.setTimeout(resolve, config.resourceReadyTimeoutMs);
         });
+        pageReadyPromise = Promise.race([imageReady, timeout]).then(() => new Promise((resolve) => {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+        }));
         return pageReadyPromise;
       }
 
@@ -255,7 +320,7 @@
           loader.remove();
           return;
         }
-        // 接口或字体加载异常时也不能让开屏层永久挡住页面，9 秒后走兜底完成流程。
+        // 接口加载异常时也不能让开屏层永久挡住页面，9 秒后走兜底完成流程。
         fallbackTimer = window.setTimeout(() => {
           if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
           fallbackTimer = null;
@@ -263,6 +328,7 @@
         }, 9000);
         particleEngine = initParticles();
         wakeProgress();
+        startDidYouKnow();
         stageIndex = 0;
         particlesPlayed = false;
         fragmentsStarted = false;
@@ -304,6 +370,7 @@
         });
         await new Promise((resolve) => window.setTimeout(resolve, config.completedHoldMs));
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
+        stopDidYouKnow();
         loader.classList.add("is-closing");
         removeTimer = window.setTimeout(() => {
           if (particleFrame) cancelAnimationFrame(particleFrame);

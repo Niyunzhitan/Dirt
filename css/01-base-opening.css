@@ -59,6 +59,10 @@ img[loading="lazy"].loaded {
 
 /* 首屏开馆层：古卷封泥解封与卷轴展开动画 */
 .opening-loader {
+  --opening-font-monument: "STKaiti", "KaiTi", serif;
+  --opening-font-display: "SimSun", "Songti SC", serif;
+  --opening-font-body: "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-family: var(--opening-font-body);
   position: fixed;
   z-index: 9999;
   inset: 0;
@@ -134,7 +138,7 @@ img[loading="lazy"].loaded {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  font-family: var(--font-monument, "Sanji Bangshu Web", serif);
+  font-family: var(--opening-font-monument);
   font-size: clamp(6.5rem, 11vw, 12rem);
   font-weight: 900;
   line-height: 1;
@@ -359,7 +363,7 @@ img[loading="lazy"].loaded {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-family: var(--font-monument, "Sanji Bangshu Web", serif);
+  font-family: var(--opening-font-monument);
   font-size: 7.5rem;
   letter-spacing: 0.5rem;
   color: rgba(168, 51, 42, 0.04);
@@ -376,7 +380,7 @@ img[loading="lazy"].loaded {
 .scroll-kicker {
   display: inline-block;
   color: var(--color-accent, #9f3027);
-  font: 700 0.85rem/1.4 var(--font-display, serif);
+  font: 700 0.85rem/1.4 var(--opening-font-display);
   letter-spacing: 0.25em;
   margin-bottom: 0.4rem;
   border-bottom: 1px solid rgba(159, 48, 39, 0.35);
@@ -384,7 +388,7 @@ img[loading="lazy"].loaded {
 }
 .scroll-main-title {
   margin: 0;
-  font: 700 clamp(2.4rem, 4vw, 3.4rem)/1.1 var(--font-monument, "Sanji Bangshu Web", serif);
+  font: 700 clamp(2.4rem, 4vw, 3.4rem)/1.1 var(--opening-font-monument);
   color: var(--theme-opening-title);
   letter-spacing: 0.15em;
   text-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -392,7 +396,7 @@ img[loading="lazy"].loaded {
 .scroll-sub-title {
   margin: 0.4rem 0 0;
   color: var(--theme-opening-subtitle);
-  font: 600 1.05rem/1.6 var(--font-display, serif);
+  font: 600 1.05rem/1.6 var(--opening-font-display);
   letter-spacing: 0.1em;
 }
 
@@ -521,6 +525,22 @@ img[loading="lazy"].loaded {
   overflow: visible;
 }
 
+/* 沂山碑篆体已转为 SVG 轮廓，首帧直接绘制，不触发字体交换。 */
+.seal-inscription-glyph {
+  fill: #e8a892;
+  stroke: #52170f;
+  stroke-width: 0.75px;
+  paint-order: stroke fill;
+  opacity: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.glyph-ni { transform: rotate(1.5deg); }
+.glyph-yun { transform: rotate(-1deg); }
+.glyph-zhi { transform: rotate(-1.5deg); }
+.glyph-tan { transform: rotate(1deg); }
+
 /* SVG 内部裂缝动态展示 */
 .seal-cracks-group {
   transition: opacity 0.3s ease;
@@ -601,7 +621,7 @@ img[loading="lazy"].loaded {
   padding: 0.15rem 0.55rem;
   background: var(--color-accent, #9f3027);
   color: #f7efe4;
-  font-family: var(--font-display, serif);
+  font-family: var(--opening-font-body);
   font-size: 0.75rem;
   font-weight: 700;
   border-radius: 3px;
@@ -614,7 +634,7 @@ img[loading="lazy"].loaded {
   min-height: 1.6em;
   margin: 0;
   color: var(--theme-opening-status);
-  font: 600 0.95rem/1.6 var(--font-display, serif);
+  font: 600 0.95rem/1.6 var(--opening-font-body);
   letter-spacing: 0.05em;
   text-align: left;
 }
@@ -659,13 +679,56 @@ img[loading="lazy"].loaded {
 }
 
 .progress-percent {
-  font-family: var(--font-display, serif);
+  font-family: var(--opening-font-body);
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--color-accent, #9f3027);
   min-width: 2.2rem;
   text-align: left;
   line-height: 1;
+}
+
+.opening-did-you-know {
+  margin-top: 1.1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  text-align: center;
+}
+
+.did-you-know-tag {
+  flex-shrink: 0;
+  padding: 0.16rem 0.6rem;
+  border: 1px solid color-mix(in oklch, var(--color-accent, #9f3027) 45%, transparent);
+  border-radius: 2px;
+  background: color-mix(in oklch, var(--color-accent, #9f3027) 10%, transparent);
+  color: var(--color-accent, #9f3027);
+  font-family: var(--opening-font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.22);
+}
+
+.did-you-know-text {
+  min-height: 1.6em;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--theme-opening-subtitle);
+  font: 500 0.84rem/1.6 var(--opening-font-display);
+  letter-spacing: 0.02em;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.did-you-know-text.is-switching {
+  opacity: 0;
+  transform: translateY(0.25rem);
 }
 
 @keyframes opening-stage-retreat {
@@ -712,6 +775,18 @@ img[loading="lazy"].loaded {
     width: 280px;
     height: 280px;
   }
+    .opening-did-you-know {
+      margin-top: 0.95rem;
+      gap: 0.55rem;
+    }
+    .did-you-know-tag {
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+    .did-you-know-text {
+      font-size: 0.78rem;
+      line-height: 1.65;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

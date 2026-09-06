@@ -65,6 +65,10 @@
   --layout-section-space: 8.5rem;
   --layout-section-space-mobile: 5.5rem;
 
+  /* 圆角层级：按钮保持利落，介绍卡片稍柔和，均不超过 8px。 */
+  --radius-control: 6px;
+  --radius-card: 8px;
+
   /* 栏目进退场动画：进入稍慢，退出稍快，位移控制上下滑动距离 */
   --motion-reveal-enter: 1100ms;
   --motion-reveal-exit: 900ms;

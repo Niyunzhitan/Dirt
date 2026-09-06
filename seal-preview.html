@@ -1,0 +1,51 @@
+<!doctype html><html><body style="margin:0;background:#444;display:grid;place-items:center;height:100vh">
+<svg class="clay-seal-svg" viewBox="0 0 200 200" width="160" height="160">
+              <defs>
+                <!-- 陶土封泥原生质感滤镜：凹凸起伏与阴影 -->
+                <radialGradient id="clayGrad" cx="38%" cy="32%" r="68%">
+                  <stop offset="0%" stop-color="#ba5d45" />
+                  <stop offset="45%" stop-color="#8c3323" />
+                  <stop offset="85%" stop-color="#5a1e14" />
+                  <stop offset="100%" stop-color="#3c1109" />
+                </radialGradient>
+                <radialGradient id="indentGrad" cx="45%" cy="40%" r="55%">
+                  <stop offset="0%" stop-color="#551a10" />
+                  <stop offset="80%" stop-color="#42130b" />
+                  <stop offset="100%" stop-color="#692216" />
+                </radialGradient>
+              </defs>
+
+              <!-- 泥块外缘不规则泥团边缘（按压溢泥效果） -->
+              <path class="clay-base" d="M98,12 C138,10 178,28 186,68 C194,108 182,154 150,178 C118,202 72,192 40,172 C8,152 4,112 12,70 C20,28 58,14 98,12 Z" fill="url(#clayGrad)" />
+              <path class="clay-rim" d="M100,20 C134,18 168,34 174,68 C180,102 170,140 142,162 C114,184 74,176 46,158 C18,140 16,106 22,70 C28,34 66,22 100,20 Z" fill="none" stroke="#320c06" stroke-width="3" opacity="0.4" />
+
+              <!-- 中间印台下凹区 -->
+              <rect x="46" y="46" width="108" height="108" rx="14" fill="url(#indentGrad)" stroke="#2b0a05" stroke-width="4" />
+              <!-- 汉白文/朱文边栏内框 -->
+              <rect x="54" y="54" width="92" height="92" rx="8" fill="none" stroke="#b3513b" stroke-width="2.5" opacity="0.7" />
+
+              <!-- 篆化封泥印文：【泥云智探】 -->
+              <g class="seal-inscription" fill="#df947c" stroke="#52170f" stroke-width="0.8" role="img" aria-label="泥云智探">
+                <!-- 泥（左上） -->
+                <path d="M66,64 C69,67 67,71 64,73 M64,79 C68,81 67,85 64,87 M65,97 L70,90 M74,64 L90,64 M74,64 L74,98 M74,78 L88,78 M88,64 L88,98 M79,83 L84,93" fill="none" stroke="#e8a892" stroke-width="2.4" stroke-linecap="round"/>
+                <!-- 云（右上） -->
+                <path d="M111,66 L135,66 M111,76 L135,76 M123,66 L123,76 M115,69 C118,73 128,73 131,69 M115,72 C118,76 128,76 131,72 M117,80 C120,83 126,83 129,80" fill="none" stroke="#e8a892" stroke-width="2.4" stroke-linecap="round"/>
+                <!-- 智（左下） -->
+                <path d="M67,106 L73,114 M73,106 L67,114 M70,114 L70,130 M64,130 L76,130 M64,130 L64,138 L76,138 L76,130 M82,120 L90,120 M82,128 L90,128 M82,136 L90,136 M82,120 L82,136 M90,120 L90,136" fill="none" stroke="#e8a892" stroke-width="2.4" stroke-linecap="round"/>
+                <!-- 探（右下） -->
+                <path d="M112,114 L120,114 M116,114 L116,136 M115,126 L121,122 M124,106 L137,106 M125,106 L125,112 M135,106 L135,112 M124,120 L137,120 M130,112 L130,138 M124,126 L129,136 M136,126 L131,136" fill="none" stroke="#e8a892" stroke-width="2.4" stroke-linecap="round"/>
+              </g>
+
+              <!-- SVG 预制核心深层裂纹（随进度逐渐加深延伸） -->
+              <g class="seal-cracks-group" id="sealCracksSvg" opacity="0">
+                <path class="crack-path crack-1" d="M100,20 L96,55 L82,85 L65,110 L40,140 L20,160" fill="none" stroke="#120402" stroke-width="2.8" stroke-linecap="round" />
+                <path class="crack-highlight crack-1-hi" d="M101,20 L97,55 L83,85 L66,110 L41,140 L21,160" fill="none" stroke="#fbd9b3" stroke-width="1" opacity="0.8" />
+
+                <path class="crack-path crack-2" d="M174,68 L140,82 L100,100 L80,128 L60,175" fill="none" stroke="#120402" stroke-width="2.6" stroke-linecap="round" />
+                <path class="crack-highlight crack-2-hi" d="M175,69 L141,83 L101,101 L81,129 L61,176" fill="none" stroke="#fbd9b3" stroke-width="1" opacity="0.8" />
+
+                <path class="crack-path crack-3" d="M100,100 L130,125 L160,140 L185,150" fill="none" stroke="#120402" stroke-width="2.4" stroke-linecap="round" />
+                <path class="crack-path crack-4" d="M82,85 L115,70 L145,50 L165,30" fill="none" stroke="#120402" stroke-width="2.2" stroke-linecap="round" />
+              </g>
+            </svg>
+</body></html>

@@ -201,6 +201,47 @@
   box-shadow: 0 2px 8px rgba(41, 62, 56, 0.35);
 }
 
+/* 19.6a 克制圆角：命令控件更紧，承载介绍内容的卡片更柔和。 */
+.button:not(.text-button),
+.filter-chip,
+.search-row button,
+.chat-form,
+.chat-form button,
+.scroll-story-controls button,
+.course-scroll-controls button,
+.course-lesson-tabs button,
+.quick-prompts button,
+.source-index-more,
+.panel-link,
+.dialog-close,
+.settings-close,
+.source-dialog-close {
+  border-radius: var(--radius-control);
+}
+
+.relic-card,
+.story-card,
+.knowledge-functions article,
+.source-stats div,
+.evidence-pair figure,
+.story-details article,
+.source-findings article,
+.source-index article,
+.course-recap-feature,
+.course-lesson-panel,
+.course-scroll,
+.ai-console,
+.upload-preview,
+.source-dialog-panel {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.relic-visual,
+.course-recap-media {
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
 /* 19.7 内容进入视口时依次显现 */
 [data-reveal] {
   opacity: 0;
@@ -443,6 +484,7 @@ main > section:first-of-type {
   color: var(--color-bronze-dark);
   background: oklch(89% .035 160);
   border: var(--rule-hairline) solid oklch(46% .045 160 / 45%);
+  border-radius: var(--radius-control);
   font: 500 var(--text-md)/1 var(--font-display);
   white-space: nowrap;
 }
@@ -473,6 +515,7 @@ main > section:first-of-type {
   place-items: center;
   color: var(--color-accent-ink);
   background: var(--color-accent);
+  border-radius: var(--radius-control);
   font: 600 var(--text-sm) var(--font-body);
 }
 .quiz-question-title h3 {
@@ -626,7 +669,7 @@ main > section:first-of-type {
 .quiz-feedback strong { color: var(--color-accent-dark); font-family: var(--font-display); }
 .quiz-actions { margin-top: var(--space-sm); display: flex; align-items: center; gap: var(--space-sm); }
 .quiz-actions [hidden] { display: none !important; }
-.quiz-actions .button { min-width: 10.5rem; min-height: 3.25rem; justify-content: center; border-radius: 0; }
+.quiz-actions .button { min-width: 10.5rem; min-height: 3.25rem; justify-content: center; border-radius: var(--radius-control); }
 .quiz-share-button { min-width: 10.5rem; min-height: 3.25rem; margin-top: var(--space-lg); color: var(--color-accent-ink); background: var(--color-accent); border: var(--rule-hairline) solid var(--color-accent-dark); }
 .quiz-share-button:hover { background: var(--color-accent-dark); }
 .quiz-share-button svg { flex: 0 0 auto; display: block; }
@@ -1065,6 +1108,14 @@ main > section:first-of-type {
     linear-gradient(to right, transparent 0, black var(--theme-image-edge-fade), black calc(100% - var(--theme-image-edge-fade)), transparent 100%),
     linear-gradient(to bottom, transparent 0, black var(--theme-image-edge-fade), black calc(100% - var(--theme-image-edge-fade)), transparent 100%);
   mask-composite: intersect;
+}
+
+/* 首屏角色是透明 PNG，不参与文物照片的双重渐隐遮罩，避免 Chrome 合成出阶梯状三角块。 */
+[data-theme="dark"] .hero-object .hero-relic-main img {
+  -webkit-mask-image: none;
+  -webkit-mask-composite: initial;
+  mask-image: none;
+  mask-composite: initial;
 }
 
 /* 地图筛选器需要比普通表面更明显的状态差异。 */
