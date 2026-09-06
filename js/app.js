@@ -455,6 +455,15 @@
     return Math.max(0, Number(course?.slideCount) || 0);
   }
 
+  function courseSlideAnchors(viewport = $("#courseSlideViewport")) {
+    if (!viewport) return [];
+    const viewportRect = viewport.getBoundingClientRect();
+    return $$(".course-slide", $("#courseSlideTrack")).map((panel) => {
+      const panelRect = panel.getBoundingClientRect();
+      return panelRect.left - viewportRect.left + viewport.scrollLeft;
+    });
+  }
+
   function syncCourseLessonPanelHeight() {
     const panel = $(".course-lesson-panel");
     const content = $("#courseScroll");
@@ -479,7 +488,7 @@
     if (image.decode) await image.decode().catch(() => {});
   }
 
-  async function updateCourseSlideState(index) {
+  async function updateCourseSlideState(index, behavior = "smooth") {
     const count = courseSlideCount();
     if (!count || !activeCourse) return;
     const nextIndex = Math.max(0, Math.min(index, count - 1));
@@ -489,8 +498,12 @@
     activeCourseSlideIndex = nextIndex;
     const panels = $$(".course-slide", $("#courseSlideTrack"));
     panels.forEach((panel, panelIndex) => panel.toggleAttribute("data-current", panelIndex === activeCourseSlideIndex));
+    const viewport = $("#courseSlideViewport");
+    const targetLeft = courseSlideAnchors(viewport)[activeCourseSlideIndex];
+    if (viewport && Number.isFinite(targetLeft)) {
+      viewport.scrollTo({ left: targetLeft, behavior: prefersReducedMotion() ? "auto" : behavior });
+    }
     $("#courseSlideStatus").innerHTML = `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(activeCourseSlideIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
-    $("#courseSlideProgress").style.transform = `scaleX(${(activeCourseSlideIndex + 1) / count})`;
     $("#courseSlidePrev").disabled = activeCourseSlideIndex === 0;
     $("#courseSlideNext").disabled = activeCourseSlideIndex === count - 1;
   }
@@ -531,7 +544,12 @@
     activeCourse = course;
     activeCourseSlideIndex = 0;
     track.replaceChildren(...Array.from(staging.children));
-    updateCourseSlideState(0);
+    viewport.style.setProperty("--course-slide-width", `${viewport.clientWidth}px`);
+    viewport.scrollTo({ left: 0, behavior: "auto" });
+    $("#courseSlideProgress").style.transform = "scaleX(0)";
+    $("#courseSlideProgressTrack")?.setAttribute("aria-valuenow", "0");
+    await updateCourseSlideState(0, "auto");
+    window.requestAnimationFrame(() => viewport.scrollTo({ left: 0, behavior: "auto" }));
   }
 
   function selectCourse(id, options = {}) {
@@ -582,8 +600,67 @@
 
   function initCourseScroll() {
     const viewport = $("#courseSlideViewport");
+    const progressTrack = $("#courseSlideProgressTrack");
     const tabs = $("#courseLessonTabs");
-    if (!viewport || !tabs) return;
+    if (!viewport || !progressTrack || !tabs) return;
+    let dragging = false;
+    let dragStart = 0;
+    let scrollStart = 0;
+
+    function syncCourseSlideFromScroll() {
+      const panels = $$(".course-slide", $("#courseSlideTrack"));
+      if (!panels.length) return;
+      const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      const scrollRatio = maxScroll > 0 ? viewport.scrollLeft / maxScroll : 0;
+      const percent = Math.min(100, Math.max(0, scrollRatio * 100));
+      $("#courseSlideProgress").style.transform = `scaleX(${scrollRatio})`;
+      progressTrack.setAttribute("aria-valuenow", String(Math.round(percent)));
+      progressTrack.setAttribute("aria-valuetext", `课件浏览位置 ${Math.round(percent)}%`);
+      const anchors = courseSlideAnchors(viewport);
+      const nextIndex = anchors.findIndex((anchor) => Math.abs(anchor - viewport.scrollLeft) <= 2);
+      const count = panels.length;
+      if (nextIndex < 0) {
+        activeCourseSlideIndex = -1;
+        panels.forEach((panel) => panel.removeAttribute("data-current"));
+        $("#courseSlideStatus").innerHTML = `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>-- / ${String(count).padStart(2, "0")}</b>`;
+        $("#courseSlidePrev").disabled = viewport.scrollLeft <= 1;
+        $("#courseSlideNext").disabled = viewport.scrollLeft >= maxScroll - 1;
+        return;
+      }
+      if (nextIndex === activeCourseSlideIndex) return;
+      activeCourseSlideIndex = nextIndex;
+      panels.forEach((panel, panelIndex) => panel.toggleAttribute("data-current", panelIndex === nextIndex));
+      $("#courseSlideStatus").innerHTML = `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(nextIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
+      $("#courseSlidePrev").disabled = nextIndex === 0;
+      $("#courseSlideNext").disabled = nextIndex === count - 1;
+    }
+
+    function setCourseScrollPercent(percent) {
+      const clamped = Math.min(100, Math.max(0, percent));
+      const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      viewport.scrollLeft = maxScroll * clamped / 100;
+    }
+
+    function setCourseScrollFromPointer(event) {
+      const bounds = progressTrack.getBoundingClientRect();
+      const percent = bounds.width > 0 ? ((event.clientX - bounds.left) / bounds.width) * 100 : 0;
+      setCourseScrollPercent(percent);
+    }
+
+    function moveToCourseAnchor(direction) {
+      const anchors = courseSlideAnchors(viewport);
+      const current = viewport.scrollLeft;
+      const tolerance = 4;
+      const targetIndex = direction > 0
+        ? anchors.findIndex((anchor) => anchor > current + tolerance)
+        : (() => {
+            for (let index = anchors.length - 1; index >= 0; index--) {
+              if (anchors[index] < current - tolerance) return index;
+            }
+            return -1;
+          })();
+      if (targetIndex >= 0) updateCourseSlideState(targetIndex);
+    }
     tabs.addEventListener("click", (event) => {
       const button = event.target.closest("[data-course-id]");
       if (button) selectCourse(button.dataset.courseId, { scrollToContent: true });
@@ -597,16 +674,75 @@
       tabButtons[next].focus();
       selectCourse(tabButtons[next].dataset.courseId, { scrollToContent: true });
     });
-    $("#courseSlidePrev").addEventListener("click", () => updateCourseSlideState(activeCourseSlideIndex - 1));
-    $("#courseSlideNext").addEventListener("click", () => updateCourseSlideState(activeCourseSlideIndex + 1));
+    $("#courseSlidePrev").addEventListener("click", () => moveToCourseAnchor(-1));
+    $("#courseSlideNext").addEventListener("click", () => moveToCourseAnchor(1));
     viewport.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowLeft") { event.preventDefault(); updateCourseSlideState(activeCourseSlideIndex - 1); }
-      if (event.key === "ArrowRight") { event.preventDefault(); updateCourseSlideState(activeCourseSlideIndex + 1); }
+      if (event.key === "ArrowLeft") { event.preventDefault(); moveToCourseAnchor(-1); }
+      if (event.key === "ArrowRight") { event.preventDefault(); moveToCourseAnchor(1); }
       if (event.key === "Home") { event.preventDefault(); updateCourseSlideState(0); }
       if (event.key === "End") { event.preventDefault(); updateCourseSlideState(courseSlideCount() - 1); }
     });
+    viewport.addEventListener("scroll", syncCourseSlideFromScroll, { passive: true });
+    viewport.addEventListener("wheel", (event) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const atStart = viewport.scrollLeft <= 0 && event.deltaY < 0;
+      const atEnd = viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth - 1 && event.deltaY > 0;
+      if (atStart || atEnd) return;
+      event.preventDefault();
+      viewport.scrollLeft += event.deltaY;
+    }, { passive: false });
+    viewport.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "touch") return;
+      dragging = true;
+      dragStart = event.clientX;
+      scrollStart = viewport.scrollLeft;
+      viewport.setPointerCapture(event.pointerId);
+      viewport.classList.add("is-dragging");
+    });
+    viewport.addEventListener("pointermove", (event) => {
+      if (dragging) viewport.scrollLeft = scrollStart - (event.clientX - dragStart);
+    });
+    viewport.addEventListener("pointerup", (event) => {
+      dragging = false;
+      viewport.releasePointerCapture(event.pointerId);
+      viewport.classList.remove("is-dragging");
+    });
+    viewport.addEventListener("pointercancel", () => {
+      dragging = false;
+      viewport.classList.remove("is-dragging");
+    });
+    progressTrack.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      progressTrack.setPointerCapture(event.pointerId);
+      progressTrack.classList.add("is-dragging");
+      setCourseScrollFromPointer(event);
+    });
+    progressTrack.addEventListener("pointermove", (event) => {
+      if (progressTrack.hasPointerCapture(event.pointerId)) setCourseScrollFromPointer(event);
+    });
+    const stopProgressDrag = (event) => {
+      if (progressTrack.hasPointerCapture(event.pointerId)) progressTrack.releasePointerCapture(event.pointerId);
+      progressTrack.classList.remove("is-dragging");
+    };
+    progressTrack.addEventListener("pointerup", stopProgressDrag);
+    progressTrack.addEventListener("pointercancel", stopProgressDrag);
+    progressTrack.addEventListener("keydown", (event) => {
+      const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      const currentPercent = maxScroll > 0 ? viewport.scrollLeft / maxScroll * 100 : 0;
+      const steps = { ArrowLeft: -2, ArrowDown: -2, ArrowRight: 2, ArrowUp: 2, PageUp: -10, PageDown: 10 };
+      if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        setCourseScrollPercent(event.key === "Home" ? 0 : 100);
+      } else if (Object.hasOwn(steps, event.key)) {
+        event.preventDefault();
+        setCourseScrollPercent(currentPercent + steps[event.key]);
+      }
+    });
     window.addEventListener("resize", () => {
-      updateCourseSlideState(activeCourseSlideIndex);
+      const oldMaxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+      const oldRatio = oldMaxScroll > 0 ? viewport.scrollLeft / oldMaxScroll : 0;
+      viewport.style.setProperty("--course-slide-width", `${viewport.clientWidth}px`);
+      window.requestAnimationFrame(() => setCourseScrollPercent(oldRatio * 100));
       syncCourseLessonPanelHeight();
     });
   }

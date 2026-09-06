@@ -1210,13 +1210,33 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
 }
 .course-lesson-panel-foot { padding-top: var(--space-md); display: flex; justify-content: space-between; gap: var(--space-sm); border-top: 1px solid var(--color-rule); color: var(--color-ink-muted); font-size: var(--text-xs); }
 .course-lesson-panel-foot strong { color: var(--color-accent); font-size: var(--text-sm); }
-.course-scroll-progress { height: 3px; overflow: hidden; background: var(--color-rule); }
-.course-scroll-progress i { width: 100%; height: 100%; display: block; background: var(--color-accent); transform: scaleX(.04); transform-origin: left; transition: transform var(--dur-short) var(--ease-out); }
-.course-slide-viewport { overflow: hidden; }
-.course-slide-track { display: block; width: 100%; aspect-ratio: 16 / 9; padding: 0; overflow: hidden; background: #101513; }
-.course-slide { position: relative; display: none; width: 100%; height: 100%; margin: 0; background: transparent; }
-.course-slide[data-current] { display: block; }
-.course-slide img { width: 100%; height: 100%; display: block; object-fit: contain; background: #101513; cursor: default; image-rendering: auto; }
+.course-scroll-progress { position: relative; height: 14px; overflow: hidden; background: linear-gradient(to bottom, var(--color-rule) 0 3px, transparent 3px); cursor: grab; touch-action: none; outline: 0; user-select: none; }
+.course-scroll-progress::after { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--color-rule); pointer-events: none; }
+.course-scroll-progress:hover::after,
+.course-scroll-progress:focus-visible::after { background: color-mix(in oklch, var(--color-accent) 35%, var(--color-rule)); }
+.course-scroll-progress:focus-visible { box-shadow: inset 0 0 0 1px var(--color-focus); }
+.course-scroll-progress.is-dragging { cursor: grabbing; }
+.course-scroll-progress i { width: 100%; height: 3px; display: block; position: relative; z-index: 1; background: var(--color-accent); transform: scaleX(0); transform-origin: left; transition: transform 100ms var(--ease-out); pointer-events: none; }
+.course-scroll-progress.is-dragging i { transition: none; }
+.course-slide-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-scrollbar-thumb) var(--theme-scrollbar-track);
+  overscroll-behavior-inline: contain;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.course-slide-viewport::-webkit-scrollbar { height: 12px; }
+.course-slide-viewport::-webkit-scrollbar-track { background: var(--theme-scrollbar-track); }
+.course-slide-viewport::-webkit-scrollbar-thumb { border: 3px solid var(--theme-scrollbar-track); border-radius: 999px; background: var(--theme-scrollbar-thumb); }
+.course-slide-viewport::-webkit-scrollbar-thumb:hover { background: var(--theme-scrollbar-thumb-hover); }
+.course-slide-viewport.is-dragging { cursor: grabbing; }
+.course-slide-track { width: max-content; height: auto; display: flex; padding: 0; background: #101513; }
+.course-slide { position: relative; width: min(100vw, var(--course-slide-width, 50rem)); height: auto; aspect-ratio: 16 / 9; flex: 0 0 var(--course-slide-width, 50rem); margin: 0; background: #101513; }
+.course-slide img { width: 100%; height: 100%; display: block; object-fit: contain; background: #101513; cursor: inherit; image-rendering: auto; pointer-events: none; -webkit-user-drag: none; user-drag: none; }
 .course-scroll-footer { padding: var(--space-lg); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-xl); border-top: var(--rule-hairline) solid var(--color-rule); }
 .course-scroll-footer > div:first-child > span { color: var(--color-accent); font-size: var(--text-sm); font-weight: 700; }
 .course-scroll-footer p { max-width: 50rem; margin: .6rem 0 0; color: var(--color-ink-muted); line-height: 1.75; }
@@ -1256,7 +1276,7 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
   .course-lesson-tabs button { flex: 0 0 11rem; min-height: 6.5rem; grid-template-columns: auto 1fr; }
   .course-lesson-tabs button small { grid-column: 2; }
   .course-lesson-tabs button::after { display: none; }
-  .course-slide-track { min-height: 15rem; }
+  .course-slide { min-height: 15rem; }
   .course-scroll-footer { grid-template-columns: 1fr; gap: var(--space-md); padding: var(--space-md); }
   .course-scroll-actions { justify-content: flex-start; }
   .course-scroll-hint { padding-inline: var(--space-md); }
