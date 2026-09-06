@@ -3,6 +3,7 @@
 
   window.NiyunSearchDialog = {
     create(dependencies) {
+      // 搜索弹窗只处理搜索输入和结果跳转；图录卡片的渲染仍由 app.js 提供。
       const {
         $, escapeHtml, prefersReducedMotion, renderSourceDialogIndex,
         sourceDialog, sourceDialogPanel, openModalAnimation, closeModalAnimation,
@@ -20,7 +21,7 @@
       }
 
       function openAnimation() {
-        const panel = dialog?.querySelector(".search-panel");
+        const panel = dialog?.querySelector(".search-box");
         if (!panel) return;
         panel.getAnimations().forEach((animation) => animation.cancel());
         panel.animate([
@@ -30,7 +31,7 @@
       }
 
       function closeAnimation() {
-        const panel = dialog?.querySelector(".search-panel");
+        const panel = dialog?.querySelector(".search-box");
         if (!panel || prefersReducedMotion()) return null;
         return panel.animate([
           { opacity: 1, transform: "translateY(0) scale(1)" },

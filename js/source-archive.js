@@ -3,6 +3,7 @@
 
   window.NiyunSourceArchive = {
     create(dependencies) {
+      // 地图、藏品卡和搜索结果都会打开同一个图录弹窗，因此集中在这里维护打开、关闭和定位逻辑。
       const { $, sourceDialog, sourceDialogPanel, sourceDialogSearch, clearSourceDialogSearch,
         renderSourceDialogIndex, cacheSourceSupplementHeights,
         animateSourceSupplementDetails, getRelicArchiveLink,

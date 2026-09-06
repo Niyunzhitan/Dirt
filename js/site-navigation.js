@@ -2,6 +2,7 @@
   "use strict";
   window.NiyunSiteNavigation = {
     create({ $, $$, prefersReducedMotion, interfaceConfig }) {
+      // 导航模块只改变滚动位置和 active 状态，不负责渲染栏目内容。
       function setMenuOpen(open) {
         const mainNav = $("#mainNav");
         const menuToggle = $("#menuToggle");

@@ -2,6 +2,7 @@
   "use strict";
 
   // 课程浏览器独立管理课时切换、课件横向阅读和进度条拖动。
+  // 这里使用 window 命名空间而不是 import/export，是为了让根目录 index.html 在 file:// 下也能直接打开。
   window.NiyunCourseBrowser = {
     create(dependencies) {
       const { $, $$, escapeHtml, safeResourceUrl, prefersReducedMotion, mediaConfig } = dependencies;
@@ -95,6 +96,7 @@
         const nextIndex = Math.max(0, Math.min(index, count - 1));
         const requestId = ++courseSlideRequest;
         await prepareCourseSlide(nextIndex);
+        // 用户快速切换课件时，旧课件的图片可能晚一步加载；只接受最后一次请求的结果。
         if (requestId !== courseSlideRequest || !activeCourse) return;
         activeCourseSlideIndex = nextIndex;
         const panels = $$(".course-slide", $("#courseSlideTrack"));
@@ -130,6 +132,7 @@
         if (!track || !viewport) return;
         const requestId = ++courseRenderRequest;
         courseSlideRequest += 1;
+        // 先在临时容器中加载首张图，避免切换课时时页面短暂出现空白或旧画面。
         const staging = document.createElement("div");
         staging.innerHTML = getCourseSlideMarkup(course);
         const firstImage = staging.querySelector(".course-slide img");

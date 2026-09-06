@@ -91,7 +91,7 @@
   pointer-events: none;
 }
 
-/* 19.4 并列介绍内容统一使用独立卡片；实时 3D 倾斜由 app.js 写入变量。 */
+/* 19.4 并列介绍内容统一使用独立卡片；实时 3D 倾斜由 page-effects.js 写入变量。 */
 .story-grid,
 .story-details,
 .source-findings,

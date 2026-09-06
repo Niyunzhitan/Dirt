@@ -3,6 +3,7 @@
   // $ 查找一个元素，$$ 查找多个元素并转成数组，后面所有板块都会使用。
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+  // 这些小工具和基础状态由多个功能模块共享，因此保留在入口文件中统一提供。
   let visibleSites = [];
   // 改名后启用新的会话命名空间，避免旧会话带回历史 AI 名称。
   const aiSessionStorageKey = "niyun-yinxiaoling-ai-session";

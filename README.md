@@ -23,7 +23,7 @@
 
 前端交互按功能拆分为几个经典脚本，脚本通过 `window` 命名空间协作，因此直接双击 `index.html` 也能运行：
 
-- [js/app.js](./js/app.js)：页面初始化、共享工具、地图、图鉴、搜索、AI 和全局交互编排。
+- [js/app.js](./js/app.js)：页面初始化、共享工具、基础数据渲染和功能模块编排。
 - [js/course-browser.js](./js/course-browser.js)：课程课时切换、课件横向阅读、连续拖动和页码定位。
 - [js/scroll-story.js](./js/scroll-story.js)：数字手卷的展卷、滚轮、拖动和章节导航。
 - [js/opening-loader.js](./js/opening-loader.js)：开屏卷轴展开、进度缓动、封泥裂解和碎片粒子效果。

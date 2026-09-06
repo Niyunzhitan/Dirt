@@ -3,6 +3,7 @@
 
   window.NiyunDisplaySettings = {
     create(dependencies) {
+      // 设置模块不直接持有 userSettings，而是通过回调读写，避免恢复默认后出现旧状态。
       const { $, getSettings, updateSetting, resetSettings, defaults, ranges, openingKey, reducedMotion, applySettings, showToast, dispatchReset } = dependencies;
       const dialog = $("#settingsDialog");
       const form = $("#settingsForm");

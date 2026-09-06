@@ -2,6 +2,7 @@
   "use strict";
   window.NiyunMapBrowser = {
     create({ $, $$, apiService, getVisibleSites, renderSites, updateSitePanel, openCurrentSiteArchive }) {
+      // 地图点位由 app.js 渲染；本模块只负责筛选、选中状态和把操作转给图录模块。
       function init() {
         const filter = async (period = "全部") => { $$(".filter-chip").forEach((button) => button.classList.toggle("active", button.dataset.period === period)); renderSites(await apiService.getSites(period)); };
         $$(".filter-chip").forEach((button) => button.addEventListener("click", () => filter(button.dataset.period)));

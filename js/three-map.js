@@ -564,7 +564,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     new ResizeObserver(resize).observe(mapRoot);
     const markerRoot = mapRoot.querySelector("#mapMarkers");
     if (markerRoot) {
-      // 筛选条件变化时 app.js 会重建点位；监听子节点变化后重新投影新元素。
+      // 筛选条件变化时 map-browser.js 会重建点位；监听子节点变化后重新投影新元素。
       new MutationObserver(invalidateMarkerProjection).observe(markerRoot, { childList: true });
     }
     const flatMapImage = mapRoot.querySelector("#shandongFlatMapImage");

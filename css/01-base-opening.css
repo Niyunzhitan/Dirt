@@ -759,7 +759,7 @@ body {
   display: flex;
 }
 
-/* 背景微尘画布：由 app.js 绘制，只负责装饰，不接收鼠标操作。 */
+/* 背景微尘画布：由 page-effects.js 绘制，只负责装饰，不接收鼠标操作。 */
 #ambientCanvas {
   position: fixed;
   inset: 0;

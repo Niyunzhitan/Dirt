@@ -3,6 +3,7 @@
 
   window.NiyunPageEffects = {
     create(dependencies) {
+      // 这些效果共用显示设置，但不负责保存设置；每次使用时读取最新值即可即时响应调整。
       const { $, $$, prefersReducedMotion, getSettings, visualEffects, motionSettingRanges } = dependencies;
 
       function init() {
@@ -54,6 +55,7 @@
               pageScrollTrack?.setAttribute("aria-valuenow", String(Math.round(clamped)));
               pageScrollTrack?.setAttribute("aria-valuetext", clamped <= 0 ? "页面顶部" : clamped >= 100 ? "页面底部" : `页面 ${Math.round(clamped)}%`);
             }
+            // 只在下一帧统一处理滚动，避免拖动页面时重复触发布局和绘制。
             if (!prefersReducedMotion()) {
               const shift = Math.min(scrollTop, window.innerHeight) / window.innerHeight;
               const settings = getSettings();

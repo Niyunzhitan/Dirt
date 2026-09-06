@@ -3,6 +3,7 @@
 
   window.NiyunOpeningLoader = {
     create({ $ }) {
+      // 开屏动画只负责展示层；正文数据加载完成后由 app.js 调用 finish() 让它退场。
       const config = {
         stages: [
           { text: "正在辨识战国秦汉封泥……", progress: 15 },
@@ -185,6 +186,7 @@
           particleEngine.createDebris(config.debrisCount.finalBurst, true);
           particlesPlayed = true;
         }
+        // 进度不是单纯的数字：不同区间分别对应封泥裂纹、绳线断开和卷轴展开。
         if (progress < 25) {
           if (paperContainer) paperContainer.style.width = "0px";
           if (rollerLeft) rollerLeft.style.transform = "translateX(0px)";
@@ -253,6 +255,7 @@
           loader.remove();
           return;
         }
+        // 接口或字体加载异常时也不能让开屏层永久挡住页面，9 秒后走兜底完成流程。
         fallbackTimer = window.setTimeout(() => {
           if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
           fallbackTimer = null;
