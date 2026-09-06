@@ -4,7 +4,6 @@ Rubbish/
 *.log
 .env
 docs/
-dist/
 .claude/
 .hallmark/
 node_modules/

@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 *.log
+*.zip
 
 # 依赖与临时目录
 node_modules/

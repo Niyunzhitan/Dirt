@@ -253,7 +253,15 @@ body { color: var(--color-ink); background: var(--color-paper); font-family: var
 .artifact-strip img { width: 100%; aspect-ratio: 1; display: block; object-fit: contain; mix-blend-mode: multiply; filter: drop-shadow(0 1.1rem 1rem var(--color-shadow-soft)); transition: transform var(--dur-medium) var(--ease-out); }
 .artifact-strip figure:hover img { transform: translateY(-.45rem); }
 .artifact-strip figcaption { margin-top: .8rem; color: var(--color-ink-muted); font: 500 var(--text-sm)/1.6 var(--font-body); }
-.artifact-strip figcaption span { display: inline-grid; width: 1.7rem; height: 1.7rem; margin-right: .5rem; place-items: center; color: var(--color-paper-soft); background: var(--color-accent); font: 600 var(--text-sm)/1 var(--font-body); }
+.artifact-strip figcaption .card-index {
+  display: inline-grid;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin: 0 .5rem .1rem 0;
+  vertical-align: middle;
+  color: var(--color-accent-ink) !important;
+  font: 700 var(--text-sm)/1 var(--font-display);
+}
 
 .story-grid { grid-template-columns: minmax(0, 1.18fr) minmax(0, .82fr); margin-top: 4rem; }
 .relic-card { background: var(--color-paper-soft); transition: transform var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out); }
