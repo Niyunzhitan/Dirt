@@ -358,20 +358,6 @@ img[loading="lazy"].loaded {
   transform: scale(1);
 }
 
-.scroll-watermark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: var(--opening-font-monument);
-  font-size: 7.5rem;
-  letter-spacing: 0.5rem;
-  color: rgba(168, 51, 42, 0.04);
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-}
-
 .scroll-title-group {
   position: relative;
   text-align: left;
@@ -758,9 +744,6 @@ img[loading="lazy"].loaded {
   }
   .scroll-main-title {
     font-size: 1.85rem;
-  }
-  .scroll-watermark {
-    font-size: 4.8rem;
   }
   .scroll-content { padding-inline: 1.35rem; }
   .scroll-title-group { max-width: 62%; }
