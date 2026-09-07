@@ -134,6 +134,7 @@ DB_CONNECTION_LIMIT=5
 
 - 课程文件放入 `assets/courses/`，并登记到 `courses` 或 `coursePack`。
 - 音乐放入 `assets/media/music/`。
+- 音乐播放器支持曲目选择、音量调整和轮播；相关配置位于 `data/media-config.js`，用户可从右上角音符按钮或显示设置中控制。
 - 封泥牌具贴图放入 `assets/textures/`。
 - 同名替换不需要改代码；换文件名时修改 `media-config.js`。
 - 外部媒体必须使用 HTTPS，并加入 `allowedExternalHosts`。
