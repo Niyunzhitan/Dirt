@@ -78,11 +78,10 @@ window.MEDIA_CONFIG = {
   textures: {
     pokerSpadeKFront: "./assets/textures/poker/front/spade-k.webp",
     pokerDiamondJFront: "./assets/textures/poker/front/diamond-j.webp",
-    pokerDefaultBack: "./assets/textures/poker/back/default.webp",
-    mahjongWan1Front: "./assets/textures/mahjong/front/wan-1.webp",
-    mahjongEastFront: "./assets/textures/mahjong/front/east.webp",
-    mahjongDefaultBack: "./assets/textures/mahjong/back/default.webp",
-    mahjongDefaultSide: "./assets/textures/mahjong/side/default.webp"
+    pokerDefaultBack: "./assets/textures/poker/back/default.png",
+    mahjongWan1Front: "./assets/textures/mahjong/front/wan-1.png",
+    mahjongEastFront: "./assets/textures/mahjong/front/east.png",
+    mahjongDefaultBack: "./assets/textures/mahjong/back/default.jpg"
   }
 };
 

@@ -12,7 +12,7 @@ poker/
 mahjong/
 ├─ front/   麻将正面
 ├─ back/    麻将背面
-└─ side/    麻将侧面
+└─ side/    可选的麻将侧面贴图
 ```
 
 ## 建议尺寸
@@ -25,6 +25,8 @@ mahjong/
 
 重要文字和印文距离边缘至少保留画布宽度的 `6%`。不要在贴图里重复绘制圆角和立体投影，这些效果由模型完成。
 
+麻将未配置侧面图片时，`js/three-showcase.js` 会自动生成默认外围材质：左右侧面采用纵向暖白木纹、灰蓝双边线和朱砂细线，顶面与底面使用横向纹理及无文字菱形暗记。
+
 ## 替换贴图
 
 路径集中在 [data/media-config.js](../../data/media-config.js) 的 `textures` 配置中。
@@ -33,6 +35,6 @@ mahjong/
 - 使用新文件名：只修改 `media-config.js`，不要修改 `three-showcase.js`。
 - 使用外部贴图：必须使用 HTTPS，并把域名加入 `allowedExternalHosts`。
 
-直接双击 `index.html` 时，浏览器可能因 `file://` 的安全限制使用占位贴图；运行 `npm start` 后再打开页面，通常可以正常读取本地文件。
+直接双击 `index.html` 时，WebGL 会使用 `data/texture-inline.js` 中的内嵌贴图；通过 HTTP 或公网访问时仍加载本目录中的普通图片文件。运行 `npm run build` 会先执行 `scripts/build-inline-textures.js`，自动同步已经登记的本地贴图。
 
 贴图会公开给访客，不要放入账号、Token、Cookie、私密水印或未获授权的素材。

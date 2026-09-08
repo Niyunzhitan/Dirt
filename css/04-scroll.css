@@ -1,12 +1,41 @@
 /* ==================== 17. 数字手卷：只让手卷内部横向翻阅，整页仍纵向滚动 ==================== */
 .scroll-story {
+  --handscroll-rail: 28px;
+  position: relative;
+  padding: 12px var(--handscroll-rail);
   margin-top: var(--space-xl);
   color: var(--color-ink);
-  border-block: var(--rule-hairline) solid var(--color-rule);
-  background: var(--color-scroll-paper-light);
+  border: 0;
+  background: transparent;
   user-select: none;
   -webkit-user-select: none;
 }
+.handscroll-roller {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  bottom: 8px;
+  width: var(--handscroll-rail);
+  pointer-events: none;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #443329 0%, #836044 24%, #bf986b 46%, #926a49 67%, #443329 100%);
+  box-shadow: inset 2px 0 2px rgba(255,255,255,.18), inset -2px 0 3px rgba(0,0,0,.3);
+}
+.handscroll-roller-left { left: 0; }
+.handscroll-roller-right { right: 0; }
+.handscroll-roller::before,
+.handscroll-roller::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #34463e, #829080 44%, #455a4e 75%, #293c32);
+  box-shadow: inset 0 2px 0 rgba(216,201,157,.5), inset 0 -2px 0 rgba(0,0,0,.3);
+}
+.handscroll-roller::before { top: -8px; }
+.handscroll-roller::after { bottom: -8px; }
 .scroll-story img {
   -webkit-user-drag: none;
   user-drag: none;
@@ -19,7 +48,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-lg);
-  border-inline: var(--rule-hairline) solid var(--color-rule);
+  border-inline: 0;
   background: var(--color-paper-soft);
 }
 .scroll-story-bar > div:first-child { min-width: 0; }
@@ -207,7 +236,7 @@
 .scroll-story-hint { margin: 0; padding: var(--space-xs) var(--space-md); color: var(--color-ink-muted); border-inline: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-soft); font-size: var(--text-xs); text-align: center; }
 
 @media (max-width: 47.5rem) {
-  .scroll-story { width: calc(100% + 12vw); margin-inline: -6vw; }
+  .scroll-story { --handscroll-rail: 16px; width: 100%; margin-inline: 0; }
   .scroll-story-bar { min-height: 4.5rem; padding-inline: 6vw; align-items: flex-start; }
   .scroll-story-bar strong { font-size: var(--text-md); }
   .scroll-story-controls { gap: var(--space-2xs); }

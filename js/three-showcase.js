@@ -118,9 +118,85 @@ if (root && window.SEAL_3D_PRODUCTS) {
     return texture;
   }
 
+  function makeMahjongEdgeTexture(direction = "vertical") {
+    const surface = document.createElement("canvas");
+    surface.width = 512;
+    surface.height = 512;
+    const ctx = surface.getContext("2d");
+
+    const base = ctx.createLinearGradient(0, 0, direction === "vertical" ? surface.width : 0, direction === "vertical" ? 0 : surface.height);
+    base.addColorStop(0, "#d7d7c5");
+    base.addColorStop(0.18, "#eee9da");
+    base.addColorStop(0.5, "#f5efe2");
+    base.addColorStop(0.82, "#e7e3d4");
+    base.addColorStop(1, "#c7cbc0");
+    ctx.fillStyle = base;
+    ctx.fillRect(0, 0, surface.width, surface.height);
+
+    // 细木纹与纸纤维只提供近看质感，不与正面封泥图案争夺注意力。
+    ctx.lineWidth = 1;
+    for (let index = 0; index < 34; index += 1) {
+      const offset = 18 + index * 15;
+      const bend = Math.sin(index * 1.7) * 8;
+      ctx.beginPath();
+      if (direction === "vertical") {
+        ctx.moveTo(offset, 0);
+        ctx.bezierCurveTo(offset + bend, 150, offset - bend, 350, offset + bend * 0.4, 512);
+      } else {
+        ctx.moveTo(0, offset);
+        ctx.bezierCurveTo(150, offset + bend, 350, offset - bend, 512, offset + bend * 0.4);
+      }
+      ctx.strokeStyle = index % 3 === 0 ? "rgba(91, 111, 119, 0.12)" : "rgba(145, 111, 82, 0.08)";
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = "#657b84";
+    ctx.lineWidth = 16;
+    ctx.strokeRect(12, 12, 488, 488);
+    ctx.strokeStyle = "rgba(101, 123, 132, 0.58)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(34, 34, 444, 444);
+
+    // 中央暗记采用无文字菱形印纹，任意方向观看都成立。
+    ctx.save();
+    ctx.translate(256, 256);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = "rgba(185, 74, 50, 0.1)";
+    ctx.strokeStyle = "rgba(185, 74, 50, 0.58)";
+    ctx.lineWidth = 5;
+    ctx.fillRect(-62, -62, 124, 124);
+    ctx.strokeRect(-62, -62, 124, 124);
+    ctx.strokeStyle = "rgba(101, 123, 132, 0.7)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(-43, -43, 86, 86);
+    ctx.restore();
+
+    const texture = new THREE.CanvasTexture(surface);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return texture;
+  }
+
   async function loadTexture(path, fallback) {
-    // file:// 会被浏览器禁止读取相邻贴图；直接使用占位图，避免卡在加载状态。
-    if (window.location.protocol === "file:") return fallback;
+    if (window.location.protocol === "file:") {
+      const inlineSource = window.SEAL_INLINE_TEXTURES?.[path];
+      if (!inlineSource) return fallback;
+      try {
+        const image = await new Promise((resolve, reject) => {
+          const localImage = new Image();
+          localImage.addEventListener("load", () => resolve(localImage), { once: true });
+          localImage.addEventListener("error", reject, { once: true });
+          localImage.src = inlineSource;
+        });
+        const texture = new THREE.Texture(image);
+        texture.needsUpdate = true;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        return texture;
+      } catch (_) {
+        return fallback;
+      }
+    }
     const safePath = window.MediaSecurity?.resolve(path) || "";
     if (!safePath) return fallback;
     try {
@@ -173,11 +249,12 @@ if (root && window.SEAL_3D_PRODUCTS) {
   function buildMahjong(item, textures) {
     const size = config.mahjong.model;
     const group = new THREE.Group();
-    const sideMaterial = new THREE.MeshPhysicalMaterial({ map: textures.side, color: 0xd9ded4, roughness: 0.32, metalness: 0, clearcoat: 0.28, clearcoatRoughness: 0.52 });
+    const sideMaterial = new THREE.MeshPhysicalMaterial({ map: textures.side, color: 0xffffff, roughness: 0.38, metalness: 0, clearcoat: 0.24, clearcoatRoughness: 0.56 });
+    const capMaterial = new THREE.MeshPhysicalMaterial({ map: textures.cap, color: 0xffffff, roughness: 0.38, metalness: 0, clearcoat: 0.24, clearcoatRoughness: 0.56 });
     const bodyMaterial = new THREE.MeshPhysicalMaterial({ color: 0xe9e5d8, roughness: 0.32, metalness: 0, clearcoat: 0.28, clearcoatRoughness: 0.52 });
     const body = new THREE.Mesh(
       new THREE.BoxGeometry(size.width, size.height, size.depth, 6, 8, 5),
-      [sideMaterial, sideMaterial, sideMaterial, sideMaterial, bodyMaterial, bodyMaterial]
+      [sideMaterial, sideMaterial, capMaterial, capMaterial, bodyMaterial, bodyMaterial]
     );
     group.add(body);
     const front = makeFace(size.width, size.height, size.depth, textures.front);
@@ -199,15 +276,16 @@ if (root && window.SEAL_3D_PRODUCTS) {
 
     const frontFallback = makePlaceholderTexture(item, mode, "front");
     const backFallback = makePlaceholderTexture(item, mode, "back");
-    const sideFallback = makePlaceholderTexture(item, mode, "side");
+    const sideFallback = mode === "mahjong" ? makeMahjongEdgeTexture("vertical") : makePlaceholderTexture(item, mode, "side");
+    const capFallback = mode === "mahjong" ? makeMahjongEdgeTexture("horizontal") : sideFallback;
     const [front, back, side] = await Promise.all([
       loadTexture(item.front, frontFallback),
       loadTexture(item.back, backFallback),
-      mode === "mahjong" ? loadTexture(item.side, sideFallback) : Promise.resolve(sideFallback)
+      Promise.resolve(sideFallback)
     ]);
     if (revision !== loadRevision) return;
     disposeModel();
-    model = mode === "poker" ? buildPoker(item, { front, back, side }) : buildMahjong(item, { front, back, side });
+    model = mode === "poker" ? buildPoker(item, { front, back, side }) : buildMahjong(item, { front, back, side, cap: capFallback });
     model.rotation.set(targetRotation.x, targetRotation.y, 0);
     modelRoot.add(model);
     flipped = false;

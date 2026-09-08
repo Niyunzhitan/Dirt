@@ -7,6 +7,9 @@
 
 # 依赖与临时目录
 node_modules/
+.pnpm-store/
+pnpm-lock.yaml
+pnpm-workspace.yaml
 Rubbish/
 
 # 编辑器和本地设计记录
@@ -22,6 +25,9 @@ dist/
 docs/research/
 docs/qa/
 ppt-rendered-audit/
+*-check.png
+scroll-check-*.png
+scripts/*-verification/
 
 # 操作系统生成文件
 Thumbs.db

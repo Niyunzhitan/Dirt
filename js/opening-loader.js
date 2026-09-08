@@ -23,7 +23,7 @@
         progressEase: 0.12,
         progressStopThreshold: 0.2,
         particleFrameIntervalMs: 32,
-        debrisCount: { finalBurst: 14 },
+        debrisCount: { finalBurst: 30 },
         mobileBreakpoint: 640,
         earlyExpandHalfWidth: { mobile: 110, desktop: 160 },
         earlyExpandRatio: 0.35,
@@ -66,7 +66,8 @@
       const cord = $("#scrollCord");
       const seal = $("#claySealEntity");
       const cracks = $("#sealCracksSvg");
-      const crackPaths = cracks ? [...cracks.querySelectorAll(".crack-path, .crack-highlight")] : [];
+      let crackPaths = [];
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const particleCanvas = $("#sealParticlesCanvas");
       const fragments = [
         [$("#fragNW"), "shatter-nw"],
@@ -96,6 +97,64 @@
       let finishPromise = null;
       let fragmentsStarted = false;
 
+      function prepareFracture() {
+        const svg = seal?.querySelector(".clay-seal-svg");
+        if (!svg || !cracks) return;
+        const ns = "http://www.w3.org/2000/svg";
+        const lines = [
+          "M98 100 L94 86 L101 73 L96 61 L102 49 L98 35 L100 10",
+          "M98 100 L114 94 L123 100 L137 91 L147 95 L161 86 L191 80",
+          "M98 100 L104 114 L98 128 L105 139 L100 153 L108 168 L103 194",
+          "M98 100 L84 108 L73 102 L61 111 L49 106 L35 115 L8 119"
+        ];
+        const clip = document.createElementNS(ns, "clipPath");
+        clip.id = "sealFractureClip";
+        const outline = svg.querySelector(".clay-base").cloneNode(true);
+        outline.removeAttribute("class");
+        outline.setAttribute("fill", "white");
+        clip.append(outline);
+        svg.querySelector("defs").append(clip);
+        cracks.setAttribute("clip-path", "url(#sealFractureClip)");
+        cracks.replaceChildren();
+        lines.forEach((d, index) => {
+          for (const highlight of [true, false]) {
+            const path = document.createElementNS(ns, "path");
+            path.setAttribute("d", d);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke", highlight ? "#d58d66" : "#35150e");
+            path.setAttribute("stroke-width", highlight ? "3.6" : "2.1");
+            path.setAttribute("stroke-linejoin", "round");
+            path.setAttribute("class", highlight ? "crack-highlight" : "crack-path");
+            path.setAttribute("pathLength", "180");
+            path.dataset.branch = index;
+            if (highlight) path.setAttribute("opacity", ".48");
+            cracks.append(path);
+          }
+        });
+        crackPaths = [...cracks.querySelectorAll("path")];
+        fragments.forEach(([fragment], index) => {
+          if (!fragment) return;
+          const copy = svg.cloneNode(true);
+          copy.querySelectorAll("script, .seal-cracks-group").forEach((node) => node.remove());
+          const ids = new Map();
+          copy.querySelectorAll("[id]").forEach((node) => {
+            const old = node.id;
+            ids.set(old, `${old}-fragment-${index}`);
+            node.id = ids.get(old);
+          });
+          copy.querySelectorAll("*").forEach((node) => {
+            for (const attr of [...node.attributes]) {
+              let value = attr.value;
+              ids.forEach((next, old) => { value = value.replaceAll(`url(#${old})`, `url(#${next})`); });
+              if (value !== attr.value) node.setAttribute(attr.name, value);
+            }
+          });
+          fragment.replaceChildren(copy);
+          // Keep shards outside the fading seal so their fall can finish independently.
+          seal.parentElement.append(fragment);
+        });
+      }
+
       function initParticles() {
         if (!particleCanvas) return null;
         const context = particleCanvas.getContext("2d");
@@ -110,16 +169,17 @@
         }
 
         function createDebris(count = 5, burst = false) {
+          if (reducedMotion) return;
           for (let index = 0; index < count; index += 1) {
             const angle = Math.random() * Math.PI * 2;
             const distance = 10 + Math.random() * 45;
-            const speed = burst ? 2.5 + Math.random() * 5.5 : 0.6 + Math.random() * 2.2;
+            const speed = burst ? 4 + Math.random() * 7 : 0.6 + Math.random() * 2.2;
             particles.push({
               x: centerX + Math.cos(angle) * distance,
               y: centerY + Math.sin(angle) * distance,
               vx: Math.cos(angle) * speed + (Math.random() - 0.5) * 1.2,
               vy: Math.sin(angle) * speed + (burst ? -1.5 + Math.random() * 3 : 1.2),
-              gravity: 0.12,
+              gravity: 0.2,
               size: burst ? 2 + Math.random() * 5.5 : 1.2 + Math.random() * 3.5,
               rotation: Math.random() * Math.PI * 2,
               vRot: (Math.random() - 0.5) * 0.25,
@@ -247,7 +307,7 @@
         if (progressBar) progressBar.style.width = `${progress}%`;
         if (progressPercent) progressPercent.textContent = `${Math.round(progress)}%`;
         if (cord) cord.classList.toggle("cord-snapped", progress >= 55);
-        if (progress >= 55 && particleEngine && !particlesPlayed) {
+        if (progress >= 80 && particleEngine && !particlesPlayed) {
           particleEngine.createDebris(config.debrisCount.finalBurst, true);
           particlesPlayed = true;
         }
@@ -262,15 +322,19 @@
           const crackRatio = (progress - 25) / 30;
           if (cracks) {
             cracks.style.opacity = `${Math.min(1, crackRatio * 1.4)}`;
-            crackPaths.forEach((path) => { path.style.strokeDashoffset = `${180 * (1 - crackRatio)}`; });
+            crackPaths.forEach((path) => {
+              const growth = Math.max(0, Math.min(1, crackRatio * 1.35 - Number(path.dataset.branch) * .1));
+              path.style.strokeDashoffset = `${180 * (1 - growth)}`;
+            });
           }
           seal?.classList.add("shaking");
         } else if (progress < 80) {
           const expandRatio = (progress - 55) / 25;
           if (cracks) cracks.style.opacity = "1";
+          crackPaths.forEach((path) => { path.style.strokeDashoffset = "0"; });
           if (seal) {
             seal.classList.add("shaking");
-            seal.style.transform = `scale(${1 - expandRatio * 0.15})`;
+            seal.style.transform = "none";
           }
           const maxHalfWidth = window.innerWidth < config.mobileBreakpoint ? config.earlyExpandHalfWidth.mobile : config.earlyExpandHalfWidth.desktop;
           const currentHalf = maxHalfWidth * expandRatio * config.earlyExpandRatio;
@@ -281,8 +345,8 @@
           const openRatio = (progress - 80) / 20;
           if (seal) {
             seal.classList.remove("shaking");
-            seal.style.opacity = `${Math.max(0, 1 - openRatio * 2.5)}`;
-            seal.style.transform = `scale(${0.85 - openRatio * 0.4})`;
+            seal.style.opacity = "0";
+            seal.style.transform = "none";
           }
           if (!fragmentsStarted) {
             fragments.forEach(([fragment, className]) => fragment?.classList.add(className));
@@ -327,6 +391,7 @@
           finish(false, true);
         }, 9000);
         particleEngine = initParticles();
+        prepareFracture();
         wakeProgress();
         startDidYouKnow();
         stageIndex = 0;
@@ -338,6 +403,7 @@
           if (stageIndex < config.stages.length - 2) {
             stageIndex += 1;
             targetProgress = config.stages[stageIndex].progress;
+            wakeProgress();
           }
         }, config.stageIntervalMs);
       }

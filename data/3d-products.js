@@ -17,7 +17,7 @@ window.SEAL_3D_PRODUCTS = {
         suit: "♠",
         title: "临淄守印",
         subtitle: "官制与权力 · 西汉",
-        description: "这张黑桃 K 使用临淄官署封泥作为主要纹样。你可以从 Photoshop 导出新设计，再直接替换牌面贴图。",
+        description: "这张黑桃 K 使用临淄官署封泥作为主要纹样，背面以泥云智探印面和缠枝网格组成统一牌背。",
         front: texturePath("pokerSpadeKFront", "./assets/textures/poker/front/spade-k.webp"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       },
@@ -27,7 +27,7 @@ window.SEAL_3D_PRODUCTS = {
         suit: "♦",
         title: "齐北船丞",
         subtitle: "仓储与漕运 · 汉代",
-        description: "这张方片 J 取材于齐北船丞封泥，牌面文字对应汉代的水运和船政事务。",
+        description: "这张方片 J 取材于齐北船丞封泥，牌面文字对应汉代水运和船政事务，并与黑桃 K 共用泥云智探牌背。",
         front: texturePath("pokerDiamondJFront", "./assets/textures/poker/front/diamond-j.webp"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       }
@@ -35,27 +35,25 @@ window.SEAL_3D_PRODUCTS = {
   },
   mahjong: {
     label: "封泥麻将",
-    model: { width: 2.6, height: 3.5, depth: 1.75, radius: 0.2 },
+    model: { width: 2.6, height: 3.5, depth: 1.30, radius: 0.2 },
     items: [
       {
         id: "wan-1",
         code: "一万",
         title: "官署封泥",
         subtitle: "万子 · 官制谱系",
-        description: "这张牌保留了常见的“一万”结构，再把官署封泥印面和朱砂色文字融入牌面。",
+        description: "“一万”牌以西汉《河间王玺》封泥为中心纹样，将封泥印蜕、木纹和朱砂字融入牌面。",
         front: texturePath("mahjongWan1Front", "./assets/textures/mahjong/front/wan-1.webp"),
-        back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp"),
-        side: texturePath("mahjongDefaultSide", "./assets/textures/mahjong/side/default.webp")
+        back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp")
       },
       {
         id: "east",
         code: "东",
         title: "齐都临淄",
         subtitle: "风牌 · 齐鲁地理",
-        description: "这张东风牌以齐都临淄为主题，同时保留清楚易认的麻将文字。",
+        description: "东风牌以北周武帝皇后随葬金印为中心纹样，配合木纹和朱砂色“东”字呈现。",
         front: texturePath("mahjongEastFront", "./assets/textures/mahjong/front/east.webp"),
-        back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp"),
-        side: texturePath("mahjongDefaultSide", "./assets/textures/mahjong/side/default.webp")
+        back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp")
       }
     ]
   }
