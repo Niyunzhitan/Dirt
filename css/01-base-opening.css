@@ -504,15 +504,6 @@ img[loading="lazy"].loaded {
   25% { transform: translate(-3px, 1px) rotate(-2deg) scale(1.04); }
   75% { transform: translate(3px, -2px) rotate(2deg) scale(1.04); }
 }
-.scroll-wrapper.seal-impact {
-  animation: seal-impact-recoil 250ms cubic-bezier(0.23, 1, 0.32, 1) both;
-}
-@keyframes seal-impact-recoil {
-  0% { transform: translateY(0); }
-  20% { transform: translateY(5px); }
-  55% { transform: translateY(-3px); }
-  100% { transform: translateY(0); }
-}
 
 @keyframes seal-strain-vibrate {
   0% { transform: translate(0, 0) rotate(0deg); }
@@ -584,22 +575,6 @@ img[loading="lazy"].loaded {
   clip-path: polygon(48% 52%, 100% 48%, 100% 100%, 52% 100%);
 }
 
-.seal-fragment.shatter-nw {
-  opacity: 1;
-  transform: translate(-90px, -90px) rotate(-35deg) scale(0.85);
-}
-.seal-fragment.shatter-ne {
-  opacity: 1;
-  transform: translate(90px, -85px) rotate(32deg) scale(0.85);
-}
-.seal-fragment.shatter-sw {
-  opacity: 1;
-  transform: translate(-85px, 90px) rotate(-28deg) scale(0.85);
-}
-.seal-fragment.shatter-se {
-  opacity: 1;
-  transform: translate(95px, 95px) rotate(42deg) scale(0.85);
-}
 
 /* 底部状态与进度条 */
 .seal-lock-wrapper > .seal-fragment {
@@ -820,7 +795,6 @@ img[loading="lazy"].loaded {
   .scroll-content,
   .opening-scroll-ip,
   .clay-seal-entity,
-  .scroll-wrapper.seal-impact,
   .crack-highlight,
   .crack-path,
   .seal-fragment,

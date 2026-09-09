@@ -763,6 +763,7 @@
       prefersReducedMotion,
       mediaConfig: window.MEDIA_CONFIG,
     });
+    // 先开始准备课件，同时继续生成其他栏目，不让这些工作互相排队等待。
     const initialCourseReady = courseBrowser.renderCourses(courseItems);
     courseBrowser.initCourseScroll();
     await openingLoaderController.yieldToBrowser();
@@ -775,6 +776,7 @@
       .catch(() => {
         aiChatController.renderStatus({ connected: false });
       });
+    // 结束开屏前，再确认最先展示的课件已完成准备流程。
     await initialCourseReady;
     openingLoaderController.finish(true);
   }

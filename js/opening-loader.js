@@ -70,11 +70,12 @@
       let crackPaths = [];
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const particleCanvas = $("#sealParticlesCanvas");
+      // 这里只保存四块碎片元素；飞行轨迹由 releaseFragments 计算，不再使用旧 CSS 动画类。
       const fragments = [
-        [$("#fragNW"), "shatter-nw"],
-        [$("#fragNE"), "shatter-ne"],
-        [$("#fragSW"), "shatter-sw"],
-        [$("#fragSE"), "shatter-se"],
+        $("#fragNW"),
+        $("#fragNE"),
+        $("#fragSW"),
+        $("#fragSE"),
       ];
       const didYouKnowText = $("#openingDidYouKnowText");
 
@@ -141,7 +142,7 @@
           }
         });
         crackPaths = [...cracks.querySelectorAll("path")];
-        fragments.forEach(([fragment], index) => {
+        fragments.forEach((fragment, index) => {
           if (!fragment) return;
           const copy = svg.cloneNode(true);
           copy.querySelectorAll("script, .seal-cracks-group").forEach((node) => node.remove());
@@ -267,7 +268,7 @@
           [-240, 40, -90],
           [260, 65, 140],
         ];
-        fragments.forEach(([fragment], index) => {
+        fragments.forEach((fragment, index) => {
           if (!fragment) return;
           const [vx, vy, spin] = velocities[index];
           // Sample x = vx*t and y = vy*t + g*t*t/2 densely for compositor playback.
@@ -339,20 +340,25 @@
       function waitForPageReady() {
         if (pageReadyPromise) return pageReadyPromise;
         const images = [...document.querySelectorAll("#openingLoader img, main img")];
+        // 只主动准备初始图片；远处课件不参与等待，坏图也不能让开屏一直卡住。
         function prepareImage(image) {
           if (!image.getAttribute("src") || image.hidden) return Promise.resolve();
           if (image.loading === "lazy" && image.closest(".course-slide")) return Promise.resolve();
           image.loading = "eager";
+          // decode 不只等待下载，还等待浏览器把图片转换成能显示的像素。
           return image.decode().catch(function ignoreBrokenImage() {});
         }
         const imageReady = Promise.all([...images.map(prepareImage), document.fonts.ready]);
         let timeoutId;
+        // 网络异常时最多等到上限，再让用户进入页面查看已加载的内容。
         const timeout = new Promise(function limitResourceWait(resolve) {
           timeoutId = window.setTimeout(resolve, config.resourceReadyTimeoutMs);
         });
+        // 资源就绪和超时谁先完成就继续，后续调用复用这次等待。
         pageReadyPromise = Promise.race([imageReady, timeout]).then(
           function allowFinalPaint() {
             window.clearTimeout(timeoutId);
+            // 留出两个绘制帧，让刚准备好的图片有机会显示后再继续退场。
             return new Promise(function waitForPaint(resolve) {
               window.requestAnimationFrame(function nextFrame() {
                 window.requestAnimationFrame(resolve);
@@ -510,6 +516,7 @@
         if (!cachedPaperWidth && paper) cachedPaperWidth = paper.getBoundingClientRect().width || 704;
         // 数据很快就绪时，也要先走完裂纹阶段；不能提前清掉阶段计时器。
         await new Promise(function waitForCracks(resolve) {
+          // 进度采用逐渐逼近的方式更新，53.5 会显示为 54%，不要求小数精确等于 54。
           function checkCrackProgress() {
             if (!loader.isConnected || currentProgress >= 53.5) {
               resolve();

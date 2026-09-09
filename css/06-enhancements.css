@@ -255,18 +255,6 @@
   transition-duration: var(--motion-reveal-enter);
 }
 
-/* 离开视口时按离开方向淡出；Observer 会在下次进入时重新添加 is-visible。 */
-[data-reveal].is-exiting-up {
-  opacity: 0;
-  transform: translateY(calc(-1 * var(--motion-reveal-distance) * var(--user-motion-scale)));
-  transition-duration: var(--motion-reveal-exit);
-}
-
-[data-reveal].is-exiting-down {
-  opacity: 0;
-  transform: translateY(calc(var(--motion-reveal-distance) * var(--user-motion-scale)));
-  transition-duration: var(--motion-reveal-exit);
-}
 
 /* 网格子元素使用不同延迟，避免所有卡片同时出现。 */
 .collection-grid .relic-card,

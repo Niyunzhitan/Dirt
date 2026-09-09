@@ -199,6 +199,7 @@
           downloadName: isPdf ? "" : course.resourceFileName,
           openInNewTab: isPdf,
         });
+        // 保存准备课件的 Promise，调用方可以等待它，而不是误以为调用后立即加载完成。
         const slidesReady = renderCourseSlides(course);
         if (options.scrollToContent) {
           window.requestAnimationFrame(() => {
@@ -221,6 +222,7 @@
           })
           .join("");
         configureCoursePackLinks();
+        // 第一课准备完成后才结束初始化，让开屏能准确判断课件是否就绪。
         await selectCourse(items[0]?.id);
         syncCourseLessonPanelHeight();
       }

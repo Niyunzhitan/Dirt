@@ -107,13 +107,13 @@
             entries.forEach((entry) => {
               const section = entry.target;
               if (entry.isIntersecting) {
-                section.classList.remove("is-exiting-up", "is-exiting-down");
                 section.classList.add("is-visible");
                 // 展示过的栏目保持可见，来回滚动时不重复播放整段入场动画。
                 reveal.unobserve(section);
                 return;
               }
             }),
+          // 提前 200px 开始入场，让快速下翻时内容尽量在进入视口前显现。
           { rootMargin: "200px 0px", threshold: 0.01 },
         );
         $$("[data-reveal]").forEach((section) => reveal.observe(section));
