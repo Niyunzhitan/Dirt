@@ -149,6 +149,14 @@ DB_CONNECTION_LIMIT=5
 
 ## 地图
 
+### Three.js 库与业务代码
+
+网站使用 [js/vendor/three.js](./js/vendor/three.js)，这是基于 Three.js **0.160.0（r160）**生成的未压缩按需构建。只导出地图和牌具使用的 30 个接口，构建工具自动保留内部依赖、移除可安全剔除的未用代码。来源、许可证和维护说明见 [第三方库说明](./js/vendor/README.md)。
+
+按需版约 898 kB，比完整未压缩版约 1.32 MB 小约 32%，仍保留正常缩进。浏览器加载普通 `<script>`，通过 `THREE` 全局对象访问，兼容直接双击网页。构建入口位于 `scripts/three-entry.js`；新增 `THREE.xxx` 调用时应补充导出，并运行 `npm run build:three`。完整 `npm run build` 也会自动执行这一步。不要手工删除生成文件中的内部类或着色器，它们可能是渲染器依赖。
+
+日常修改地图应编辑 `js/three-map.js`，修改麻将和扑克牌展示应编辑 `js/three-showcase.js`，修改牌具资料与顺序应编辑 `data/3d-products.js`。通常不需要改第三方库内部代码。更新库后先运行 `npm run build`，再检查地图、牌面切换、旋转和缩放。
+
 山东 3D 文化地图由 [js/three-map.js](./js/three-map.js) 读取轻量 DEM、山东边界和 45 个资料点位。地图用于文化展示和历史地理理解，不用于测绘、导航或工程计算。
 
 主要参数位于文件顶部的 `MAP_VIEW`：

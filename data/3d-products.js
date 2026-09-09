@@ -38,21 +38,21 @@ window.SEAL_3D_PRODUCTS = {
     model: { width: 2.6, height: 3.5, depth: 1.30, radius: 0.2 },
     items: [
       {
-        id: "wan-1",
-        code: "一万",
-        title: "官署封泥",
-        subtitle: "万子 · 官制谱系",
-        description: "“一万”牌以西汉《河间王玺》封泥为中心纹样，将封泥印蜕、木纹和朱砂字融入牌面。",
-        front: texturePath("mahjongWan1Front", "./assets/textures/mahjong/front/wan-1.webp"),
-        back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp")
-      },
-      {
         id: "east",
         code: "东",
         title: "齐都临淄",
         subtitle: "风牌 · 齐鲁地理",
         description: "东风牌以北周武帝皇后随葬金印为中心纹样，配合木纹和朱砂色“东”字呈现。",
         front: texturePath("mahjongEastFront", "./assets/textures/mahjong/front/east.webp"),
+        back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp")
+      },
+      {
+        id: "wan-1",
+        code: "一万",
+        title: "官署封泥",
+        subtitle: "万子 · 官制谱系",
+        description: "“一万”牌以西汉《河间王玺》封泥为中心纹样，将封泥印蜕、木纹和朱砂字融入牌面。",
+        front: texturePath("mahjongWan1Front", "./assets/textures/mahjong/front/wan-1.webp"),
         back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp")
       }
     ]

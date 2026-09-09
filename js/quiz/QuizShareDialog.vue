@@ -10,7 +10,7 @@ const dialog = ref(null);
 const copyButton = ref(null);
 const copied = ref(false);
 const copyButtonText = ref("复制当前网址");
-const copyFeedback = ref("分享网址后，朋友可以打开同一个趣味问答页面。");
+const copyFeedback = ref("已复制当前网址，可发送给朋友了。");
 const shareUrl = window.location.href;
 const copyCount = ref(0);
 let copyResetTimer = null;
@@ -18,7 +18,7 @@ let copyResetTimer = null;
 function open() {
   copied.value = false;
   copyButtonText.value = copyCount.value ? "再次复制" : "复制当前网址";
-  copyFeedback.value = "分享网址后，朋友可以打开同一个趣味问答页面。";
+  copyFeedback.value = "已复制当前网址，可发送给朋友了。";
   dialog.value?.showModal();
   nextTick(() => copyButton.value?.focus());
 }
@@ -61,14 +61,14 @@ async function copyUrl() {
 
     copyCount.value += 1;
     copied.value = true;
-    copyButtonText.value = copyCount.value > 1 ? "再次复制成功" : "已复制";
+    copyButtonText.value = copyCount.value > 1 ? "复制成功" : "已复制";
     copyFeedback.value =
-      copyCount.value > 1 ? `已第 ${copyCount.value} 次复制当前网址。` : "网址已复制，可以发送给朋友了。";
+      copyCount.value > 1 ? `已第 ${copyCount.value} 次复制当前网址。` : "已复制当前网址，可发送给朋友了。";
     window.clearTimeout(copyResetTimer);
     copyResetTimer = window.setTimeout(() => {
       copied.value = false;
       copyButtonText.value = "再次复制";
-      copyFeedback.value = "可继续点击，再次复制当前网址。";
+      copyFeedback.value = "已复制当前网址，可发送给朋友了。";
     }, 1600);
   } catch (_) {
     copyButtonText.value = "复制失败";

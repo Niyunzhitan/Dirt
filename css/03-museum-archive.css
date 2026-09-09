@@ -519,6 +519,8 @@ body,
 .rubbing-group figure { padding: var(--space-md); border: var(--rule-hairline) solid var(--color-rule); background: var(--color-paper-soft); }
 .rubbing-group img { aspect-ratio: 1; }
 
+/* 实物与拓片图片区下方留出间隔，避免与资料卡片贴在一起。 */
+.evidence-pair + .source-findings { margin-top: var(--space-md); }
 .source-findings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-left: var(--rule-hairline) solid var(--color-rule); }
 .source-findings article { min-width: 0; padding: var(--space-lg); border-right: var(--rule-hairline) solid var(--color-rule); border-bottom: var(--rule-hairline) solid var(--color-rule); }
 .source-findings span { color: var(--color-accent); font-weight: 700; }
