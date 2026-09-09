@@ -18,7 +18,7 @@ window.SEAL_3D_PRODUCTS = {
         title: "临淄守印",
         subtitle: "官制与权力 · 西汉",
         description: "这张黑桃 K 使用临淄官署封泥作为主要纹样，背面以泥云智探印面和缠枝网格组成统一牌背。",
-        front: texturePath("pokerSpadeKFront", "./assets/textures/poker/front/spade-k.webp"),
+        front: texturePath("pokerSpadeKFront", "./assets/textures/poker/front/k.jpg"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       },
       {
@@ -28,7 +28,7 @@ window.SEAL_3D_PRODUCTS = {
         title: "齐北船丞",
         subtitle: "仓储与漕运 · 汉代",
         description: "这张方片 J 取材于齐北船丞封泥，牌面文字对应汉代水运和船政事务，并与黑桃 K 共用泥云智探牌背。",
-        front: texturePath("pokerDiamondJFront", "./assets/textures/poker/front/diamond-j.webp"),
+        front: texturePath("pokerDiamondJFront", "./assets/textures/poker/front/j.jpg"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       }
     ]

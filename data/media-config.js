@@ -76,8 +76,8 @@ window.MEDIA_CONFIG = {
 
   // 【位置 2：Three.js 贴图】保留文件名时只覆盖 assets 中的同名文件即可。
   textures: {
-    pokerSpadeKFront: "./assets/textures/poker/front/spade-k.webp",
-    pokerDiamondJFront: "./assets/textures/poker/front/diamond-j.webp",
+    pokerSpadeKFront: "./assets/textures/poker/front/k.jpg",
+    pokerDiamondJFront: "./assets/textures/poker/front/j.jpg",
     pokerDefaultBack: "./assets/textures/poker/back/default.png",
     mahjongWan1Front: "./assets/textures/mahjong/front/wan-1.png",
     mahjongEastFront: "./assets/textures/mahjong/front/east.png",

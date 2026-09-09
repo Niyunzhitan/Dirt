@@ -22,8 +22,9 @@
         initialProgress: 8,
         progressEase: 0.12,
         progressStopThreshold: 0.2,
-        particleFrameIntervalMs: 32,
-        debrisCount: { finalBurst: 30 },
+        particleFrameIntervalMs: 16,
+        debrisLifetimeMs: 750,
+        debrisCount: { finalBurst: 84, mobileBurst: 48 },
         mobileBreakpoint: 640,
         earlyExpandHalfWidth: { mobile: 110, desktop: 160 },
         earlyExpandRatio: 0.35,
@@ -105,7 +106,11 @@
           "M98 100 L94 86 L101 73 L96 61 L102 49 L98 35 L100 10",
           "M98 100 L114 94 L123 100 L137 91 L147 95 L161 86 L191 80",
           "M98 100 L104 114 L98 128 L105 139 L100 153 L108 168 L103 194",
-          "M98 100 L84 108 L73 102 L61 111 L49 106 L35 115 L8 119"
+          "M98 100 L84 108 L73 102 L61 111 L49 106 L35 115 L8 119",
+          "M101 73 L116 65 L120 48 L137 34",
+          "M147 95 L154 111 L172 123 L178 143",
+          "M105 139 L85 147 L77 165 L57 178",
+          "M61 111 L54 91 L37 80 L29 59"
         ];
         const clip = document.createElementNS(ns, "clipPath");
         clip.id = "sealFractureClip";
@@ -122,12 +127,12 @@
             path.setAttribute("d", d);
             path.setAttribute("fill", "none");
             path.setAttribute("stroke", highlight ? "#d58d66" : "#35150e");
-            path.setAttribute("stroke-width", highlight ? "3.6" : "2.1");
+            path.setAttribute("stroke-width", index < 4 ? (highlight ? "5.2" : "3.2") : (highlight ? "2.8" : "1.6"));
             path.setAttribute("stroke-linejoin", "round");
             path.setAttribute("class", highlight ? "crack-highlight" : "crack-path");
             path.setAttribute("pathLength", "180");
             path.dataset.branch = index;
-            if (highlight) path.setAttribute("opacity", ".48");
+            if (highlight) path.setAttribute("opacity", ".7");
             cracks.append(path);
           }
         });
@@ -159,8 +164,14 @@
         if (!particleCanvas) return null;
         const context = particleCanvas.getContext("2d");
         if (!context) return null;
-        const width = particleCanvas.width;
-        const height = particleCanvas.height;
+        const width = Math.min(800, window.innerWidth);
+        const height = 640;
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        particleCanvas.width = Math.round(width * pixelRatio);
+        particleCanvas.height = Math.round(height * pixelRatio);
+        particleCanvas.style.width = `${width}px`;
+        particleCanvas.style.height = `${height}px`;
+        context.scale(pixelRatio, pixelRatio);
         const centerX = width / 2;
         const centerY = height / 2;
 
@@ -170,22 +181,25 @@
 
         function createDebris(count = 5, burst = false) {
           if (reducedMotion) return;
+          const bornAt = performance.now();
           for (let index = 0; index < count; index += 1) {
             const angle = Math.random() * Math.PI * 2;
             const distance = 10 + Math.random() * 45;
-            const speed = burst ? 4 + Math.random() * 7 : 0.6 + Math.random() * 2.2;
+            const speed = (burst ? 5 + Math.random() * 10 : 0.6 + Math.random() * 2.2)
+              * Math.min(1, width / 640);
+            const fine = index % 3 !== 0;
             particles.push({
               x: centerX + Math.cos(angle) * distance,
               y: centerY + Math.sin(angle) * distance,
               vx: Math.cos(angle) * speed + (Math.random() - 0.5) * 1.2,
-              vy: Math.sin(angle) * speed + (burst ? -1.5 + Math.random() * 3 : 1.2),
-              gravity: 0.2,
-              size: burst ? 2 + Math.random() * 5.5 : 1.2 + Math.random() * 3.5,
+              vy: Math.sin(angle) * speed - (burst ? 3 : 0),
+              gravity: fine ? 0.12 : 0.24,
+              size: fine ? 1 + Math.random() * 2 : 3 + Math.random() * 6,
               rotation: Math.random() * Math.PI * 2,
               vRot: (Math.random() - 0.5) * 0.25,
               color: Math.random() > 0.4 ? "#8c3323" : (Math.random() > 0.5 ? "#ba5d45" : "#4a180e"),
-              alpha: 1,
-              decay: burst ? 0.015 + Math.random() * 0.02 : 0.02 + Math.random() * 0.03
+              bornAt,
+              alpha: 1
             });
           }
           wake();
@@ -204,18 +218,16 @@
           context.clearRect(0, 0, width, height);
           for (let index = particles.length - 1; index >= 0; index -= 1) {
             const particle = particles[index];
-            particle.x += particle.vx;
-            particle.y += particle.vy;
-            particle.vy += particle.gravity;
-            particle.rotation += particle.vRot;
-            particle.alpha -= particle.decay;
-            if (particle.alpha <= 0 || particle.y > height + 20) {
+            const age = Math.max(0, timestamp - particle.bornAt);
+            const frames = age / (1000 / 60);
+            particle.alpha = 1 - Math.max(0, (age / config.debrisLifetimeMs - 0.55) / 0.45);
+            if (age >= config.debrisLifetimeMs) {
               particles.splice(index, 1);
               continue;
             }
             context.save();
-            context.translate(particle.x, particle.y);
-            context.rotate(particle.rotation);
+            context.translate(particle.x + particle.vx * frames, particle.y + particle.vy * frames + 0.5 * particle.gravity * frames * frames);
+            context.rotate(particle.rotation + particle.vRot * frames);
             context.globalAlpha = Math.max(0, particle.alpha);
             context.fillStyle = particle.color;
             context.beginPath();
@@ -231,6 +243,29 @@
         }
 
         return { createDebris };
+      }
+
+      function releaseFragments() {
+        if (reducedMotion) return;
+        const spread = window.innerWidth < config.mobileBreakpoint ? 0.6 : 1;
+        const velocities = [[-290, -290, -110], [310, -320, 125], [-240, 40, -90], [260, 65, 140]];
+        fragments.forEach(([fragment], index) => {
+          if (!fragment) return;
+          const [vx, vy, spin] = velocities[index];
+          // Sample x = vx*t and y = vy*t + g*t*t/2 densely for compositor playback.
+          const keyframes = Array.from({ length: 61 }, (_, frame) => {
+            const offset = frame / 60;
+            const time = offset * config.debrisLifetimeMs / 1000;
+            const x = vx * spread * time;
+            const y = vy * time + 0.5 * 1000 * time * time;
+            return {
+              offset,
+              transform: `translate(${x}px, ${y}px) rotate(${spin * time}deg)`,
+              opacity: 1 - Math.max(0, (offset - 0.55) / 0.45)
+            };
+          });
+          fragment.animate(keyframes, { duration: config.debrisLifetimeMs, easing: "linear", fill: "forwards" });
+        });
       }
 
       function startDidYouKnow() {
@@ -308,7 +343,8 @@
         if (progressPercent) progressPercent.textContent = `${Math.round(progress)}%`;
         if (cord) cord.classList.toggle("cord-snapped", progress >= 55);
         if (progress >= 80 && particleEngine && !particlesPlayed) {
-          particleEngine.createDebris(config.debrisCount.finalBurst, true);
+          particleEngine.createDebris(window.innerWidth < config.mobileBreakpoint
+            ? config.debrisCount.mobileBurst : config.debrisCount.finalBurst, true);
           particlesPlayed = true;
         }
         // 进度不是单纯的数字：不同区间分别对应封泥裂纹、绳线断开和卷轴展开。
@@ -323,7 +359,8 @@
           if (cracks) {
             cracks.style.opacity = `${Math.min(1, crackRatio * 1.4)}`;
             crackPaths.forEach((path) => {
-              const growth = Math.max(0, Math.min(1, crackRatio * 1.35 - Number(path.dataset.branch) * .1));
+              const branch = Number(path.dataset.branch);
+              const growth = Math.max(0, Math.min(1, crackRatio * 1.6 - (branch < 4 ? branch * .1 : .5 + (branch - 4) * .08)));
               path.style.strokeDashoffset = `${180 * (1 - growth)}`;
             });
           }
@@ -334,6 +371,7 @@
           crackPaths.forEach((path) => { path.style.strokeDashoffset = "0"; });
           if (seal) {
             seal.classList.add("shaking");
+            seal.classList.add("is-straining");
             seal.style.transform = "none";
           }
           const maxHalfWidth = window.innerWidth < config.mobileBreakpoint ? config.earlyExpandHalfWidth.mobile : config.earlyExpandHalfWidth.desktop;
@@ -344,12 +382,12 @@
         } else {
           const openRatio = (progress - 80) / 20;
           if (seal) {
-            seal.classList.remove("shaking");
+            seal.classList.remove("shaking", "is-straining");
             seal.style.opacity = "0";
             seal.style.transform = "none";
           }
           if (!fragmentsStarted) {
-            fragments.forEach(([fragment, className]) => fragment?.classList.add(className));
+            releaseFragments();
             fragmentsStarted = true;
           }
           if (!cachedPaperWidth && paper) cachedPaperWidth = paper.getBoundingClientRect().width || 704;

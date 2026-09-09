@@ -29,7 +29,6 @@ if (root && window.SEAL_3D_PRODUCTS) {
   const subtitle = root.querySelector("#product3dSubtitle");
   const description = root.querySelector("#product3dDescription");
   const counter = root.querySelector("#product3dCounter");
-  const texturePath = root.querySelector("#product3dTexturePath");
   const autoRotateButton = root.querySelector("#product3dAutoRotate");
   const flipButton = root.querySelector("#product3dFlip");
   const resetButton = root.querySelector("#product3dReset");
@@ -109,9 +108,6 @@ if (root && window.SEAL_3D_PRODUCTS) {
     ctx.fillStyle = dark ? "#d5ad74" : "#a5322a";
     ctx.font = `700 ${Math.round(size.width * 0.09)}px serif`;
     ctx.fillText(face === "front" ? item.title : "齐鲁封泥牌具", size.width / 2, size.height * 0.57);
-    ctx.fillStyle = dark ? "#c9c7bd" : "#6e645c";
-    ctx.font = `500 ${Math.round(size.width * 0.032)}px sans-serif`;
-    ctx.fillText("PS 贴图占位 · 可替换", size.width / 2, size.height * 0.79);
     const texture = new THREE.CanvasTexture(surface);
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
@@ -267,12 +263,11 @@ if (root && window.SEAL_3D_PRODUCTS) {
     const revision = ++loadRevision;
     const collection = config[mode];
     const item = collection.items[itemIndex];
-    status.textContent = "正在装载 3D 贴图…";
+    status.textContent = "正在加载牌具…";
     title.textContent = item.title;
     subtitle.textContent = item.subtitle;
     description.textContent = item.description;
     counter.textContent = `${String(itemIndex + 1).padStart(2, "0")} / ${String(collection.items.length).padStart(2, "0")}`;
-    texturePath.textContent = item.front;
 
     const frontFallback = makePlaceholderTexture(item, mode, "front");
     const backFallback = makePlaceholderTexture(item, mode, "back");

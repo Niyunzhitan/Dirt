@@ -3,6 +3,8 @@ const path = require("path");
 
 const projectRoot = path.resolve(__dirname, "..");
 const textures = {
+  "./assets/textures/poker/front/k.jpg": "image/jpeg",
+  "./assets/textures/poker/front/j.jpg": "image/jpeg",
   "./assets/textures/poker/back/default.png": "image/png",
   "./assets/textures/mahjong/front/wan-1.png": "image/png",
   "./assets/textures/mahjong/front/east.png": "image/png",

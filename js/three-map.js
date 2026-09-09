@@ -136,7 +136,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         material.needsUpdate = true;
         applyHeightMap();
         mapRoot.dataset.terrainBoundary = "dem-mask-inline";
-        status.textContent = "山东省 DEM 30 米 · 双击打开模式";
+        status.textContent = config.attribution;
         return;
       }
       if (!config.heightDataUrl) {
