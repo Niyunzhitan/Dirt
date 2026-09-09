@@ -295,7 +295,7 @@
         <figure class="hero-relic hero-relic-main hero-relic-soft" id="heroMascotFigure" data-parallax="10">
           <!-- 角色悬停温润印光 -->
           <div class="mascot-aura" aria-hidden="true"></div>
-          <img src="./assets/branding/mascot.png" alt="印小灵角色形象" loading="lazy">
+          <img src="./assets/branding/mascot.png" alt="印小灵角色形象" fetchpriority="high" decoding="async">
           <figcaption>印小灵 · 齐鲁封泥导览</figcaption>
           <!-- 互动问候气泡 -->
           <div class="hero-mascot-speech" id="heroMascotSpeech" aria-hidden="true">
@@ -524,8 +524,8 @@
             <canvas id="product3dCanvas" aria-hidden="true"></canvas>
             <p class="product-3d-status" id="product3dStatus" role="status">正在准备 3D 展台…</p>
             <div class="product-3d-mode" role="group" aria-label="牌具类型">
-              <button class="active" type="button" data-product-mode="poker" aria-pressed="true">扑克牌</button>
-              <button type="button" data-product-mode="mahjong" aria-pressed="false">麻将</button>
+              <button class="active" type="button" data-product-mode="mahjong" aria-pressed="true">麻将</button>
+              <button type="button" data-product-mode="poker" aria-pressed="false">扑克牌</button>
             </div>
             <div class="product-3d-controls" aria-label="3D 模型操作">
               <button id="product3dPrev" type="button" aria-label="上一件" title="上一件">←</button>
@@ -537,8 +537,8 @@
             </div>
           </div>
           <aside class="product-3d-caption" aria-live="polite">
-            <div class="product-3d-caption-head"><span id="product3dSubtitle">官制与权力 · 西汉</span><b id="product3dCounter">01 / 02</b></div>
-            <h3 id="product3dTitle">临淄守印</h3>
+            <div class="product-3d-caption-head"><span id="product3dSubtitle">万子 · 官制谱系</span><b id="product3dCounter">01 / 02</b></div>
+            <h3 id="product3dTitle">官署封泥</h3>
             <p id="product3dDescription">正在加载牌具介绍…</p>
             <dl>
               <div><dt>观看方式</dt><dd>拖动旋转、滚轮缩放，查看封泥纹样在牌具上的呈现</dd></div>

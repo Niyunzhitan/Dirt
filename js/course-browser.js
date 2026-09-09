@@ -77,17 +77,23 @@
         panel.style.minHeight = `${Math.ceil(content.getBoundingClientRect().height)}px`;
       }
 
+      async function waitForSlideImage(image) {
+        if (!image) return;
+        // 跳到远处的课件时主动加载；超时后也允许翻页，不让按钮一直等待。
+        image.loading = "eager";
+        let timer;
+        await Promise.race([
+          image.decode().catch(() => {}),
+          new Promise((resolve) => { timer = window.setTimeout(resolve, 4000); })
+        ]);
+        window.clearTimeout(timer);
+      }
+
       async function prepareCourseSlide(index) {
         const panels = $$(".course-slide", $("#courseSlideTrack"));
-        const image = panels[index]?.querySelector("img");
-        if (!image) return;
-        if (!image.complete) {
-          await new Promise((resolve) => {
-            image.addEventListener("load", resolve, { once: true });
-            image.addEventListener("error", resolve, { once: true });
-          });
-        }
-        if (image.decode) await image.decode().catch(() => {});
+        await waitForSlideImage(panels[index]?.querySelector("img"));
+        const nextImage = panels[index + 1]?.querySelector("img");
+        if (nextImage) nextImage.loading = "eager";
       }
 
       async function updateCourseSlideState(index, behavior = "smooth") {
@@ -119,7 +125,7 @@
           ? Array.from({ length: count }, (_, index) => {
               const number = String(index + 1).padStart(2, "0");
               const source = safeResourceUrl(`${basePath}/slide-${number}.webp`);
-              return `<figure class="course-slide" data-course-slide="${index}"><img src="${escapeHtml(source)}" alt="${escapeHtml(courseLessonLabel(course))}课件第 ${index + 1} 页" loading="eager" decoding="async" draggable="false"></figure>`;
+              return `<figure class="course-slide" data-course-slide="${index}"><img src="${escapeHtml(source)}" alt="${escapeHtml(courseLessonLabel(course))}课件第 ${index + 1} 页" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" draggable="false"></figure>`;
             }).join("")
           : '<div class="empty-state"><strong>课件预览暂不可用</strong><p>请点击下方按钮打开原始 PDF。</p></div>';
         courseSlideMarkupCache.set(course.id, markup);
@@ -136,13 +142,7 @@
         const staging = document.createElement("div");
         staging.innerHTML = getCourseSlideMarkup(course);
         const firstImage = staging.querySelector(".course-slide img");
-        if (firstImage && !firstImage.complete) {
-          await new Promise((resolve) => {
-            firstImage.addEventListener("load", resolve, { once: true });
-            firstImage.addEventListener("error", resolve, { once: true });
-          });
-        }
-        if (firstImage?.decode) await firstImage.decode().catch(() => {});
+        await waitForSlideImage(firstImage);
         if (requestId !== courseRenderRequest) return;
         activeCourse = course;
         activeCourseSlideIndex = 0;
@@ -253,14 +253,17 @@
           const anchors = courseSlideAnchors(viewport);
           const current = viewport.scrollLeft;
           const tolerance = 4;
-          const targetIndex = direction > 0
-            ? anchors.findIndex((anchor) => anchor > current + tolerance)
-            : (() => {
-                for (let index = anchors.length - 1; index >= 0; index -= 1) {
-                  if (anchors[index] < current - tolerance) return index;
-                }
-                return -1;
-              })();
+          let targetIndex = -1;
+          if (direction > 0) {
+            targetIndex = anchors.findIndex((anchor) => anchor > current + tolerance);
+          } else {
+            for (let index = anchors.length - 1; index >= 0; index -= 1) {
+              if (anchors[index] < current - tolerance) {
+                targetIndex = index;
+                break;
+              }
+            }
+          }
           if (targetIndex >= 0) updateCourseSlideState(targetIndex);
         }
         tabs.addEventListener("click", (event) => {

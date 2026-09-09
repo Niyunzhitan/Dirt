@@ -19,7 +19,6 @@
   }
 
   // 未配置数据库时保留模拟数据，便于本地做页面开发；上线时打开 USE_DATABASE。
-  const delay = (value, ms = 120) => new Promise((resolve) => setTimeout(() => resolve(value), ms));
   const copyItems = (items) => items.map((item) => ({ ...item }));
   // 常用媒体配置按课程 id 补充视频、课件等公开资源，数据库和 mock 模式共用。
   const applyCourseMedia = (items) => items.map((course) => {
@@ -49,7 +48,7 @@
   function startMockQuiz() {
     const questions = shuffle(copyItems(window.MOCK_DATA.questions)).slice(0, 10);
     if (questions.length < 10) throw new Error("题库至少需要 10 道题目");
-    return delay({ questions, total: 10, scorePerQuestion: 10 });
+    return { questions, total: 10, scorePerQuestion: 10 };
   }
 
   function answerMockQuiz(questionId, answer) {
@@ -57,36 +56,40 @@
     if (!question) throw new Error("题目不存在");
     const selectedAnswer = String(answer).toUpperCase();
     const correct = selectedAnswer === question.correctAnswer;
-    return delay({
+    return {
       questionId: question.id,
       selectedAnswer,
       correct,
       correctAnswer: question.correctAnswer,
       explanation: question.explanation,
       earnedScore: correct ? 10 : 0
-    });
+    };
   }
 
   // 页面只调用 ApiService；这里统一处理“本地 mock / 云端数据库”的差异。
   window.ApiService = {
-    async getStats() { return useDatabase ? request("/api/data/stats") : delay({ ...window.MOCK_DATA.stats }); },
-    async getMapConfig() { return delay({ imageUrl: window.MOCK_DATA.mapImageUrl }); },
+    async getStats() { return useDatabase ? request("/api/data/stats") : { ...window.MOCK_DATA.stats }; },
+    async getMapConfig() { return { imageUrl: window.MOCK_DATA.mapImageUrl }; },
     async getSites(period = "全部") {
       if (useDatabase) return request(`/api/data/sites?period=${encodeURIComponent(period)}`);
       const mainSystems = ["青州", "兖州", "徐州"];
-      const items = period === "全部" ? window.MOCK_DATA.sites : window.MOCK_DATA.sites.filter((site) => period === "其他" ? !mainSystems.some((name) => site.period.includes(name)) : site.period.includes(period));
-      return delay(copyItems(items));
+      const items = window.MOCK_DATA.sites.filter((site) => {
+        if (period === "全部") return true;
+        if (period === "其他") return !mainSystems.some((name) => site.period.includes(name));
+        return site.period.includes(period);
+      });
+      return copyItems(items);
     },
     async getRelics(params = {}) {
       if (useDatabase) return request(`/api/data/relics?keyword=${encodeURIComponent(params.keyword || "")}`);
       const keyword = String(params.keyword || "").trim().toLowerCase();
       const items = window.MOCK_DATA.relics.filter((item) => !keyword || [item.name, item.inscription, item.period, item.location, item.category, item.value].some((field) => field.toLowerCase().includes(keyword)));
-      return delay({ items: copyItems(items), total: items.length });
+      return { items: copyItems(items), total: items.length };
     },
-    async getRelicById(id) { return useDatabase ? request(`/api/data/relics/${encodeURIComponent(id)}`) : delay(window.MOCK_DATA.relics.find((item) => item.id === id) || null); },
+    async getRelicById(id) { return useDatabase ? request(`/api/data/relics/${encodeURIComponent(id)}`) : window.MOCK_DATA.relics.find((item) => item.id === id) || null; },
     async getCourses() {
       const items = useDatabase ? await request("/api/data/courses") : copyItems(window.MOCK_DATA.courses);
-      return useDatabase ? applyCourseMedia(items) : delay(applyCourseMedia(items));
+      return applyCourseMedia(items);
     },
     async startQuiz() { return useQuizDatabase ? request("/api/quiz/start") : startMockQuiz(); },
     async answerQuiz(questionId, answer) { return useQuizDatabase ? post("/api/quiz/answer", { questionId, answer }) : answerMockQuiz(questionId, answer); }

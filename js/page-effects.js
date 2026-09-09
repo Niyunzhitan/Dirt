@@ -150,17 +150,13 @@
           frameId = requestAnimationFrame(animateDust);
         }
 
-        const lazyImages = $$('img[loading="lazy"]');
-        if ("IntersectionObserver" in window) {
-          const imageObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            const image = entry.target;
-            if (image.complete) image.classList.add("loaded");
-            else image.addEventListener("load", () => image.classList.add("loaded"), { once: true });
-            imageObserver.unobserve(image);
-          }), { rootMargin: "50px" });
-          lazyImages.forEach((image) => { if (image.complete) image.classList.add("loaded"); else imageObserver.observe(image); });
-        } else lazyImages.forEach((image) => image.classList.add("loaded"));
+        // 浏览器负责懒加载；捕获 load 事件也能处理之后插入的课件图片。
+        document.addEventListener("load", (event) => {
+          if (event.target instanceof HTMLImageElement) event.target.classList.add("loaded");
+        }, true);
+        $$('img[loading="lazy"]').forEach((image) => {
+          if (image.complete) image.classList.add("loaded");
+        });
 
         const heroVisualArea = $("#heroVisualArea");
         if (heroVisualArea) {

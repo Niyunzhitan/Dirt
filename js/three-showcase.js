@@ -54,7 +54,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
   const modelRoot = new THREE.Group();
   scene.add(modelRoot);
 
-  let mode = "poker";
+  let mode = "mahjong";
   let itemIndex = 0;
   let model = null;
   let autoRotate = showcaseSettings.defaultAutoRotate;
@@ -300,7 +300,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
   }
 
   function setMode(nextMode) {
-    if (!config[nextMode]) return;
+    if (!config[nextMode] || nextMode === mode) return;
     mode = nextMode;
     itemIndex = 0;
     resetView();

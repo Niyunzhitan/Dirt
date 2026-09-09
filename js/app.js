@@ -602,7 +602,10 @@
     renderSourceFindings();
     renderSourcePreview();
     window.NiyunScrollStory.create({ $, $$, escapeHtml, prefersReducedMotion }).init();
-    aiChatController.renderStatus(await AiService.getStatus());
+    // AI 在后台连接，不让它阻塞图鉴、地图和课程的展示。
+    AiService.getStatus().then((status) => aiChatController.renderStatus(status)).catch(() => {
+      aiChatController.renderStatus({ connected: false });
+    });
     openingLoaderController.finish(true);
   }
 

@@ -41,7 +41,7 @@
       let latestStatus = null;
       for (const baseUrl of API_BASE_URLS) {
         try {
-          const response = await fetch(`${baseUrl}/api/ai/status`);
+          const response = await fetch(`${baseUrl}/api/ai/status`, { signal: AbortSignal.timeout(4000) });
           const status = response.ok ? await response.json() : null;
           if (status) latestStatus = status;
           // 兼容尚未返回 verified 字段的旧版后端；真正请求失败时，chat() 仍会显示具体错误。
@@ -56,8 +56,9 @@
       }
       activeBaseUrl = "";
       const status = latestStatus || { connected: false, configured: false, appId: "" };
-      notifyStatus({ ...status, connected: false });
-      return status;
+      const disconnectedStatus = { ...status, connected: false };
+      notifyStatus(disconnectedStatus);
+      return disconnectedStatus;
     },
 
     // 把文字、图片和会话编号统一交给后端；后端再决定调用文字模型还是视觉模型。

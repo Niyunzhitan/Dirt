@@ -146,6 +146,25 @@
 .map-marker::before { content: ""; position: absolute; inset: 1px; border: 1px solid #d8b990; border-radius: 50%; }
 .map-marker span { position: absolute; left: 1.0625rem; top: -3px; width: max-content; color: #eef1ef; font-size: 0.6875rem; text-shadow: 0 1px 0.25rem #20312c; }
 .map-marker.active i, .map-marker:hover i { background: #d55a48; transform: scale(1.5); }
+.shandong-map[data-map-mode="flat"] .map-marker {
+  background: rgba(190, 151, 99, .28);
+}
+.shandong-map[data-map-mode="flat"] .map-marker::before { border-color: #c4a275; }
+.shandong-map[data-map-mode="flat"] .map-marker i { background: #d4b17a; }
+.shandong-map[data-map-mode="flat"] .map-marker:is(.active, :hover, :focus-visible) { z-index: 8; }
+.shandong-map[data-map-mode="flat"] .map-marker:is(.active, :hover, :focus-visible) i { background: #c87964; }
+.shandong-map[data-map-mode="flat"] .map-marker span {
+  left: 50%; top: auto; bottom: calc(100% + 6px); transform: translateX(-50%);
+  color: #77614d; font-size: 12px; line-height: 1.5;
+  text-shadow: 0 1px 2px #ffffff;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .shandong-map[data-map-mode="flat"] .map-marker {
+    width: 12px; height: 12px; margin: -6px 0 0 -6px;
+  }
+  .shandong-map[data-map-mode="flat"] .map-marker i { inset: 2px; }
+}
 .map-legend { position: absolute; z-index: 4; left: 1.25rem; right: 1.25rem; bottom: 1.125rem; display: flex; justify-content: space-between; color: #aebbb6; font-size: 0.625rem; }
 .map-legend span:first-child i { display: inline-block; width: 0.4375rem; height: 0.4375rem; margin-right: 0.4375rem; border-radius: 50%; background: #ead3b4; }
 .site-panel { height: 100%; min-height: 0; padding: 2.375rem 2.125rem; display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto auto; background: var(--color-paper); color: var(--ink); overflow: hidden; }

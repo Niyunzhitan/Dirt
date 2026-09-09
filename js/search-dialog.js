@@ -14,6 +14,7 @@
       const results = $("#searchResults");
       const clearButton = $("#clearSearch");
       const initialMessage = "<p>输入关键词以检索封泥藏品、古地名与调研档案。</p>";
+      let searchRequest = 0;
 
       function updateClearButton() {
         const hasValue = Boolean(input?.value.trim());
@@ -52,6 +53,7 @@
 
       async function search() {
         if (!input || !results) return;
+        const requestId = ++searchRequest;
         const keyword = input.value.trim();
         if (!keyword) {
           results.innerHTML = initialMessage;
@@ -59,7 +61,15 @@
           return;
         }
         results.innerHTML = "<p>正在检索封泥档案……</p>";
-        const response = await apiService.getRelics({ keyword });
+        let response;
+        try {
+          response = await apiService.getRelics({ keyword });
+        } catch (error) {
+          if (requestId === searchRequest) results.textContent = error.message || "搜索失败，请稍后重试";
+          return;
+        }
+        // 后发起的搜索优先，清空输入后也不再显示旧结果。
+        if (requestId !== searchRequest) return;
         const query = keyword.toLowerCase();
         const sourceMatches = findKnowledgeSites(query);
         const total = response.total + sourceMatches.length;
@@ -98,6 +108,7 @@
         dialog?.addEventListener("close", () => $("#openSearch")?.focus());
         input?.addEventListener("input", updateClearButton);
         $("#clearSearch")?.addEventListener("click", () => {
+          searchRequest += 1;
           input.value = "";
           results.innerHTML = initialMessage;
           updateClearButton();
