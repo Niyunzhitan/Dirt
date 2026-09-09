@@ -17,7 +17,7 @@ const showcaseSettings = {
   dragRotateY: 0.012,
   wheelZoomSpeed: 0.008,
   autoRotateSpeed: 0.32,
-  rotationSmoothing: 0.09
+  rotationSmoothing: 0.09,
 };
 
 if (root && window.SEAL_3D_PRODUCTS) {
@@ -36,7 +36,12 @@ if (root && window.SEAL_3D_PRODUCTS) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance",
+  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   // 封泥牌具不使用投影阴影，避免模型下方出现深色阴影块。
@@ -68,6 +73,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
 
   const textureLoader = new THREE.TextureLoader();
 
+  // 在中心点周围画圆角矩形，后面把它加厚就得到扑克牌的实体。
   function roundedRectShape(width, height, radius) {
     const x = -width / 2;
     const y = -height / 2;
@@ -84,6 +90,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     return shape;
   }
 
+  // 图片加载失败时仍显示带牌名的备用牌面，不让模型变成空白。
   function makePlaceholderTexture(item, type, face) {
     const size = type === "poker" ? { width: 750, height: 1050 } : { width: 768, height: 1024 };
     const surface = document.createElement("canvas");
@@ -114,13 +121,19 @@ if (root && window.SEAL_3D_PRODUCTS) {
     return texture;
   }
 
+  // 麻将侧边没有单独的图片，用画布生成木纹和边框。
   function makeMahjongEdgeTexture(direction = "vertical") {
     const surface = document.createElement("canvas");
     surface.width = 512;
     surface.height = 512;
     const ctx = surface.getContext("2d");
 
-    const base = ctx.createLinearGradient(0, 0, direction === "vertical" ? surface.width : 0, direction === "vertical" ? 0 : surface.height);
+    const base = ctx.createLinearGradient(
+      0,
+      0,
+      direction === "vertical" ? surface.width : 0,
+      direction === "vertical" ? 0 : surface.height,
+    );
     base.addColorStop(0, "#d7d7c5");
     base.addColorStop(0.18, "#eee9da");
     base.addColorStop(0.5, "#f5efe2");
@@ -173,6 +186,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     return texture;
   }
 
+  // 双击网页时读内嵌图片，网站模式读安全地址；两种方式失败都返回备用牌面。
   async function loadTexture(path, fallback) {
     if (window.location.protocol === "file:") {
       const inlineSource = window.SEAL_INLINE_TEXTURES?.[path];
@@ -180,7 +194,13 @@ if (root && window.SEAL_3D_PRODUCTS) {
       try {
         const image = await new Promise((resolve, reject) => {
           const localImage = new Image();
-          localImage.addEventListener("load", () => resolve(localImage), { once: true });
+          localImage.addEventListener(
+            "load",
+            function handleLoad() {
+              return resolve(localImage);
+            },
+            { once: true },
+          );
           localImage.addEventListener("error", reject, { once: true });
           localImage.src = inlineSource;
         });
@@ -205,6 +225,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     }
   }
 
+  // 换牌时释放旧模型占用的显存，仅从页面移除对象并不会自动释放这些资源。
   function disposeModel() {
     while (modelRoot.children.length) {
       const child = modelRoot.children.pop();
@@ -219,10 +240,17 @@ if (root && window.SEAL_3D_PRODUCTS) {
     }
   }
 
+  // 把图片贴在牌的正面或背面，稍微离开实体表面以免两层画面闪烁。
   function makeFace(width, height, depth, texture, back = false) {
     // 标准平面自带 0～1 UV，Photoshop 导出的整张贴图可以无损铺满。
     const geometry = new THREE.PlaneGeometry(width * 0.94, height * 0.94);
-    const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.58, metalness: 0.02, polygonOffset: true, polygonOffsetFactor: -1 });
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 0.58,
+      metalness: 0.02,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+    });
     const mesh = new THREE.Mesh(geometry, material);
     const faceOffset = depth / 2 + 0.04;
     mesh.position.z = back ? -faceOffset : faceOffset;
@@ -230,28 +258,66 @@ if (root && window.SEAL_3D_PRODUCTS) {
     return mesh;
   }
 
+  // 将薄的圆角牌身与正反两张牌面组合成一张扑克牌。
   function buildPoker(item, textures) {
     const size = config.poker.model;
     const group = new THREE.Group();
     const body = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(roundedRectShape(size.width, size.height, size.radius), { depth: size.depth, bevelEnabled: true, bevelSegments: 4, steps: 1, bevelSize: 0.035, bevelThickness: 0.025, curveSegments: 14 }),
-      new THREE.MeshStandardMaterial({ color: 0xe9e1d3, roughness: 0.74, metalness: 0 })
+      new THREE.ExtrudeGeometry(roundedRectShape(size.width, size.height, size.radius), {
+        depth: size.depth,
+        bevelEnabled: true,
+        bevelSegments: 4,
+        steps: 1,
+        bevelSize: 0.035,
+        bevelThickness: 0.025,
+        curveSegments: 14,
+      }),
+      new THREE.MeshStandardMaterial({ color: 0xe9e1d3, roughness: 0.74, metalness: 0 }),
     );
     body.geometry.center();
-    group.add(body, makeFace(size.width, size.height, size.depth, textures.front), makeFace(size.width, size.height, size.depth, textures.back, true));
+    group.add(
+      body,
+      makeFace(size.width, size.height, size.depth, textures.front),
+      makeFace(size.width, size.height, size.depth, textures.back, true),
+    );
     return group;
   }
 
+  // 麻将由较厚的牌身、侧边纹理和正反牌面组成。
   function buildMahjong(item, textures) {
     const size = config.mahjong.model;
     const group = new THREE.Group();
-    const sideMaterial = new THREE.MeshPhysicalMaterial({ map: textures.side, color: 0xffffff, roughness: 0.38, metalness: 0, clearcoat: 0.24, clearcoatRoughness: 0.56 });
-    const capMaterial = new THREE.MeshPhysicalMaterial({ map: textures.cap, color: 0xffffff, roughness: 0.38, metalness: 0, clearcoat: 0.24, clearcoatRoughness: 0.56 });
-    const bodyMaterial = new THREE.MeshPhysicalMaterial({ color: 0xe9e5d8, roughness: 0.32, metalness: 0, clearcoat: 0.28, clearcoatRoughness: 0.52 });
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(size.width, size.height, size.depth, 6, 8, 5),
-      [sideMaterial, sideMaterial, capMaterial, capMaterial, bodyMaterial, bodyMaterial]
-    );
+    const sideMaterial = new THREE.MeshPhysicalMaterial({
+      map: textures.side,
+      color: 0xffffff,
+      roughness: 0.38,
+      metalness: 0,
+      clearcoat: 0.24,
+      clearcoatRoughness: 0.56,
+    });
+    const capMaterial = new THREE.MeshPhysicalMaterial({
+      map: textures.cap,
+      color: 0xffffff,
+      roughness: 0.38,
+      metalness: 0,
+      clearcoat: 0.24,
+      clearcoatRoughness: 0.56,
+    });
+    const bodyMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xe9e5d8,
+      roughness: 0.32,
+      metalness: 0,
+      clearcoat: 0.28,
+      clearcoatRoughness: 0.52,
+    });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(size.width, size.height, size.depth, 6, 8, 5), [
+      sideMaterial,
+      sideMaterial,
+      capMaterial,
+      capMaterial,
+      bodyMaterial,
+      bodyMaterial,
+    ]);
     group.add(body);
     const front = makeFace(size.width, size.height, size.depth, textures.front);
     const back = makeFace(size.width, size.height, size.depth, textures.back, true);
@@ -259,6 +325,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     return group;
   }
 
+  // 加载当前选中的牌；编号用来识别过期请求，防止连续切换后显示上一张。
   async function loadCurrentItem() {
     const revision = ++loadRevision;
     const collection = config[mode];
@@ -271,16 +338,20 @@ if (root && window.SEAL_3D_PRODUCTS) {
 
     const frontFallback = makePlaceholderTexture(item, mode, "front");
     const backFallback = makePlaceholderTexture(item, mode, "back");
-    const sideFallback = mode === "mahjong" ? makeMahjongEdgeTexture("vertical") : makePlaceholderTexture(item, mode, "side");
+    const sideFallback =
+      mode === "mahjong" ? makeMahjongEdgeTexture("vertical") : makePlaceholderTexture(item, mode, "side");
     const capFallback = mode === "mahjong" ? makeMahjongEdgeTexture("horizontal") : sideFallback;
     const [front, back, side] = await Promise.all([
       loadTexture(item.front, frontFallback),
       loadTexture(item.back, backFallback),
-      Promise.resolve(sideFallback)
+      Promise.resolve(sideFallback),
     ]);
     if (revision !== loadRevision) return;
     disposeModel();
-    model = mode === "poker" ? buildPoker(item, { front, back, side }) : buildMahjong(item, { front, back, side, cap: capFallback });
+    model =
+      mode === "poker"
+        ? buildPoker(item, { front, back, side })
+        : buildMahjong(item, { front, back, side, cap: capFallback });
     model.rotation.set(targetRotation.x, targetRotation.y, 0);
     modelRoot.add(model);
     flipped = false;
@@ -288,6 +359,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     updateButtons();
   }
 
+  // 根据实际状态更新按钮文字和选中标记，让按钮与模型保持一致。
   function updateButtons() {
     autoRotateButton.setAttribute("aria-pressed", String(autoRotate));
     autoRotateButton.textContent = autoRotate ? "暂停旋转" : "自动旋转";
@@ -299,6 +371,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     });
   }
 
+  // 换牌具种类时回到该组第一件，同时恢复合适的相机距离。
   function setMode(nextMode) {
     if (!config[nextMode] || nextMode === mode) return;
     mode = nextMode;
@@ -308,14 +381,20 @@ if (root && window.SEAL_3D_PRODUCTS) {
     loadCurrentItem();
   }
 
+  // 恢复初始角度和距离，不改变用户正在看的牌具种类。
   function resetView() {
     targetRotation = { x: showcaseSettings.initialRotationX, y: showcaseSettings.initialRotationY };
-    camera.position.set(0, showcaseSettings.cameraPositionY, mode === "poker" ? showcaseSettings.pokerCameraDistance : showcaseSettings.mahjongCameraDistance);
+    camera.position.set(
+      0,
+      showcaseSettings.cameraPositionY,
+      mode === "poker" ? showcaseSettings.pokerCameraDistance : showcaseSettings.mahjongCameraDistance,
+    );
     camera.lookAt(0, 0, 0);
     if (model) model.rotation.set(targetRotation.x, targetRotation.y, 0);
     flipped = false;
   }
 
+  // 容器尺寸变化后同步画布与相机比例，避免模型被拉宽或压扁。
   function resize() {
     const rect = viewport.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
@@ -324,18 +403,40 @@ if (root && window.SEAL_3D_PRODUCTS) {
     camera.updateProjectionMatrix();
   }
 
-  root.addEventListener("click", (event) => {
+  // direction 为 1 是下一件，-1 是上一件；到头后从另一端继续。
+  function changeItem(direction) {
+    const count = config[mode].items.length;
+    itemIndex += direction;
+    if (itemIndex < 0) itemIndex = count - 1;
+    if (itemIndex >= count) itemIndex = 0;
+    loadCurrentItem();
+  }
+
+  // 每次再转半圈；按钮点击和双击模型共用这一入口。
+  function flipItem() {
+    flipped = !flipped;
+    targetRotation.y += Math.PI;
+    updateButtons();
+  }
+
+  root.addEventListener("click", function handleClick(event) {
     const modeButton = event.target.closest("[data-product-mode]");
     if (modeButton) return setMode(modeButton.dataset.productMode);
-    if (event.target.closest("#product3dPrev")) { itemIndex = (itemIndex - 1 + config[mode].items.length) % config[mode].items.length; loadCurrentItem(); }
-    if (event.target.closest("#product3dNext")) { itemIndex = (itemIndex + 1) % config[mode].items.length; loadCurrentItem(); }
-    if (event.target.closest("#product3dFlip")) { flipped = !flipped; targetRotation.y += Math.PI; updateButtons(); }
-    if (event.target.closest("#product3dAutoRotate")) { autoRotate = !autoRotate; updateButtons(); }
-    if (event.target.closest("#product3dReset")) { resetView(); updateButtons(); }
+    if (event.target.closest("#product3dPrev")) changeItem(-1);
+    if (event.target.closest("#product3dNext")) changeItem(1);
+    if (event.target.closest("#product3dFlip")) flipItem();
+    if (event.target.closest("#product3dAutoRotate")) {
+      autoRotate = !autoRotate;
+      updateButtons();
+    }
+    if (event.target.closest("#product3dReset")) {
+      resetView();
+      updateButtons();
+    }
     if (event.target.closest("#product3dFullscreen")) viewport.requestFullscreen?.();
   });
 
-  viewport.addEventListener("pointerdown", (event) => {
+  viewport.addEventListener("pointerdown", function handlePointerdown(event) {
     if (event.target.closest("button, .product-3d-mode, .product-3d-controls")) return;
     isDragging = true;
     autoRotate = false;
@@ -343,32 +444,53 @@ if (root && window.SEAL_3D_PRODUCTS) {
     viewport.setPointerCapture(event.pointerId);
     updateButtons();
   });
-  viewport.addEventListener("pointermove", (event) => {
+  viewport.addEventListener("pointermove", function handlePointermove(event) {
     if (!isDragging) return;
     const dx = event.clientX - dragStart.x;
     const dy = event.clientY - dragStart.y;
     targetRotation.y += dx * showcaseSettings.dragRotateY;
-    targetRotation.x = THREE.MathUtils.clamp(targetRotation.x + dy * showcaseSettings.dragRotateX, -1.15, 1.15);
+    targetRotation.x = THREE.MathUtils.clamp(
+      targetRotation.x + dy * showcaseSettings.dragRotateX,
+      -1.15,
+      1.15,
+    );
     dragStart = { x: event.clientX, y: event.clientY };
   });
-  viewport.addEventListener("pointerup", () => { isDragging = false; });
-  viewport.addEventListener("pointercancel", () => { isDragging = false; });
-  viewport.addEventListener("dblclick", () => { flipped = !flipped; targetRotation.y += Math.PI; updateButtons(); });
-  viewport.addEventListener("wheel", (event) => {
-    event.preventDefault();
-    camera.position.z = THREE.MathUtils.clamp(camera.position.z + event.deltaY * showcaseSettings.wheelZoomSpeed, showcaseSettings.cameraMinDistance, showcaseSettings.cameraMaxDistance);
-  }, { passive: false });
+  viewport.addEventListener("pointerup", function handlePointerup() {
+    isDragging = false;
+  });
+  viewport.addEventListener("pointercancel", function handlePointercancel() {
+    isDragging = false;
+  });
+  viewport.addEventListener("dblclick", function handleDblclick(event) {
+    if (!event.target.closest("button")) flipItem();
+  });
+  viewport.addEventListener(
+    "wheel",
+    function handleWheel(event) {
+      event.preventDefault();
+      camera.position.z = THREE.MathUtils.clamp(
+        camera.position.z + event.deltaY * showcaseSettings.wheelZoomSpeed,
+        showcaseSettings.cameraMinDistance,
+        showcaseSettings.cameraMaxDistance,
+      );
+    },
+    { passive: false },
+  );
 
   new ResizeObserver(resize).observe(viewport);
   document.addEventListener("fullscreenchange", resize);
 
   // 3D 展厅离开视口或页面切到后台时暂停渲染，回来后再从当前状态继续。
-  const showcaseVisibilityObserver = new IntersectionObserver(([entry]) => {
-    showcaseVisible = entry.isIntersecting;
-    if (showcaseVisible && !document.hidden && !animationFrameId) animate();
-  }, { threshold: 0.01 });
+  const showcaseVisibilityObserver = new IntersectionObserver(
+    ([entry]) => {
+      showcaseVisible = entry.isIntersecting;
+      if (showcaseVisible && !document.hidden && !animationFrameId) animate();
+    },
+    { threshold: 0.01 },
+  );
   showcaseVisibilityObserver.observe(root);
-  document.addEventListener("visibilitychange", () => {
+  document.addEventListener("visibilitychange", function handleVisibilitychange() {
     if (document.hidden && animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = 0;
@@ -378,6 +500,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
   });
 
   const clock = new THREE.Clock();
+  // 模型逐帧靠近拖动的目标角度；离开视口后暂停，减少不必要的绘制。
   function animate() {
     if (!showcaseVisible || document.hidden) {
       animationFrameId = 0;
@@ -386,7 +509,8 @@ if (root && window.SEAL_3D_PRODUCTS) {
     animationFrameId = requestAnimationFrame(animate);
     const delta = Math.min(clock.getDelta(), 0.04);
     if (model) {
-      if (autoRotate && document.documentElement.dataset.motion !== "0") targetRotation.y += delta * showcaseSettings.autoRotateSpeed;
+      if (autoRotate && document.documentElement.dataset.motion !== "0")
+        targetRotation.y += delta * showcaseSettings.autoRotateSpeed;
       model.rotation.x += (targetRotation.x - model.rotation.x) * showcaseSettings.rotationSmoothing;
       model.rotation.y += (targetRotation.y - model.rotation.y) * showcaseSettings.rotationSmoothing;
     }

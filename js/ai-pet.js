@@ -48,7 +48,7 @@
     morning: ["早呀，今天也要元气满满！", "小爪子已经准备好啦", "要一起看看古人的小秘密吗？"],
     afternoon: ["下午好呀，来歇一小会儿吧", "好奇的事就交给我吧", "要不要拆开一段封泥故事？"],
     evening: ["晚上好呀，今天过得怎么样？", "我还留着一盏小灯等你", "来听一小段齐鲁往事吧"],
-    night: ["夜深啦，说话轻轻的", "再查一个小问题就休息吧", "困困也没关系，我还醒着呢"]
+    night: ["夜深啦，说话轻轻的", "再查一个小问题就休息吧", "困困也没关系，我还醒着呢"],
   };
 
   function preloadPetStates() {
@@ -61,6 +61,7 @@
   }
   preloadPetStates();
 
+  // 两张图片交替显示，先准备下一张再切换，减少角色状态变化时的闪白。
   function switchTexture(nextSrc) {
     if (!nextSrc) return;
     if (layers.length < 2) {
@@ -107,25 +108,29 @@
     });
   }
 
+  // 统一更新角色图片与状态文字，思考、回答等流程都从这里切换表情。
   function setState(state, label) {
     currentState = state;
     root.dataset.state = state;
-    stateText.textContent = label || ({
-      idle: "来找我玩呀",
-      hover: "来找我玩呀",
-      listening: "小耳朵竖起来啦",
-      thinking: "让我抱着线索想一想",
-      answering: "答案马上端上来",
-      happy: "嘿嘿，帮上忙啦",
-      error: "小脑袋好像打了个结"
-    }[state] || "来找我玩呀");
+    stateText.textContent =
+      label ||
+      {
+        idle: "来找我玩呀",
+        hover: "来找我玩呀",
+        listening: "小耳朵竖起来啦",
+        thinking: "让我抱着线索想一想",
+        answering: "答案马上端上来",
+        happy: "嘿嘿，帮上忙啦",
+        error: "小脑袋好像打了个结",
+      }[state] ||
+      "来找我玩呀";
     const targetSrc = config.states?.[state] || config.states?.idle || "./assets/branding/idling.png";
     switchTexture(targetSrc);
     updateGreeting(state);
   }
 
   layers.forEach((layer) => {
-    layer.addEventListener("error", () => {
+    layer.addEventListener("error", function handleError() {
       const fallback = config.states?.idle || "./assets/branding/idling.png";
       if (layer.src.endsWith(fallback)) return;
       layer.src = fallback;
@@ -134,9 +139,13 @@
 
   function updateGreeting(state = "idle") {
     const hour = new Date().getHours();
-    const period = hour < 6 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : hour < 23 ? "evening" : "night";
+    const period =
+      hour < 6 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : hour < 23 ? "evening" : "night";
     const stateLines = { thinking: "正在翻翻小册子", happy: "找到线索啦", error: "呀，线索绕成一团了" };
-    if (stateLines[state]) { greeting.textContent = stateLines[state]; return; }
+    if (stateLines[state]) {
+      greeting.textContent = stateLines[state];
+      return;
+    }
     const options = greetingSets[period];
     greeting.textContent = options[greetingIndex % options.length];
     greetingIndex += 1;
@@ -191,7 +200,7 @@
     panel.hidden = false;
     panel.classList.remove("is-closing");
     panel.classList.add("is-opening");
-    const finishOpening = (event) => {
+    const finishOpening = function finishOpening(event) {
       if (event.animationName !== "ai-pet-panel-in") return;
       panel.classList.remove("is-opening");
     };
@@ -206,7 +215,7 @@
     panel.classList.remove("is-opening");
     panel.classList.add("is-closing");
     petButton.setAttribute("aria-expanded", "false");
-    const finishClosing = (event) => {
+    const finishClosing = function finishClosing(event) {
       if (event.animationName !== "ai-pet-panel-out") return;
       panel.hidden = true;
       panel.classList.remove("is-closing");
@@ -215,13 +224,16 @@
       closeTimer = null;
     };
     panel.addEventListener("animationend", finishClosing, { once: true });
-    closeTimer = window.setTimeout(() => {
-      panel.hidden = true;
-      panel.classList.remove("is-closing");
-      root.classList.remove("is-panel-open");
-      startGreetingCycle();
-      closeTimer = null;
-    }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 400);
+    closeTimer = window.setTimeout(
+      () => {
+        panel.hidden = true;
+        panel.classList.remove("is-closing");
+        root.classList.remove("is-panel-open");
+        startGreetingCycle();
+        closeTimer = null;
+      },
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 400,
+    );
   }
 
   function appendMessage(text, role) {
@@ -233,6 +245,7 @@
     return message;
   }
 
+  // 发送快捷对话，并在请求期间显示思考状态；结束后恢复可交互状态。
   async function send(text) {
     const message = text.trim();
     if (!message) return;
@@ -246,7 +259,10 @@
     try {
       const result = await window.AiService.chat({ message, sessionId });
       if (requestRevision !== conversationRevision) return;
-      pending.textContent = String(result.reply || "咦，答案刚刚躲起来了，再问我一次好吗？").replaceAll("于见泥", "印小灵");
+      pending.textContent = String(result.reply || "咦，答案刚刚躲起来了，再问我一次好吗？").replaceAll(
+        "于见泥",
+        "印小灵",
+      );
       pending.classList.remove("pending");
       setState("happy");
       if (result.sessionId) {
@@ -270,11 +286,15 @@
     }
   }
 
-  petButton.addEventListener("click", (event) => {
-    if (moved) { event.preventDefault(); moved = false; return; }
+  petButton.addEventListener("click", function handleClick(event) {
+    if (moved) {
+      event.preventDefault();
+      moved = false;
+      return;
+    }
     panel.hidden ? openPanel() : closePanel();
   });
-  petButton.addEventListener("pointerenter", () => {
+  petButton.addEventListener("pointerenter", function handlePointerenter() {
     pointerInside = true;
     window.clearTimeout(returnToIdleTimer);
     if (!conversationInProgress && currentState !== "hover") {
@@ -282,18 +302,25 @@
       setState("hover");
     }
   });
-  petButton.addEventListener("pointerleave", () => {
+  petButton.addEventListener("pointerleave", function handlePointerleave() {
     pointerInside = false;
     if (currentState === "hover") setState(stateBeforeHover || "idle");
   });
   closeButton.addEventListener("click", closePanel);
   clearButton.addEventListener("click", clearMessages);
-  form.addEventListener("submit", (event) => { event.preventDefault(); send(input.value); });
-  root.querySelectorAll("[data-pet-prompt]").forEach((button) => button.addEventListener("click", () => send(button.dataset.petPrompt)));
+  form.addEventListener("submit", function handleSubmit(event) {
+    event.preventDefault();
+    send(input.value);
+  });
+  root.querySelectorAll("[data-pet-prompt]").forEach((button) =>
+    button.addEventListener("click", function handleClick() {
+      return send(button.dataset.petPrompt);
+    }),
+  );
 
   if (config.allowDrag !== false) {
     const edgeSnapDistance = 32;
-    petButton.addEventListener("pointerdown", (event) => {
+    petButton.addEventListener("pointerdown", function handlePointerdown(event) {
       if (event.button !== 0) return;
       event.preventDefault();
       moved = false;
@@ -302,7 +329,7 @@
       pointerStart = { x: event.clientX, y: event.clientY };
       petButton.setPointerCapture(event.pointerId);
     });
-    petButton.addEventListener("pointermove", (event) => {
+    petButton.addEventListener("pointermove", function handlePointermove(event) {
       if (!petButton.hasPointerCapture(event.pointerId)) return;
       event.preventDefault();
       const distance = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y);
@@ -311,20 +338,22 @@
       const bounds = getDragBounds();
       const proposedLeft = event.clientX - dragOffset.x;
       const proposedTop = event.clientY - dragOffset.y;
-      const left = event.clientX <= edgeSnapDistance
-        ? bounds.minLeft
-        : event.clientX >= window.innerWidth - edgeSnapDistance
-          ? bounds.maxLeft
-          : Math.max(bounds.minLeft, Math.min(bounds.maxLeft, proposedLeft));
-      const top = event.clientY <= edgeSnapDistance
-        ? bounds.minTop
-        : event.clientY >= window.innerHeight - edgeSnapDistance
-          ? bounds.maxTop
-          : Math.max(bounds.minTop, Math.min(bounds.maxTop, proposedTop));
+      const left =
+        event.clientX <= edgeSnapDistance
+          ? bounds.minLeft
+          : event.clientX >= window.innerWidth - edgeSnapDistance
+            ? bounds.maxLeft
+            : Math.max(bounds.minLeft, Math.min(bounds.maxLeft, proposedLeft));
+      const top =
+        event.clientY <= edgeSnapDistance
+          ? bounds.minTop
+          : event.clientY >= window.innerHeight - edgeSnapDistance
+            ? bounds.maxTop
+            : Math.max(bounds.minTop, Math.min(bounds.maxTop, proposedTop));
       hasCustomPosition = true;
       customPositionRatio = {
         x: bounds.maxLeft > bounds.minLeft ? (left - bounds.minLeft) / (bounds.maxLeft - bounds.minLeft) : 1,
-        y: bounds.maxTop > bounds.minTop ? (top - bounds.minTop) / (bounds.maxTop - bounds.minTop) : 1
+        y: bounds.maxTop > bounds.minTop ? (top - bounds.minTop) / (bounds.maxTop - bounds.minTop) : 1,
       };
       window.localStorage.setItem(getPositionKey(), JSON.stringify(customPositionRatio));
       root.style.left = `${left}px`;
@@ -332,7 +361,9 @@
       root.style.right = "auto";
       root.style.bottom = "auto";
     });
-    petButton.addEventListener("dragstart", (event) => event.preventDefault());
+    petButton.addEventListener("dragstart", function handleDragstart(event) {
+      return event.preventDefault();
+    });
   }
 
   function resetToDefaultPosition() {
@@ -344,6 +375,7 @@
     root.style.bottom = "";
   }
 
+  // 窗口变小时修正保存的位置，避免角色留在屏幕外无法拖回来。
   function adaptCustomPosition() {
     if (!hasCustomPosition) {
       resetToDefaultPosition();
@@ -364,23 +396,25 @@
       minLeft: -imageContentBounds.left * imageWidth,
       maxLeft: window.innerWidth - imageContentBounds.right * imageWidth,
       minTop: -imageContentBounds.top * imageHeight,
-      maxTop: window.innerHeight - imageContentBounds.bottom * imageHeight
+      maxTop: window.innerHeight - imageContentBounds.bottom * imageHeight,
     };
   }
 
   window.addEventListener("resize", adaptCustomPosition, { passive: true });
   window.visualViewport?.addEventListener("resize", adaptCustomPosition, { passive: true });
-  viewportMediaQuery.addEventListener?.("change", () => {
+  viewportMediaQuery.addEventListener?.("change", function handleChange() {
     const nextViewportKey = getPositionKey();
     if (nextViewportKey === lastViewportKey) return;
     lastViewportKey = nextViewportKey;
     try {
       const savedPosition = JSON.parse(window.localStorage.getItem(nextViewportKey) || "null");
-      hasCustomPosition = Boolean(savedPosition && Number.isFinite(savedPosition.x) && Number.isFinite(savedPosition.y));
+      hasCustomPosition = Boolean(
+        savedPosition && Number.isFinite(savedPosition.x) && Number.isFinite(savedPosition.y),
+      );
       if (hasCustomPosition) {
         customPositionRatio = {
           x: Math.min(1, Math.max(0, savedPosition.x)),
-          y: Math.min(1, Math.max(0, savedPosition.y))
+          y: Math.min(1, Math.max(0, savedPosition.y)),
         };
       }
     } catch (_) {
@@ -394,7 +428,8 @@
   }
 
   const enabled = window.localStorage.getItem(storageKey) !== "false";
-  dynamicGreetingEnabled = window.localStorage.getItem(greetingStorageKey) !== "false" && config.dynamicGreeting !== false;
+  dynamicGreetingEnabled =
+    window.localStorage.getItem(greetingStorageKey) !== "false" && config.dynamicGreeting !== false;
   const enabledInput = document.querySelector("#aiPetEnabled");
   const dynamicGreetingInput = document.querySelector("#aiPetDynamicGreeting");
   if (enabledInput) enabledInput.checked = enabled;
@@ -406,7 +441,7 @@
     if (savedPosition && Number.isFinite(savedPosition.x) && Number.isFinite(savedPosition.y)) {
       customPositionRatio = {
         x: Math.min(1, Math.max(0, savedPosition.x)),
-        y: Math.min(1, Math.max(0, savedPosition.y))
+        y: Math.min(1, Math.max(0, savedPosition.y)),
       };
       hasCustomPosition = true;
       requestAnimationFrame(() => {
@@ -418,6 +453,7 @@
     hasCustomPosition = false;
   }
   image.alt = config.imageAlt || "印小灵封泥宠物";
+  // 透明图片的外框不等于角色本身，测量实际内容后再计算贴边与拖动范围。
   function measureImageContentBounds() {
     if (!image.naturalWidth || !image.naturalHeight) return;
     try {
@@ -445,7 +481,7 @@
           left: minX / canvas.width,
           top: minY / canvas.height,
           right: (maxX + 1) / canvas.width,
-          bottom: (maxY + 1) / canvas.height
+          bottom: (maxY + 1) / canvas.height,
         };
       }
     } catch (_) {
@@ -456,14 +492,14 @@
   image.addEventListener("load", measureImageContentBounds, { once: true });
   setState(currentState);
   startGreetingCycle();
-  dynamicGreetingInput?.addEventListener("change", (event) => {
+  dynamicGreetingInput?.addEventListener("change", function handleChange(event) {
     const isEnabled = event.target.checked;
     dynamicGreetingEnabled = isEnabled;
     window.localStorage.setItem(greetingStorageKey, String(isEnabled));
     if (isEnabled) startGreetingCycle();
     else stopGreetingCycle();
   });
-  enabledInput?.addEventListener("change", (event) => {
+  enabledInput?.addEventListener("change", function handleChange(event) {
     const isEnabled = event.target.checked;
     window.localStorage.setItem(storageKey, String(isEnabled));
     root.hidden = !isEnabled;
@@ -471,7 +507,7 @@
     else stopGreetingCycle();
   });
 
-  window.addEventListener("ai-pet-settings-reset", () => {
+  window.addEventListener("ai-pet-settings-reset", function handleAiPetSettingsReset() {
     window.localStorage.setItem(storageKey, "true");
     window.localStorage.setItem(greetingStorageKey, "true");
     if (enabledInput) enabledInput.checked = true;
@@ -480,4 +516,4 @@
     dynamicGreetingEnabled = true;
     startGreetingCycle();
   });
-}());
+})();

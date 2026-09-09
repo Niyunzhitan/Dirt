@@ -11,13 +11,17 @@
   const carouselButton = document.querySelector("#toggleMusicCarousel");
   const nextButton = document.querySelector("#nextMusic");
   const trackInputs = [...document.querySelectorAll("[name=backgroundMusicTrack]")];
-  const tracks = (config.tracks || []).map((track) => ({
-    ...track,
-    url: window.MediaSecurity?.resolve(track.url) || ""
-  })).filter((track) => track.url);
+  const tracks = (config.tracks || [])
+    .map((track) => ({
+      ...track,
+      url: window.MediaSecurity?.resolve(track.url) || "",
+    }))
+    .filter((track) => track.url);
   const trackStorageKey = "niyun-background-music-track";
   const carouselStorageKey = "niyun-background-music-carousel";
-  const defaultTrackId = tracks.some((track) => track.id === config.defaultTrackId) ? config.defaultTrackId : tracks[0]?.id || "";
+  const defaultTrackId = tracks.some((track) => track.id === config.defaultTrackId)
+    ? config.defaultTrackId
+    : tracks[0]?.id || "";
   let settings = { enabled: config.defaultEnabled === true, volume: defaultVolume };
   let selectedTrackId = defaultTrackId;
   let carouselEnabled = config.defaultCarouselEnabled === true;
@@ -34,8 +38,12 @@
   try {
     const saved = JSON.parse(window.localStorage.getItem(storageKey) || "{}");
     settings.enabled = Object.hasOwn(saved, "enabled") ? saved.enabled === true : settings.enabled;
-    settings.volume = Number.isFinite(Number(saved.volume)) ? Math.min(1, Math.max(0, Number(saved.volume))) : defaultVolume;
-  } catch (_) { /* 使用默认设置。 */ }
+    settings.volume = Number.isFinite(Number(saved.volume))
+      ? Math.min(1, Math.max(0, Number(saved.volume)))
+      : defaultVolume;
+  } catch (_) {
+    /* 使用默认设置。 */
+  }
   const savedTrackId = window.localStorage.getItem(trackStorageKey);
   if (tracks.some((track) => track.id === savedTrackId)) selectedTrackId = savedTrackId;
   const savedCarousel = window.localStorage.getItem(carouselStorageKey);
@@ -47,7 +55,9 @@
 
   function getSelectedTrackVolume() {
     const track = getSelectedTrack();
-    const scale = Number.isFinite(Number(track?.volumeScale)) ? Math.min(1, Math.max(0, Number(track.volumeScale))) : 1;
+    const scale = Number.isFinite(Number(track?.volumeScale))
+      ? Math.min(1, Math.max(0, Number(track.volumeScale)))
+      : 1;
     return settings.volume * scale;
   }
 
@@ -59,13 +69,16 @@
     audio.volume = getSelectedTrackVolume();
     audio.loop = !carouselEnabled;
     audio.title = track?.label || config.title || "背景音乐";
-    trackInputs.forEach((input) => { input.checked = input.value === track?.id; });
+    trackInputs.forEach((input) => {
+      input.checked = input.value === track?.id;
+    });
   }
 
   function saveSettings() {
     window.localStorage.setItem(storageKey, JSON.stringify(settings));
   }
 
+  // 导航栏和设置面板都能控制音乐，要一起更新，避免两处显示不同状态。
   function syncControls() {
     if (settingsInput) settingsInput.checked = settings.enabled;
     const hasMusic = Boolean(getSelectedTrack());
@@ -75,8 +88,15 @@
     if (musicButton) {
       const videoPaused = activeVideos > 0;
       musicButton.setAttribute("aria-pressed", String(settings.enabled));
-      musicButton.setAttribute("aria-label", videoPaused ? "视频播放中，背景音乐已暂停" : settings.enabled ? "关闭背景音乐" : "开启背景音乐");
-      musicButton.title = videoPaused ? "视频播放中，背景音乐已暂停" : settings.enabled ? "关闭背景音乐" : "开启背景音乐";
+      musicButton.setAttribute(
+        "aria-label",
+        videoPaused ? "视频播放中，背景音乐已暂停" : settings.enabled ? "关闭背景音乐" : "开启背景音乐",
+      );
+      musicButton.title = videoPaused
+        ? "视频播放中，背景音乐已暂停"
+        : settings.enabled
+          ? "关闭背景音乐"
+          : "开启背景音乐";
       musicButton.dataset.playing = String(settings.enabled && !audio.paused && !videoPaused);
       musicButton.dataset.videoPaused = String(videoPaused);
       musicButton.disabled = !hasMusic;
@@ -93,6 +113,7 @@
     }
   }
 
+  // 逐步调整音量，让播放和暂停不突然；新渐变开始时会接管旧渐变。
   function fadeTo(target, duration = 320) {
     if (fadeTimer) window.clearInterval(fadeTimer);
     const start = audio.volume;
@@ -107,6 +128,7 @@
     }, 30);
   }
 
+  // 浏览器可能禁止未经点击就播放声音，因此要等待播放结果并处理失败。
   async function playMusic() {
     if (!getSelectedTrack() || !settings.enabled || activeVideos > 0) return false;
     pauseRequestId += 1;
@@ -145,6 +167,7 @@
     return playMusic();
   }
 
+  // 视频开始时让背景音乐让位，避免两路声音同时播放。
   function handleVideoPlay(event) {
     if (event.target === audio) return;
     if (!(event.target instanceof HTMLVideoElement)) return;
@@ -154,6 +177,7 @@
     syncControls();
   }
 
+  // 视频结束或暂停后，再根据用户原来的设置决定是否恢复背景音乐。
   function handleVideoStop(event) {
     if (!(event.target instanceof HTMLVideoElement)) return;
     activeVideos = Math.max(0, activeVideos - 1);
@@ -192,7 +216,12 @@
 
   // 用户已开启音乐时尝试自动播放；若浏览器拦截，则在用户第一次操作页面时重试。
   function resumeAfterUserGesture(event) {
-    if (event.target.closest?.("#toggleMusic, #restartMusic, #toggleMusicCarousel, #nextMusic, #backgroundMusicEnabled, [name=backgroundMusicTrack], #backgroundMusicVolume")) return;
+    if (
+      event.target.closest?.(
+        "#toggleMusic, #restartMusic, #toggleMusicCarousel, #nextMusic, #backgroundMusicEnabled, [name=backgroundMusicTrack], #backgroundMusicVolume",
+      )
+    )
+      return;
     if (!settings.enabled || activeVideos > 0 || !audio.paused) return;
     playMusic();
   }
@@ -211,13 +240,15 @@
     }
     syncControls();
   }
-  musicButton?.addEventListener("click", (event) => {
+  musicButton?.addEventListener("click", function handleClick(event) {
     event.stopPropagation();
     toggleMusic();
   });
-  musicButton?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  musicButton?.addEventListener("pointerdown", function handlePointerdown(event) {
+    return event.stopPropagation();
+  });
 
-  settingsInput?.addEventListener("change", () => {
+  settingsInput?.addEventListener("change", function handleChange() {
     settings.enabled = settingsInput.checked;
     saveSettings();
     if (settings.enabled) playMusic();
@@ -234,30 +265,41 @@
     audio.loop = !carouselEnabled;
     syncControls();
   }
-  carouselButton?.addEventListener("click", (event) => {
+  carouselButton?.addEventListener("click", function handleClick(event) {
     event.stopPropagation();
     toggleCarousel();
   });
-  carouselButton?.addEventListener("pointerdown", (event) => event.stopPropagation());
-  restartButton?.addEventListener("pointerdown", (event) => event.stopPropagation());
-  nextButton?.addEventListener("click", (event) => { event.stopPropagation(); skipToNextTrack(); });
-  nextButton?.addEventListener("pointerdown", (event) => event.stopPropagation());
-  trackInputs.forEach((input) => input.addEventListener("change", () => {
-    const shouldResume = settings.enabled && !audio.paused;
-    selectedTrackId = input.value;
-    window.localStorage.setItem(trackStorageKey, selectedTrackId);
-    applySelectedTrack();
-    syncControls();
-    if (shouldResume && activeVideos === 0) playMusic();
-  }));
-  volumeInput?.addEventListener("input", () => {
+  carouselButton?.addEventListener("pointerdown", function handlePointerdown(event) {
+    return event.stopPropagation();
+  });
+  restartButton?.addEventListener("pointerdown", function handlePointerdown(event) {
+    return event.stopPropagation();
+  });
+  nextButton?.addEventListener("click", function handleClick(event) {
+    event.stopPropagation();
+    skipToNextTrack();
+  });
+  nextButton?.addEventListener("pointerdown", function handlePointerdown(event) {
+    return event.stopPropagation();
+  });
+  trackInputs.forEach((input) =>
+    input.addEventListener("change", function handleChange() {
+      const shouldResume = settings.enabled && !audio.paused;
+      selectedTrackId = input.value;
+      window.localStorage.setItem(trackStorageKey, selectedTrackId);
+      applySelectedTrack();
+      syncControls();
+      if (shouldResume && activeVideos === 0) playMusic();
+    }),
+  );
+  volumeInput?.addEventListener("input", function handleInput() {
     settings.volume = Number(volumeInput.value) / 100;
     audio.volume = getSelectedTrackVolume();
     saveSettings();
     syncControls();
   });
   window.addEventListener("ai-pet-settings-reset", syncControls);
-  window.addEventListener("media-settings-reset", () => {
+  window.addEventListener("media-settings-reset", function handleMediaSettingsReset() {
     settings = { enabled: config.defaultEnabled === true, volume: defaultVolume };
     selectedTrackId = defaultTrackId;
     carouselEnabled = config.defaultCarouselEnabled === true;
@@ -274,9 +316,9 @@
     pauseMusic,
     restartMusic,
     getAudio: () => audio,
-    hasMusic: () => Boolean(getSelectedTrack())
+    hasMusic: () => Boolean(getSelectedTrack()),
   });
   applySelectedTrack();
   syncControls();
   if (settings.enabled) playMusic();
-}());
+})();

@@ -8,19 +8,19 @@ export default defineConfig({
     "process.env.NODE_ENV": JSON.stringify("production"),
     __VUE_OPTIONS_API__: true,
     __VUE_PROD_DEVTOOLS__: false,
-    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+    __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
   },
   build: {
     lib: {
       entry: "js/quiz/main.js",
       formats: ["iife"],
       name: "NiyunQuizApp",
-      fileName: () => "quiz-bundle.js"
+      fileName: () => "quiz-bundle.js",
     },
     rollupOptions: {
       output: {
-        entryFileNames: "assets/quiz-bundle.js"
-      }
-    }
-  }
+        entryFileNames: "assets/quiz-bundle.js",
+      },
+    },
+  },
 });

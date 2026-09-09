@@ -23,7 +23,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     pinchSpeed: 0.025,
     panSpeed: 1,
     // 只允许向上抬升视角；弧度制，不会左右转向。
-    maxElevation: 1.20,
+    maxElevation: 1.2,
     maxPanX: 7,
     maxPanY: 4,
     viewportPadding: 1.16,
@@ -31,7 +31,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     boundaryHeightOffset: 0.045,
     boundaryColor: 0xe6d4b5,
     // 省界内缩检测距离（百分比坐标），用于去掉市级数据自带的山东外轮廓线。
-    boundaryInteriorMargin: 0.7
+    boundaryInteriorMargin: 0.7,
   };
   MAP_VIEW.minDistance = MAP_VIEW.defaultDistance / MAP_VIEW.maxZoomFactor;
 
@@ -39,7 +39,12 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     const scene = new THREE.Scene();
     // 正射相机没有透视缩短，更接近标准 2D 地图的观察方式。
     const camera = new THREE.OrthographicCamera(-9, 9, 6, -6, 0.1, 100);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: "high-performance",
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     // 地图只需要柔和地形明暗，不启用实时阴影，避免出现灰色投影层。
@@ -50,7 +55,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     let mapVisible = true;
     let mapRenderFrame = 0;
     let markersNeedProjection = true;
-    const requestMapRender = () => {
+    const requestMapRender = function requestMapRender() {
       if (!mapVisible || mapRenderFrame) return;
       mapRenderFrame = window.requestAnimationFrame(() => {
         mapRenderFrame = 0;
@@ -65,7 +70,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
 
     // 点位 DOM、平面图尺寸和地图容器可能在不同帧准备好。
     // 连续请求两帧可避开首次布局尚未稳定时得到的旧尺寸，不需要恢复持续渲染循环。
-    const invalidateMarkerProjection = () => {
+    const invalidateMarkerProjection = function invalidateMarkerProjection() {
       markersNeedProjection = true;
       requestMapRender();
       window.requestAnimationFrame(() => {
@@ -73,7 +78,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         requestMapRender();
       });
     };
-    window.addEventListener("shandong-map-mode-change", (event) => {
+    window.addEventListener("shandong-map-mode-change", function handleShandongMapModeChange(event) {
       mapRoot.dataset.mapMode = event.detail?.mode === "flat" ? "flat" : "terrain";
       invalidateMarkerProjection();
     });
@@ -89,8 +94,15 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     const isFilePage = window.location.protocol === "file:";
     // 保持原始 DEM 的经纬度比例，避免把山东省纵向拉长。
     const terrainWidth = MAP_VIEW.terrainWidth;
-    const terrainHeightDimension = terrainWidth * (config.bounds.north - config.bounds.south) / (config.bounds.east - config.bounds.west);
-    const geometry = new THREE.PlaneGeometry(terrainWidth, terrainHeightDimension, MAP_VIEW.gridColumns - 1, MAP_VIEW.gridRows - 1);
+    const terrainHeightDimension =
+      (terrainWidth * (config.bounds.north - config.bounds.south)) /
+      (config.bounds.east - config.bounds.west);
+    const geometry = new THREE.PlaneGeometry(
+      terrainWidth,
+      terrainHeightDimension,
+      MAP_VIEW.gridColumns - 1,
+      MAP_VIEW.gridRows - 1,
+    );
     const material = new THREE.MeshPhysicalMaterial({
       color: 0x55776b,
       roughness: 0.72,
@@ -99,7 +111,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       clearcoatRoughness: 0.82,
       side: THREE.DoubleSide,
       transparent: true,
-      alphaTest: 0.5
+      alphaTest: 0.5,
     });
 
     let heightSamples = null;
@@ -109,6 +121,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     let heightHeight = 0;
 
     // 只把公开的本地灰度高度图读入内存，不在浏览器中加载原始 GeoTIFF。
+    // 读取表示地面高低的灰度图及省界遮罩；本地双击模式使用内嵌数据。
     function loadHeightMap() {
       const inline = window.SHANDONG_TERRAIN_INLINE;
       if (isFilePage && inline) {
@@ -124,7 +137,13 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
           rgbaMask[index * 4 + 2] = value;
           rgbaMask[index * 4 + 3] = value;
         }
-        maskTexture = new THREE.DataTexture(rgbaMask, heightWidth, heightHeight, THREE.RGBAFormat, THREE.UnsignedByteType);
+        maskTexture = new THREE.DataTexture(
+          rgbaMask,
+          heightWidth,
+          heightHeight,
+          THREE.RGBAFormat,
+          THREE.UnsignedByteType,
+        );
         maskTexture.colorSpace = THREE.NoColorSpace;
         // DataTexture 默认不翻转 Y；高度数组和普通图片都按“北到南”读取，必须统一方向。
         maskTexture.flipY = true;
@@ -161,10 +180,13 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         heightWidth = image.naturalWidth;
         heightHeight = image.naturalHeight;
         heightSamples = new Uint8Array(heightWidth * heightHeight);
-        for (let index = 0; index < heightSamples.length; index += 1) heightSamples[index] = pixels[index * 4];
+        for (let index = 0; index < heightSamples.length; index += 1)
+          heightSamples[index] = pixels[index * 4];
         applyHeightMap();
       };
-      image.onerror = () => { heightSamples = null; };
+      image.onerror = () => {
+        heightSamples = null;
+      };
       image.src = config.heightDataUrl;
       if (isFilePage) return;
       const maskImage = new Image();
@@ -179,7 +201,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         heightWidth = heightWidth || maskCanvas.width;
         heightHeight = heightHeight || maskCanvas.height;
         maskSamples = new Uint8Array(maskCanvas.width * maskCanvas.height);
-        for (let index = 0; index < maskSamples.length; index += 1) maskSamples[index] = maskPixels[index * 4];
+        for (let index = 0; index < maskSamples.length; index += 1)
+          maskSamples[index] = maskPixels[index * 4];
         maskTexture = new THREE.Texture(maskImage);
         maskTexture.colorSpace = THREE.NoColorSpace;
         maskTexture.minFilter = THREE.NearestFilter;
@@ -196,6 +219,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       maskImage.src = config.maskDataUrl;
     }
 
+    // 把地图上的相对位置换成图片像素，取出该位置的高度值。
     function sampleHeight(percentX, percentY) {
       if (!heightSamples) return null;
       const x = Math.min(heightWidth - 1, Math.max(0, Math.round((percentX / 100) * (heightWidth - 1))));
@@ -203,6 +227,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       return heightSamples[y * heightWidth + x] / 255;
     }
 
+    // 从遮罩图判断当前位置是否属于省内，避免省外也长出地形。
     function sampleMask(percentX, percentY) {
       if (!maskSamples) return 255;
       const x = Math.min(heightWidth - 1, Math.max(0, Math.round((percentX / 100) * (heightWidth - 1))));
@@ -210,6 +235,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       return maskSamples[y * heightWidth + x];
     }
 
+    // 按高度图调整网格顶点，并重新计算表面方向，让光照能表现山地起伏。
     function applyHeightMap() {
       if (!heightSamples) return;
       const sampledHeights = new Float32Array(position.count);
@@ -219,9 +245,12 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         const percentY = ((terrainHeightDimension / 2 - position.getY(index)) / terrainHeightDimension) * 100;
         const value = sampleHeight(percentX, percentY);
         const maskValue = sampleMask(percentX, percentY);
-        const height = value === null
-          ? config.terrain.baseDepth + 0.12
-          : config.terrain.baseDepth + value * config.terrain.reliefScale * config.terrain.heightExaggeration + 0.12;
+        const height =
+          value === null
+            ? config.terrain.baseDepth + 0.12
+            : config.terrain.baseDepth +
+              value * config.terrain.reliefScale * config.terrain.heightExaggeration +
+              0.12;
         sampledHeights[index] = height;
         validVertices[index] = !maskSamples || maskValue >= 128 ? 1 : 0;
       }
@@ -239,11 +268,19 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
             let found = false;
             for (let offset = -radius; offset <= radius && !found; offset += 1) {
               const candidates = [
-                [column + offset, row - radius], [column + offset, row + radius],
-                [column - radius, row + offset], [column + radius, row + offset]
+                [column + offset, row - radius],
+                [column + offset, row + radius],
+                [column - radius, row + offset],
+                [column + radius, row + offset],
               ];
               for (const [candidateColumn, candidateRow] of candidates) {
-                if (candidateColumn < 0 || candidateColumn >= columns || candidateRow < 0 || candidateRow >= rows) continue;
+                if (
+                  candidateColumn < 0 ||
+                  candidateColumn >= columns ||
+                  candidateRow < 0 ||
+                  candidateRow >= rows
+                )
+                  continue;
                 const candidateIndex = candidateRow * columns + candidateColumn;
                 if (validVertices[candidateIndex]) {
                   replacement = sampledHeights[candidateIndex];
@@ -285,7 +322,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       transparent: true,
       opacity: 0.72,
       depthTest: false,
-      depthWrite: false
+      depthWrite: false,
     });
     const administrativeBoundaries = new THREE.Group();
     administrativeBoundaries.name = "山东省地级市边界";
@@ -296,11 +333,19 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       if (!maskSamples) return true;
       const margin = MAP_VIEW.boundaryInteriorMargin;
       return [
-        [0, 0], [-margin, 0], [margin, 0], [0, -margin], [0, margin],
-        [-margin, -margin], [margin, -margin], [-margin, margin], [margin, margin]
+        [0, 0],
+        [-margin, 0],
+        [margin, 0],
+        [0, -margin],
+        [0, margin],
+        [-margin, -margin],
+        [margin, -margin],
+        [-margin, margin],
+        [margin, margin],
       ].every(([offsetX, offsetY]) => sampleMask(percentX + offsetX, percentY + offsetY) >= 128);
     }
 
+    // 将经纬度转换为模型坐标，边界线还要贴近当地地形高度。
     function createBoundaryPoint(longitude, latitude) {
       const percentX = ((longitude - config.bounds.west) / (config.bounds.east - config.bounds.west)) * 100;
       const percentY = ((config.bounds.north - latitude) / (config.bounds.north - config.bounds.south)) * 100;
@@ -308,10 +353,11 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       return new THREE.Vector3(
         (percentX / 100) * terrainWidth - terrainWidth / 2,
         terrainHeightDimension / 2 - (percentY / 100) * terrainHeightDimension,
-        terrainHeight(percentX, percentY) + MAP_VIEW.boundaryHeightOffset
+        terrainHeight(percentX, percentY) + MAP_VIEW.boundaryHeightOffset,
       );
     }
 
+    // 把行政区轮廓连成线，旧线先移除，避免更新时重复叠加。
     function drawAdministrativeBoundaries() {
       if (!heightSamples || !Array.isArray(window.SHANDONG_PREFECTURES)) return;
       administrativeBoundaries.clear();
@@ -319,8 +365,11 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       window.SHANDONG_PREFECTURES.forEach((prefecture) => {
         prefecture.rings.forEach((ring) => {
           let segment = [];
-          const flushSegment = () => {
-            if (segment.length < 2) { segment = []; return; }
+          const flushSegment = function flushSegment() {
+            if (segment.length < 2) {
+              segment = [];
+              return;
+            }
             boundaryFitPoints.push(...segment);
             const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(segment), boundaryMaterial);
             line.userData.prefecture = prefecture.name;
@@ -351,6 +400,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     const activePointers = new Map();
     let pinchDistance = 0;
 
+    // 根据旋转、缩放和拖动状态摆放相机，再让点位跟随新视角。
     function updateCamera() {
       cameraElevation = THREE.MathUtils.clamp(cameraElevation, 0, MAP_VIEW.maxElevation);
       // 正角度滑条对应视觉上的“向上抬升”，因此相机沿 Y 轴负方向移动。
@@ -358,9 +408,9 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       camera.position.set(
         cameraTarget.x,
         cameraTarget.y - Math.sin(cameraElevation) * cameraDistance,
-        cameraTarget.z + horizontal
+        cameraTarget.z + horizontal,
       );
-      camera.zoom = fitZoom * MAP_VIEW.defaultDistance / cameraDistance;
+      camera.zoom = (fitZoom * MAP_VIEW.defaultDistance) / cameraDistance;
       camera.lookAt(cameraTarget);
       camera.updateProjectionMatrix();
       // fitFullView 会在同一事件中立即投影坐标，不能等下一帧渲染再更新矩阵。
@@ -372,7 +422,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       mapRoot.dataset.cameraTargetY = cameraTarget.y.toFixed(3);
       mapRoot.dataset.cameraTargetZ = cameraTarget.z.toFixed(3);
       const elevationDegrees = Math.round(THREE.MathUtils.radToDeg(cameraElevation));
-      if (rotationInput && Number(rotationInput.value) !== elevationDegrees) rotationInput.value = String(elevationDegrees);
+      if (rotationInput && Number(rotationInput.value) !== elevationDegrees)
+        rotationInput.value = String(elevationDegrees);
       if (rotationOutput) rotationOutput.textContent = `${elevationDegrees}°`;
       markersNeedProjection = true;
       requestMapRender();
@@ -386,7 +437,10 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       renderer.setSize(rect.width, rect.height, false);
       const aspect = rect.width / rect.height;
       // 根据容器比例自动留出边距，窄屏也必须默认显示山东全貌。
-      const viewWidth = Math.max(terrainWidth * MAP_VIEW.viewportPadding, terrainHeightDimension * MAP_VIEW.viewportPadding * aspect);
+      const viewWidth = Math.max(
+        terrainWidth * MAP_VIEW.viewportPadding,
+        terrainHeightDimension * MAP_VIEW.viewportPadding * aspect,
+      );
       const viewHeight = viewWidth / aspect;
       camera.left = -viewWidth / 2;
       camera.right = viewWidth / 2;
@@ -398,6 +452,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     }
 
     // 根据当前抬升角计算地形投影包络，避免山东东西或南北边缘被裁掉。
+    // 计算能容纳整张地图的视野，初始化或复位时不把省界裁掉。
     function fitFullView() {
       // 用默认地图距离计算“全貌基准”，不要把用户当前缩放状态混进 fitZoom。
       // 这样浏览器缩放或窗口尺寸变化后，用户仍能继续使用原来的地图缩放级别。
@@ -406,13 +461,18 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       fitZoom = 1;
       updateCamera();
       terrain.updateMatrixWorld(true);
-      const maxTerrainHeight = config.terrain.baseDepth + config.terrain.reliefScale * config.terrain.heightExaggeration + 0.12;
+      const maxTerrainHeight =
+        config.terrain.baseDepth + config.terrain.reliefScale * config.terrain.heightExaggeration + 0.12;
       const corners = [];
-      [-1, 1].forEach((x) => [-1, 1].forEach((y) => [0, maxTerrainHeight].forEach((z) => {
-        const point = new THREE.Vector3(x * terrainWidth / 2, y * terrainHeightDimension / 2, z);
-        terrain.localToWorld(point);
-        corners.push(point.project(camera));
-      })));
+      [-1, 1].forEach((x) =>
+        [-1, 1].forEach((y) =>
+          [0, maxTerrainHeight].forEach((z) => {
+            const point = new THREE.Vector3((x * terrainWidth) / 2, (y * terrainHeightDimension) / 2, z);
+            terrain.localToWorld(point);
+            corners.push(point.project(camera));
+          }),
+        ),
+      );
       boundaryFitPoints.forEach((localPoint) => {
         const point = localPoint.clone();
         terrain.localToWorld(point);
@@ -420,7 +480,11 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       });
       const maxProjectedX = Math.max(...corners.map((point) => Math.abs(point.x)), 0.01);
       const maxProjectedY = Math.max(...corners.map((point) => Math.abs(point.y)), 0.01);
-      const fitFactor = Math.min(MAP_VIEW.fitScreenPadding / maxProjectedX, MAP_VIEW.fitScreenPadding / maxProjectedY, 1);
+      const fitFactor = Math.min(
+        MAP_VIEW.fitScreenPadding / maxProjectedX,
+        MAP_VIEW.fitScreenPadding / maxProjectedY,
+        1,
+      );
       fitZoom = Math.max(0.25, fitFactor);
       cameraDistance = userDistance;
       updateCamera();
@@ -431,15 +495,27 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     function terrainHeight(percentX, percentY) {
       const demValue = sampleHeight(percentX, percentY);
       if (maskSamples) {
-        const maskX = Math.min(heightWidth - 1, Math.max(0, Math.round((percentX / 100) * (heightWidth - 1))));
-        const maskY = Math.min(heightHeight - 1, Math.max(0, Math.round((percentY / 100) * (heightHeight - 1))));
+        const maskX = Math.min(
+          heightWidth - 1,
+          Math.max(0, Math.round((percentX / 100) * (heightWidth - 1))),
+        );
+        const maskY = Math.min(
+          heightHeight - 1,
+          Math.max(0, Math.round((percentY / 100) * (heightHeight - 1))),
+        );
         if (maskSamples[maskY * heightWidth + maskX] < 128) return config.terrain.baseDepth + 0.12;
       }
-      if (demValue !== null) return config.terrain.baseDepth + demValue * config.terrain.reliefScale * config.terrain.heightExaggeration + 0.12;
+      if (demValue !== null)
+        return (
+          config.terrain.baseDepth +
+          demValue * config.terrain.reliefScale * config.terrain.heightExaggeration +
+          0.12
+        );
       return 0.12;
     }
 
     // 点位与地形共享同一组百分比坐标，旋转或缩放时重新投影到屏幕。
+    // 点位按钮属于网页，不属于 3D 模型；这里把地图坐标投影到屏幕位置。
     function projectMarkers() {
       const rect = mapRoot.getBoundingClientRect();
       if (mapRoot.dataset.mapMode === "flat") {
@@ -471,10 +547,20 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         const percentX = Number(marker.dataset.terrainX);
         const percentY = Number(marker.dataset.terrainY);
         if (!Number.isFinite(percentX) || !Number.isFinite(percentY)) return;
-        const point = new THREE.Vector3((percentX / 100) * terrainWidth - terrainWidth / 2, terrainHeightDimension / 2 - (percentY / 100) * terrainHeightDimension, terrainHeight(percentX, percentY));
+        const point = new THREE.Vector3(
+          (percentX / 100) * terrainWidth - terrainWidth / 2,
+          terrainHeightDimension / 2 - (percentY / 100) * terrainHeightDimension,
+          terrainHeight(percentX, percentY),
+        );
         terrain.localToWorld(point);
         point.project(camera);
-        const visible = point.z > -1 && point.z < 1 && point.x > -1.15 && point.x < 1.15 && point.y > -1.15 && point.y < 1.15;
+        const visible =
+          point.z > -1 &&
+          point.z < 1 &&
+          point.x > -1.15 &&
+          point.x < 1.15 &&
+          point.y > -1.15 &&
+          point.y < 1.15;
         marker.style.left = `${(point.x + 1) * 50}%`;
         marker.style.top = `${(1 - point.y) * 50}%`;
         marker.style.visibility = visible ? "visible" : "hidden";
@@ -482,8 +568,9 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       });
     }
 
-    mapRoot.addEventListener("pointerdown", (event) => {
-      if (event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control")) return;
+    mapRoot.addEventListener("pointerdown", function handlePointerdown(event) {
+      if (event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control"))
+        return;
       if (event.pointerType === "mouse" && event.button !== 0) return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (activePointers.size === 2) {
@@ -496,12 +583,18 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       mapRoot.setPointerCapture(event.pointerId);
       mapRoot.classList.add("is-dragging");
     });
-    mapRoot.addEventListener("pointermove", (event) => {
-      if (activePointers.has(event.pointerId)) activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    mapRoot.addEventListener("pointermove", function handlePointermove(event) {
+      if (activePointers.has(event.pointerId))
+        activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (activePointers.size === 2) {
         const [first, second] = [...activePointers.values()];
         const nextDistance = Math.hypot(first.x - second.x, first.y - second.y);
-        if (pinchDistance) cameraDistance = THREE.MathUtils.clamp(cameraDistance - (nextDistance - pinchDistance) * MAP_VIEW.pinchSpeed, MAP_VIEW.minDistance, MAP_VIEW.maxDistance);
+        if (pinchDistance)
+          cameraDistance = THREE.MathUtils.clamp(
+            cameraDistance - (nextDistance - pinchDistance) * MAP_VIEW.pinchSpeed,
+            MAP_VIEW.minDistance,
+            MAP_VIEW.maxDistance,
+          );
         pinchDistance = nextDistance;
         updateCamera();
         return;
@@ -516,7 +609,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       const elements = camera.matrixWorld.elements;
       const screenRight = new THREE.Vector3(elements[0], elements[1], elements[2]);
       const screenUp = new THREE.Vector3(elements[4], elements[5], elements[6]);
-      const pan = screenRight.multiplyScalar(-deltaX * worldPerPixelX * MAP_VIEW.panSpeed)
+      const pan = screenRight
+        .multiplyScalar(-deltaX * worldPerPixelX * MAP_VIEW.panSpeed)
         .add(screenUp.multiplyScalar(deltaY * worldPerPixelY * MAP_VIEW.panSpeed));
       const nextTarget = cameraTarget.clone().add(pan);
       nextTarget.x = THREE.MathUtils.clamp(nextTarget.x, -MAP_VIEW.maxPanX, MAP_VIEW.maxPanX);
@@ -530,15 +624,24 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       if (activePointers.size < 2) pinchDistance = 0;
       isDragging = false;
       mapRoot.classList.remove("is-dragging");
-      if (event?.pointerId !== undefined && mapRoot.hasPointerCapture(event.pointerId)) mapRoot.releasePointerCapture(event.pointerId);
+      if (event?.pointerId !== undefined && mapRoot.hasPointerCapture(event.pointerId))
+        mapRoot.releasePointerCapture(event.pointerId);
     }
     mapRoot.addEventListener("pointerup", stopDragging);
     mapRoot.addEventListener("pointercancel", stopDragging);
-    mapRoot.addEventListener("wheel", (event) => {
-      event.preventDefault();
-      cameraDistance = THREE.MathUtils.clamp(cameraDistance + event.deltaY * MAP_VIEW.wheelSpeed, MAP_VIEW.minDistance, MAP_VIEW.maxDistance);
-      updateCamera();
-    }, { passive: false });
+    mapRoot.addEventListener(
+      "wheel",
+      function handleWheel(event) {
+        event.preventDefault();
+        cameraDistance = THREE.MathUtils.clamp(
+          cameraDistance + event.deltaY * MAP_VIEW.wheelSpeed,
+          MAP_VIEW.minDistance,
+          MAP_VIEW.maxDistance,
+        );
+        updateCamera();
+      },
+      { passive: false },
+    );
 
     function resetMapView() {
       cameraDistance = MAP_VIEW.defaultDistance;
@@ -548,16 +651,16 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     }
 
     mapRoot.addEventListener("dblclick", resetMapView);
-      if (rotationInput) {
+    if (rotationInput) {
       const maxElevationDegrees = Math.round(THREE.MathUtils.radToDeg(MAP_VIEW.maxElevation));
       rotationInput.min = "0";
       rotationInput.max = String(maxElevationDegrees);
-      rotationInput.addEventListener("input", () => {
+      rotationInput.addEventListener("input", function handleInput() {
         cameraElevation = THREE.MathUtils.degToRad(Number(rotationInput.value));
         fitFullView();
       });
     }
-      mapRoot.addEventListener("click", (event) => {
+    mapRoot.addEventListener("click", function handleClick(event) {
       if (event.target.closest("[data-map-reset]")) resetMapView();
     });
 
@@ -572,14 +675,17 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       if (flatMapImage.complete) invalidateMarkerProjection();
       else flatMapImage.addEventListener("load", invalidateMarkerProjection, { once: true });
     }
-    const mapVisibilityObserver = new IntersectionObserver(([entry]) => {
-      mapVisible = entry.isIntersecting;
-      if (mapVisible) {
-        invalidateMarkerProjection();
-      }
-    }, { threshold: 0.01 });
+    const mapVisibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        mapVisible = entry.isIntersecting;
+        if (mapVisible) {
+          invalidateMarkerProjection();
+        }
+      },
+      { threshold: 0.01 },
+    );
     mapVisibilityObserver.observe(mapRoot);
-    document.addEventListener("visibilitychange", () => {
+    document.addEventListener("visibilitychange", function handleVisibilitychange() {
       if (document.hidden && mapRenderFrame) {
         cancelAnimationFrame(mapRenderFrame);
         mapRenderFrame = 0;

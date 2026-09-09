@@ -13,6 +13,7 @@
       let courseRenderRequest = 0;
       let courseSlideRequest = 0;
 
+      // 有可用地址才显示下载入口，避免出现点了没有反应的按钮。
       function configureCourseLink(link, value, options = {}) {
         if (!link) return;
         const resourceUrl = safeResourceUrl(value);
@@ -33,9 +34,12 @@
         }
       }
 
+      // 把配置中的教案和回顾视频接到页面上，资源地址集中在配置文件维护。
       function configureCoursePackLinks() {
         const pack = mediaConfig?.coursePack || {};
-        configureCourseLink($("#courseGuideLink"), pack.guideUrl, { downloadName: pack.guideFileName || "封泥教案与学习单.docx" });
+        configureCourseLink($("#courseGuideLink"), pack.guideUrl, {
+          downloadName: pack.guideFileName || "封泥教案与学习单.docx",
+        });
         const recapVideo = $("#courseRecapVideo");
         const recapVideoUrl = safeResourceUrl(pack.recapVideoUrl);
         if (recapVideo && recapVideoUrl) {
@@ -57,6 +61,7 @@
         return Math.max(0, Number(course?.slideCount) || 0);
       }
 
+      // 记录每页在横向课卷中的位置，翻页时就能准确停在页首。
       function courseSlideAnchors(viewport = $("#courseSlideViewport")) {
         if (!viewport) return [];
         const viewportRect = viewport.getBoundingClientRect();
@@ -66,6 +71,7 @@
         });
       }
 
+      // 桌面端让右侧课时列表与课件等高，手机端则交给内容自然撑开。
       function syncCourseLessonPanelHeight() {
         const panel = $(".course-lesson-panel");
         const content = $("#courseScroll");
@@ -84,11 +90,14 @@
         let timer;
         await Promise.race([
           image.decode().catch(() => {}),
-          new Promise((resolve) => { timer = window.setTimeout(resolve, 4000); })
+          new Promise((resolve) => {
+            timer = window.setTimeout(resolve, 4000);
+          }),
         ]);
         window.clearTimeout(timer);
       }
 
+      // 先准备要看的这一页，再预加载下一页，兼顾首次加载和连续翻页。
       async function prepareCourseSlide(index) {
         const panels = $$(".course-slide", $("#courseSlideTrack"));
         await waitForSlideImage(panels[index]?.querySelector("img"));
@@ -96,6 +105,7 @@
         if (nextImage) nextImage.loading = "eager";
       }
 
+      // 翻到指定页，并同步页码和按钮；请求编号保证快速操作时以最后一次为准。
       async function updateCourseSlideState(index, behavior = "smooth") {
         const count = courseSlideCount();
         if (!count || !activeCourse) return;
@@ -106,32 +116,38 @@
         if (requestId !== courseSlideRequest || !activeCourse) return;
         activeCourseSlideIndex = nextIndex;
         const panels = $$(".course-slide", $("#courseSlideTrack"));
-        panels.forEach((panel, panelIndex) => panel.toggleAttribute("data-current", panelIndex === activeCourseSlideIndex));
+        panels.forEach((panel, panelIndex) =>
+          panel.toggleAttribute("data-current", panelIndex === activeCourseSlideIndex),
+        );
         const viewport = $("#courseSlideViewport");
         const targetLeft = courseSlideAnchors(viewport)[activeCourseSlideIndex];
         if (viewport && Number.isFinite(targetLeft)) {
           viewport.scrollTo({ left: targetLeft, behavior: prefersReducedMotion() ? "auto" : behavior });
         }
-        $("#courseSlideStatus").innerHTML = `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(activeCourseSlideIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
+        $("#courseSlideStatus").innerHTML =
+          `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(activeCourseSlideIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
         $("#courseSlidePrev").disabled = activeCourseSlideIndex === 0;
         $("#courseSlideNext").disabled = activeCourseSlideIndex === count - 1;
       }
 
+      // 生成本课的图片页面并缓存 HTML；远处的页面暂不急着下载。
       function getCourseSlideMarkup(course) {
         const count = Number(course.slideCount) || 0;
         const basePath = String(course.slideBasePath || "").replace(/\/$/, "");
         if (courseSlideMarkupCache.has(course.id)) return courseSlideMarkupCache.get(course.id);
-        const markup = count && basePath
-          ? Array.from({ length: count }, (_, index) => {
-              const number = String(index + 1).padStart(2, "0");
-              const source = safeResourceUrl(`${basePath}/slide-${number}.webp`);
-              return `<figure class="course-slide" data-course-slide="${index}"><img src="${escapeHtml(source)}" alt="${escapeHtml(courseLessonLabel(course))}课件第 ${index + 1} 页" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" draggable="false"></figure>`;
-            }).join("")
-          : '<div class="empty-state"><strong>课件预览暂不可用</strong><p>请点击下方按钮打开原始 PDF。</p></div>';
+        const markup =
+          count && basePath
+            ? Array.from({ length: count }, (_, index) => {
+                const number = String(index + 1).padStart(2, "0");
+                const source = safeResourceUrl(`${basePath}/slide-${number}.webp`);
+                return `<figure class="course-slide" data-course-slide="${index}"><img src="${escapeHtml(source)}" alt="${escapeHtml(courseLessonLabel(course))}课件第 ${index + 1} 页" loading="${index < 2 ? "eager" : "lazy"}" decoding="async" draggable="false"></figure>`;
+              }).join("")
+            : '<div class="empty-state"><strong>课件预览暂不可用</strong><p>请点击下方按钮打开原始 PDF。</p></div>';
         courseSlideMarkupCache.set(course.id, markup);
         return markup;
       }
 
+      // 新课件首图准备好后再换掉旧内容，减少切换时的空白。
       async function renderCourseSlides(course) {
         const track = $("#courseSlideTrack");
         const viewport = $("#courseSlideViewport");
@@ -155,12 +171,14 @@
         window.requestAnimationFrame(() => viewport.scrollTo({ left: 0, behavior: "auto" }));
       }
 
+      // 切换课时的统一入口：更新介绍、选中按钮、下载链接和课件。
       function selectCourse(id, options = {}) {
         const course = courses.find((item) => item.id === id) || courses[0];
         if (!course) return;
         $("#courseMeta").textContent = `第 ${course.lesson} 课 · ${course.duration}`;
         const lessonProgress = $("#courseLessonProgress");
-        if (lessonProgress) lessonProgress.textContent = `${String(course.lesson).padStart(2, "0")} / ${String(courses.length || 3).padStart(2, "0")}`;
+        if (lessonProgress)
+          lessonProgress.textContent = `${String(course.lesson).padStart(2, "0")} / ${String(courses.length || 3).padStart(2, "0")}`;
         $("#courseScrollTitle").textContent = course.title;
         $("#courseDescription").textContent = course.description;
         $$(`[data-course-id]`).forEach((button) => {
@@ -179,27 +197,34 @@
         resourceLink.textContent = isPdf ? "打开原始 PDF" : "下载原始 PPTX";
         configureCourseLink(resourceLink, course.resourceUrl, {
           downloadName: isPdf ? "" : course.resourceFileName,
-          openInNewTab: isPdf
+          openInNewTab: isPdf,
         });
         renderCourseSlides(course);
         if (options.scrollToContent) {
           window.requestAnimationFrame(() => {
-            $("#courseScroll")?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+            $("#courseScroll")?.scrollIntoView({
+              behavior: prefersReducedMotion() ? "auto" : "smooth",
+              block: "start",
+            });
           });
         }
       }
 
+      // 首次拿到课程列表后，生成课时按钮并默认打开第一课。
       function renderCourses(items) {
         courses = items;
-        $("#courseLessonTabs").innerHTML = items.map((course, index) => {
-          const label = Number(course.lesson) === 3 ? "手绘实践" : course.title.split("：")[0];
-          return `<button type="button" role="tab" aria-selected="${index === 0}" aria-controls="courseSlideViewport" data-course-id="${escapeHtml(course.id)}" tabindex="${index === 0 ? 0 : -1}"><span class="card-index">0${Number(course.lesson) || 0}</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(course.duration)}</small></button>`;
-        }).join("");
+        $("#courseLessonTabs").innerHTML = items
+          .map((course, index) => {
+            const label = Number(course.lesson) === 3 ? "手绘实践" : course.title.split("：")[0];
+            return `<button type="button" role="tab" aria-selected="${index === 0}" aria-controls="courseSlideViewport" data-course-id="${escapeHtml(course.id)}" tabindex="${index === 0 ? 0 : -1}"><span class="card-index">0${Number(course.lesson) || 0}</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(course.duration)}</small></button>`;
+          })
+          .join("");
         configureCoursePackLinks();
         selectCourse(items[0]?.id);
         syncCourseLessonPanelHeight();
       }
 
+      // 将鼠标拖动、滚轮、键盘和进度条接到同一套课件翻页逻辑上。
       function initCourseScroll() {
         const viewport = $("#courseSlideViewport");
         const progressTrack = $("#courseSlideProgressTrack");
@@ -209,6 +234,7 @@
         let dragStart = 0;
         let scrollStart = 0;
 
+        // 用户也能手动拖动课卷，所以页码要根据实际滚动位置更新。
         function syncCourseSlideFromScroll() {
           const panels = $$(".course-slide", $("#courseSlideTrack"));
           if (!panels.length) return;
@@ -224,15 +250,19 @@
           if (nextIndex < 0) {
             activeCourseSlideIndex = -1;
             panels.forEach((panel) => panel.removeAttribute("data-current"));
-            $("#courseSlideStatus").innerHTML = `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>-- / ${String(count).padStart(2, "0")}</b>`;
+            $("#courseSlideStatus").innerHTML =
+              `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>-- / ${String(count).padStart(2, "0")}</b>`;
             $("#courseSlidePrev").disabled = viewport.scrollLeft <= 1;
             $("#courseSlideNext").disabled = viewport.scrollLeft >= maxScroll - 1;
             return;
           }
           if (nextIndex === activeCourseSlideIndex) return;
           activeCourseSlideIndex = nextIndex;
-          panels.forEach((panel, panelIndex) => panel.toggleAttribute("data-current", panelIndex === nextIndex));
-          $("#courseSlideStatus").innerHTML = `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(nextIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
+          panels.forEach((panel, panelIndex) =>
+            panel.toggleAttribute("data-current", panelIndex === nextIndex),
+          );
+          $("#courseSlideStatus").innerHTML =
+            `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(nextIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
           $("#courseSlidePrev").disabled = nextIndex === 0;
           $("#courseSlideNext").disabled = nextIndex === count - 1;
         }
@@ -240,7 +270,7 @@
         function setCourseScrollPercent(percent) {
           const clamped = Math.min(100, Math.max(0, percent));
           const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-          viewport.scrollLeft = maxScroll * clamped / 100;
+          viewport.scrollLeft = (maxScroll * clamped) / 100;
         }
 
         function setCourseScrollFromPointer(event) {
@@ -266,37 +296,59 @@
           }
           if (targetIndex >= 0) updateCourseSlideState(targetIndex);
         }
-        tabs.addEventListener("click", (event) => {
+        tabs.addEventListener("click", function handleClick(event) {
           const button = event.target.closest("[data-course-id]");
           if (button) selectCourse(button.dataset.courseId, { scrollToContent: true });
         });
-        tabs.addEventListener("keydown", (event) => {
+        tabs.addEventListener("keydown", function handleKeydown(event) {
           if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
           event.preventDefault();
           const tabButtons = $$(`[data-course-id]`, tabs);
           const current = tabButtons.findIndex((button) => button.getAttribute("aria-selected") === "true");
-          const next = (current + (event.key === "ArrowRight" ? 1 : -1) + tabButtons.length) % tabButtons.length;
+          const next =
+            (current + (event.key === "ArrowRight" ? 1 : -1) + tabButtons.length) % tabButtons.length;
           tabButtons[next].focus();
           selectCourse(tabButtons[next].dataset.courseId, { scrollToContent: true });
         });
-        $("#courseSlidePrev").addEventListener("click", () => moveToCourseAnchor(-1));
-        $("#courseSlideNext").addEventListener("click", () => moveToCourseAnchor(1));
-        viewport.addEventListener("keydown", (event) => {
-          if (event.key === "ArrowLeft") { event.preventDefault(); moveToCourseAnchor(-1); }
-          if (event.key === "ArrowRight") { event.preventDefault(); moveToCourseAnchor(1); }
-          if (event.key === "Home") { event.preventDefault(); updateCourseSlideState(0); }
-          if (event.key === "End") { event.preventDefault(); updateCourseSlideState(courseSlideCount() - 1); }
+        $("#courseSlidePrev").addEventListener("click", function handleClick() {
+          return moveToCourseAnchor(-1);
+        });
+        $("#courseSlideNext").addEventListener("click", function handleClick() {
+          return moveToCourseAnchor(1);
+        });
+        viewport.addEventListener("keydown", function handleKeydown(event) {
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            moveToCourseAnchor(-1);
+          }
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            moveToCourseAnchor(1);
+          }
+          if (event.key === "Home") {
+            event.preventDefault();
+            updateCourseSlideState(0);
+          }
+          if (event.key === "End") {
+            event.preventDefault();
+            updateCourseSlideState(courseSlideCount() - 1);
+          }
         });
         viewport.addEventListener("scroll", syncCourseSlideFromScroll, { passive: true });
-        viewport.addEventListener("wheel", (event) => {
-          if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-          const atStart = viewport.scrollLeft <= 0 && event.deltaY < 0;
-          const atEnd = viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth - 1 && event.deltaY > 0;
-          if (atStart || atEnd) return;
-          event.preventDefault();
-          viewport.scrollLeft += event.deltaY;
-        }, { passive: false });
-        viewport.addEventListener("pointerdown", (event) => {
+        viewport.addEventListener(
+          "wheel",
+          function handleWheel(event) {
+            if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            const atStart = viewport.scrollLeft <= 0 && event.deltaY < 0;
+            const atEnd =
+              viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth - 1 && event.deltaY > 0;
+            if (atStart || atEnd) return;
+            event.preventDefault();
+            viewport.scrollLeft += event.deltaY;
+          },
+          { passive: false },
+        );
+        viewport.addEventListener("pointerdown", function handlePointerdown(event) {
           if (event.pointerType === "touch") return;
           dragging = true;
           dragStart = event.clientX;
@@ -304,37 +356,45 @@
           viewport.setPointerCapture(event.pointerId);
           viewport.classList.add("is-dragging");
         });
-        viewport.addEventListener("pointermove", (event) => {
+        viewport.addEventListener("pointermove", function handlePointermove(event) {
           if (dragging) viewport.scrollLeft = scrollStart - (event.clientX - dragStart);
         });
-        viewport.addEventListener("pointerup", (event) => {
+        viewport.addEventListener("pointerup", function handlePointerup(event) {
           dragging = false;
           viewport.releasePointerCapture(event.pointerId);
           viewport.classList.remove("is-dragging");
         });
-        viewport.addEventListener("pointercancel", () => {
+        viewport.addEventListener("pointercancel", function handlePointercancel() {
           dragging = false;
           viewport.classList.remove("is-dragging");
         });
-        progressTrack.addEventListener("pointerdown", (event) => {
+        progressTrack.addEventListener("pointerdown", function handlePointerdown(event) {
           if (event.button !== 0) return;
           progressTrack.setPointerCapture(event.pointerId);
           progressTrack.classList.add("is-dragging");
           setCourseScrollFromPointer(event);
         });
-        progressTrack.addEventListener("pointermove", (event) => {
+        progressTrack.addEventListener("pointermove", function handlePointermove(event) {
           if (progressTrack.hasPointerCapture(event.pointerId)) setCourseScrollFromPointer(event);
         });
-        const stopProgressDrag = (event) => {
-          if (progressTrack.hasPointerCapture(event.pointerId)) progressTrack.releasePointerCapture(event.pointerId);
+        const stopProgressDrag = function stopProgressDrag(event) {
+          if (progressTrack.hasPointerCapture(event.pointerId))
+            progressTrack.releasePointerCapture(event.pointerId);
           progressTrack.classList.remove("is-dragging");
         };
         progressTrack.addEventListener("pointerup", stopProgressDrag);
         progressTrack.addEventListener("pointercancel", stopProgressDrag);
-        progressTrack.addEventListener("keydown", (event) => {
+        progressTrack.addEventListener("keydown", function handleKeydown(event) {
           const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-          const currentPercent = maxScroll > 0 ? viewport.scrollLeft / maxScroll * 100 : 0;
-          const steps = { ArrowLeft: -2, ArrowDown: -2, ArrowRight: 2, ArrowUp: 2, PageUp: -10, PageDown: 10 };
+          const currentPercent = maxScroll > 0 ? (viewport.scrollLeft / maxScroll) * 100 : 0;
+          const steps = {
+            ArrowLeft: -2,
+            ArrowDown: -2,
+            ArrowRight: 2,
+            ArrowUp: 2,
+            PageUp: -10,
+            PageDown: 10,
+          };
           if (event.key === "Home" || event.key === "End") {
             event.preventDefault();
             setCourseScrollPercent(event.key === "Home" ? 0 : 100);
@@ -343,7 +403,7 @@
             setCourseScrollPercent(currentPercent + steps[event.key]);
           }
         });
-        window.addEventListener("resize", () => {
+        window.addEventListener("resize", function handleResize() {
           const oldMaxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
           const oldRatio = oldMaxScroll > 0 ? viewport.scrollLeft / oldMaxScroll : 0;
           viewport.style.setProperty("--course-slide-width", `${viewport.clientWidth}px`);
@@ -353,6 +413,6 @@
       }
 
       return { renderCourses, initCourseScroll };
-    }
+    },
   };
-}());
+})();

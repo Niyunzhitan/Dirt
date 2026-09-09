@@ -5,6 +5,7 @@
       // 地图点位由 app.js 渲染；本模块只负责筛选、选中状态和把操作转给图录模块。
       let filterRequest = 0;
 
+      // 等数据到了再替换地图；快速连点只接受最后一次结果。
       async function filterSites(period) {
         const requestId = ++filterRequest;
         const root = $("#shandongMap");
@@ -27,6 +28,7 @@
         }
       }
 
+      // 只切换立体或平面显示，不改变行政区域筛选。
       function setMapMode(mode) {
         const root = $("#shandongMap");
         if (!root || !mode) return;
@@ -41,26 +43,32 @@
 
       function init() {
         $$("[data-period]").forEach((button) => {
-          button.addEventListener("click", () => filterSites(button.dataset.period));
+          button.addEventListener("click", function handleClick() {
+            return filterSites(button.dataset.period);
+          });
         });
         $$("[data-map-mode]").forEach((button) => {
-          button.addEventListener("click", () => setMapMode(button.dataset.mapMode));
+          button.addEventListener("click", function handleClick() {
+            return setMapMode(button.dataset.mapMode);
+          });
         });
-        $("#mapMarkers")?.addEventListener("click", (event) => {
+        $("#mapMarkers")?.addEventListener("click", function handleClick(event) {
           const marker = event.target.closest(".map-marker");
           if (!marker) return;
-          $$(".map-marker", event.currentTarget).forEach((item) => item.classList.toggle("active", item === marker));
+          $$(".map-marker", event.currentTarget).forEach((item) =>
+            item.classList.toggle("active", item === marker),
+          );
           const sites = getVisibleSites();
           const index = sites.findIndex((site) => site.id === Number(marker.dataset.siteId));
           if (index >= 0) updateSitePanel(sites[index], index);
         });
-        $("#openCurrentSiteArchive")?.addEventListener("click", () => {
+        $("#openCurrentSiteArchive")?.addEventListener("click", function handleClick() {
           const id = Number($("#mapMarkers .map-marker.active")?.dataset.siteId);
           if (!id) return;
           openCurrentSiteArchive(id);
         });
       }
       return { init };
-    }
+    },
   };
-}());
+})();

@@ -5,9 +5,18 @@
     create(dependencies) {
       // 搜索弹窗只处理搜索输入和结果跳转；图录卡片的渲染仍由 app.js 提供。
       const {
-        $, escapeHtml, prefersReducedMotion, renderSourceDialogIndex,
-        sourceDialog, sourceDialogPanel, openModalAnimation, closeModalAnimation,
-        findKnowledgeSites, revealTarget, showToast, apiService
+        $,
+        escapeHtml,
+        prefersReducedMotion,
+        renderSourceDialogIndex,
+        sourceDialog,
+        sourceDialogPanel,
+        openModalAnimation,
+        closeModalAnimation,
+        findKnowledgeSites,
+        revealTarget,
+        showToast,
+        apiService,
       } = dependencies;
       const dialog = $("#searchDialog");
       const input = $("#searchInput");
@@ -25,32 +34,44 @@
         const panel = dialog?.querySelector(".search-box");
         if (!panel) return;
         panel.getAnimations().forEach((animation) => animation.cancel());
-        panel.animate([
-          { opacity: 0, transform: "translateY(10px) scale(.98)" },
-          { opacity: 1, transform: "translateY(0) scale(1)" }
-        ], { duration: prefersReducedMotion() ? 1 : 280, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" });
+        panel.animate(
+          [
+            { opacity: 0, transform: "translateY(10px) scale(.98)" },
+            { opacity: 1, transform: "translateY(0) scale(1)" },
+          ],
+          { duration: prefersReducedMotion() ? 1 : 280, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" },
+        );
       }
 
       function closeAnimation() {
         const panel = dialog?.querySelector(".search-box");
         if (!panel || prefersReducedMotion()) return null;
-        return panel.animate([
-          { opacity: 1, transform: "translateY(0) scale(1)" },
-          { opacity: 0, transform: "translateY(8px) scale(.98)" }
-        ], { duration: 180, easing: "ease-in", fill: "both" });
+        return panel.animate(
+          [
+            { opacity: 1, transform: "translateY(0) scale(1)" },
+            { opacity: 0, transform: "translateY(8px) scale(.98)" },
+          ],
+          { duration: 180, easing: "ease-in", fill: "both" },
+        );
       }
 
+      // 等关闭动画结束再关弹窗，动画被取消时不强行继续关闭。
       async function close() {
         if (!dialog?.open || dialog.classList.contains("is-closing")) return;
         dialog.classList.add("is-closing");
         const animation = closeAnimation();
         if (animation) {
-          try { await animation.finished; } catch (_) { return; }
+          try {
+            await animation.finished;
+          } catch (_) {
+            return;
+          }
         }
         dialog.classList.remove("is-closing");
         dialog.close();
       }
 
+      // 同时搜索藏品和区县图录；只展示最新请求，清空后不让旧结果回来。
       async function search() {
         if (!input || !results) return;
         const requestId = ++searchRequest;
@@ -77,11 +98,15 @@
           ? `<div class="search-result-group"><h3>代表藏品 <span>${response.total}</span></h3>${response.items.map((item) => `<button type="button" data-search-id="${item.id}"><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.period)} · ${escapeHtml(item.location)}</span></button>`).join("")}</div>`
           : "";
         const sourceGroup = sourceMatches.length
-          ? `<div class="search-result-group"><h3>45区县金石图录 <span>${sourceMatches.length}</span></h3>${sourceMatches.map((site) => {
-              const matchedSeals = site.seals.filter((seal) => seal.toLowerCase().includes(query));
-              const detail = matchedSeals.length ? matchedSeals.slice(0, 2).join(" · ") : `${site.period} · ${site.admin}`;
-              return `<button type="button" data-search-site-id="${site.id}"><strong>${escapeHtml(site.city)} · ${escapeHtml(site.name)}</strong><span>${escapeHtml(detail)}</span></button>`;
-            }).join("")}</div>`
+          ? `<div class="search-result-group"><h3>45区县金石图录 <span>${sourceMatches.length}</span></h3>${sourceMatches
+              .map((site) => {
+                const matchedSeals = site.seals.filter((seal) => seal.toLowerCase().includes(query));
+                const detail = matchedSeals.length
+                  ? matchedSeals.slice(0, 2).join(" · ")
+                  : `${site.period} · ${site.admin}`;
+                return `<button type="button" data-search-site-id="${site.id}"><strong>${escapeHtml(site.city)} · ${escapeHtml(site.name)}</strong><span>${escapeHtml(detail)}</span></button>`;
+              })
+              .join("")}</div>`
           : "";
         results.innerHTML = total
           ? `<p class="search-count">共找到 ${total} 条相关档案，点击即可前往对应位置。</p>${relicGroup}${sourceGroup}`
@@ -100,22 +125,35 @@
       function init() {
         $("#openSearch")?.addEventListener("click", open);
         $("#closeSearch")?.addEventListener("click", close);
-        dialog?.addEventListener("click", (event) => { if (event.target === dialog) close(); });
-        dialog?.addEventListener("cancel", (event) => { event.preventDefault(); close(); });
-        dialog?.addEventListener("keydown", (event) => {
-          if (event.key === "Escape") { event.preventDefault(); close(); }
+        dialog?.addEventListener("click", function handleClick(event) {
+          if (event.target === dialog) close();
         });
-        dialog?.addEventListener("close", () => $("#openSearch")?.focus());
+        dialog?.addEventListener("cancel", function handleCancel(event) {
+          event.preventDefault();
+          close();
+        });
+        dialog?.addEventListener("keydown", function handleKeydown(event) {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            close();
+          }
+        });
+        dialog?.addEventListener("close", function handleClose() {
+          return $("#openSearch")?.focus();
+        });
         input?.addEventListener("input", updateClearButton);
-        $("#clearSearch")?.addEventListener("click", () => {
+        $("#clearSearch")?.addEventListener("click", function handleClick() {
           searchRequest += 1;
           input.value = "";
           results.innerHTML = initialMessage;
           updateClearButton();
           input.focus();
         });
-        $("#searchForm")?.addEventListener("submit", (event) => { event.preventDefault(); search(); });
-        results?.addEventListener("click", async (event) => {
+        $("#searchForm")?.addEventListener("submit", function handleSubmit(event) {
+          event.preventDefault();
+          search();
+        });
+        results?.addEventListener("click", async function handleClick(event) {
           const resultButton = event.target.closest("[data-search-id], [data-search-site-id]");
           if (!resultButton) return;
           if (resultButton.dataset.searchId) {
@@ -129,7 +167,9 @@
             }, 80);
             return;
           }
-          const site = findKnowledgeSites("").find((item) => item.id === Number(resultButton.dataset.searchSiteId));
+          const site = findKnowledgeSites("").find(
+            (item) => item.id === Number(resultButton.dataset.searchSiteId),
+          );
           if (!site) return;
           close();
           renderSourceDialogIndex(site.city);
@@ -139,13 +179,16 @@
           window.setTimeout(() => {
             const targetCard = $(`#sourceDialogIndex [data-source-card="${site.id}"]`);
             targetCard?.classList.add("search-target");
-            targetCard?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
+            targetCard?.scrollIntoView({
+              behavior: prefersReducedMotion() ? "auto" : "smooth",
+              block: "center",
+            });
             showToast(`已定位图录：${site.city} · ${site.seals[0]}`);
           }, 80);
         });
       }
 
       return { init };
-    }
+    },
   };
-}());
+})();

@@ -5,5 +5,5 @@ window.APP_CONFIG = {
   AI_FALLBACK_API_BASE_URL: "http://127.0.0.1:3000",
   API_BASE_URL: "http://127.0.0.1:3000",
   USE_DATABASE: false, // 普通栏目继续使用本地展示数据
-  USE_QUIZ_DATABASE: false
+  USE_QUIZ_DATABASE: false,
 };

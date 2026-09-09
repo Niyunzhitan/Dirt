@@ -25,9 +25,15 @@
         const preview = $("#uploadPreview");
         preview.hidden = selectedImages.length === 0;
         $("#uploadCount").textContent = `印小灵收到 ${selectedImages.length} 张图片啦`;
-        $("#uploadThumbnails").innerHTML = selectedImages.map((item, index) => `<div class="upload-item"><img src="${item.previewUrl}" alt="待上传图片 ${index + 1}"><button type="button" data-remove-image="${item.id}" aria-label="移除${escapeHtml(item.file.name)}">×</button><span title="${escapeHtml(item.file.name)}">${escapeHtml(item.file.name)}</span></div>`).join("");
+        $("#uploadThumbnails").innerHTML = selectedImages
+          .map(
+            (item, index) =>
+              `<div class="upload-item"><img src="${item.previewUrl}" alt="待上传图片 ${index + 1}"><button type="button" data-remove-image="${item.id}" aria-label="移除${escapeHtml(item.file.name)}">×</button><span title="${escapeHtml(item.file.name)}">${escapeHtml(item.file.name)}</span></div>`,
+          )
+          .join("");
       }
 
+      // 清空预览时释放临时图片地址，避免多次上传后一直占用内存。
       function clearSelectedImages() {
         selectedImages.forEach((item) => URL.revokeObjectURL(item.previewUrl));
         selectedImages = [];
@@ -35,6 +41,7 @@
         renderSelectedImages();
       }
 
+      // 先显示用户消息和等待提示，再请求回答；成功或失败都要恢复发送按钮。
       async function send(message) {
         const images = selectedImages.map((item) => item.file);
         if (!message && !images.length) return;
@@ -68,23 +75,44 @@
         element.innerHTML = `<i></i> ${status.connected ? "印小灵已经准备好啦" : "印小灵暂时打了个小盹"}`;
       }
 
+      // 集中绑定发送、快捷提问、上传和清空事件，页面初始化时调用一次。
       function init() {
-        window.addEventListener("ai-status-change", (event) => renderStatus(event.detail || { connected: false }));
-        $("#chatForm")?.addEventListener("submit", (event) => { event.preventDefault(); send($("#aiQuestion").value.trim()); });
-        $$(`[data-prompt]`).forEach((button) => button.addEventListener("click", () => send(button.dataset.prompt)));
-        $("#aiImage")?.addEventListener("change", () => {
+        window.addEventListener("ai-status-change", function handleAiStatusChange(event) {
+          return renderStatus(event.detail || { connected: false });
+        });
+        $("#chatForm")?.addEventListener("submit", function handleSubmit(event) {
+          event.preventDefault();
+          send($("#aiQuestion").value.trim());
+        });
+        $$(`[data-prompt]`).forEach((button) =>
+          button.addEventListener("click", function handleClick() {
+            return send(button.dataset.prompt);
+          }),
+        );
+        $("#aiImage")?.addEventListener("change", function handleChange() {
           const files = [...$("#aiImage").files];
           const availableSlots = Math.max(0, 4 - selectedImages.length);
-          const validFiles = files.filter((file) => {
-            if (file.size > 5 * 1024 * 1024) { showToast(`${file.name} 太大啦，请换一张不超过 5MB 的图片`); return false; }
-            return true;
-          }).slice(0, availableSlots);
+          const validFiles = files
+            .filter((file) => {
+              if (file.size > 5 * 1024 * 1024) {
+                showToast(`${file.name} 太大啦，请换一张不超过 5MB 的图片`);
+                return false;
+              }
+              return true;
+            })
+            .slice(0, availableSlots);
           if (files.length > availableSlots) showToast("印小灵一次最多能抱住 4 张图片哦");
-          validFiles.forEach((file) => selectedImages.push({ id: `${Date.now()}-${Math.random()}`, file, previewUrl: URL.createObjectURL(file) }));
+          validFiles.forEach((file) =>
+            selectedImages.push({
+              id: `${Date.now()}-${Math.random()}`,
+              file,
+              previewUrl: URL.createObjectURL(file),
+            }),
+          );
           $("#aiImage").value = "";
           renderSelectedImages();
         });
-        $("#uploadThumbnails")?.addEventListener("click", (event) => {
+        $("#uploadThumbnails")?.addEventListener("click", function handleClick(event) {
           const button = event.target.closest("[data-remove-image]");
           if (!button) return;
           const index = selectedImages.findIndex((item) => item.id === button.dataset.removeImage);
@@ -94,8 +122,9 @@
           renderSelectedImages();
         });
         $("#clearImages")?.addEventListener("click", clearSelectedImages);
-        $("#clearChat")?.addEventListener("click", () => {
-          $("#chatMessages").innerHTML = '<div class="chat-message assistant">小黑板擦干净啦！重新开始吧，想聊封泥或别的小问题都可以。</div>';
+        $("#clearChat")?.addEventListener("click", function handleClick() {
+          $("#chatMessages").innerHTML =
+            '<div class="chat-message assistant">小黑板擦干净啦！重新开始吧，想聊封泥或别的小问题都可以。</div>';
           sessionId = "";
           window.sessionStorage.removeItem(sessionStorageKey);
           clearSelectedImages();
@@ -103,6 +132,6 @@
       }
 
       return { init, renderStatus };
-    }
+    },
   };
-}());
+})();

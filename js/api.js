@@ -2,39 +2,54 @@
   const baseUrl = String(window.APP_CONFIG?.API_BASE_URL || "").replace(/\/$/, "");
   const useDatabase = Boolean(window.APP_CONFIG?.USE_DATABASE);
   const useQuizDatabase = Boolean(window.APP_CONFIG?.USE_QUIZ_DATABASE);
-  const apiUrl = (path) => `${baseUrl}${path}`;
+  const apiUrl = function apiUrl(path) {
+    return `${baseUrl}${path}`;
+  };
+  // GET 请求统一从这里读取 JSON；接口报错时把错误交给页面处理。
   async function request(path) {
     const response = await fetch(apiUrl(path));
-    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || `数据请求失败（${response.status}）`);
+    if (!response.ok)
+      throw new Error(
+        (await response.json().catch(() => ({}))).error || `数据请求失败（${response.status}）`,
+      );
     return response.json();
   }
+  // 将提交内容转换为 JSON，并统一检查服务器是否成功接收。
   async function post(path, body) {
     const response = await fetch(apiUrl(path), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
-    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || `数据提交失败（${response.status}）`);
+    if (!response.ok)
+      throw new Error(
+        (await response.json().catch(() => ({}))).error || `数据提交失败（${response.status}）`,
+      );
     return response.json();
   }
 
   // 未配置数据库时保留模拟数据，便于本地做页面开发；上线时打开 USE_DATABASE。
-  const copyItems = (items) => items.map((item) => ({ ...item }));
+  const copyItems = function copyItems(items) {
+    return items.map((item) => ({ ...item }));
+  };
   // 常用媒体配置按课程 id 补充视频、课件等公开资源，数据库和 mock 模式共用。
-  const applyCourseMedia = (items) => items.map((course) => {
-    const media = window.MEDIA_CONFIG?.courses?.[course.id] || {};
-    return {
-      ...course,
-      videoUrl: media.videoUrl || course.videoUrl || "",
-      posterUrl: media.posterUrl || course.posterUrl || "",
-      resourceUrl: media.resourceUrl || course.resourceUrl || "",
-      resourceType: media.resourceType || course.resourceType || "",
-      resourceName: media.resourceName || course.resourceName || "",
-      resourceFileName: media.resourceFileName || course.resourceFileName || "",
-      slideBasePath: media.slideBasePath || course.slideBasePath || "",
-      slideCount: Number(media.slideCount || course.slideCount) || 0
-    };
-  });
+  const applyCourseMedia = function applyCourseMedia(items) {
+    return items.map((course) => {
+      const media = window.MEDIA_CONFIG?.courses?.[course.id] || {};
+      return {
+        ...course,
+        videoUrl: media.videoUrl || course.videoUrl || "",
+        posterUrl: media.posterUrl || course.posterUrl || "",
+        resourceUrl: media.resourceUrl || course.resourceUrl || "",
+        resourceType: media.resourceType || course.resourceType || "",
+        resourceName: media.resourceName || course.resourceName || "",
+        resourceFileName: media.resourceFileName || course.resourceFileName || "",
+        slideBasePath: media.slideBasePath || course.slideBasePath || "",
+        slideCount: Number(media.slideCount || course.slideCount) || 0,
+      };
+    });
+  };
+  // 先复制数组，再从后往前随机交换，避免打乱原始题库。
   function shuffle(items) {
     const result = [...items];
     for (let index = result.length - 1; index > 0; index -= 1) {
@@ -62,14 +77,18 @@
       correct,
       correctAnswer: question.correctAnswer,
       explanation: question.explanation,
-      earnedScore: correct ? 10 : 0
+      earnedScore: correct ? 10 : 0,
     };
   }
 
   // 页面只调用 ApiService；这里统一处理“本地 mock / 云端数据库”的差异。
   window.ApiService = {
-    async getStats() { return useDatabase ? request("/api/data/stats") : { ...window.MOCK_DATA.stats }; },
-    async getMapConfig() { return { imageUrl: window.MOCK_DATA.mapImageUrl }; },
+    async getStats() {
+      return useDatabase ? request("/api/data/stats") : { ...window.MOCK_DATA.stats };
+    },
+    async getMapConfig() {
+      return { imageUrl: window.MOCK_DATA.mapImageUrl };
+    },
     async getSites(period = "全部") {
       if (useDatabase) return request(`/api/data/sites?period=${encodeURIComponent(period)}`);
       const mainSystems = ["青州", "兖州", "徐州"];
@@ -82,16 +101,34 @@
     },
     async getRelics(params = {}) {
       if (useDatabase) return request(`/api/data/relics?keyword=${encodeURIComponent(params.keyword || "")}`);
-      const keyword = String(params.keyword || "").trim().toLowerCase();
-      const items = window.MOCK_DATA.relics.filter((item) => !keyword || [item.name, item.inscription, item.period, item.location, item.category, item.value].some((field) => field.toLowerCase().includes(keyword)));
+      const keyword = String(params.keyword || "")
+        .trim()
+        .toLowerCase();
+      const items = window.MOCK_DATA.relics.filter(
+        (item) =>
+          !keyword ||
+          [item.name, item.inscription, item.period, item.location, item.category, item.value].some((field) =>
+            field.toLowerCase().includes(keyword),
+          ),
+      );
       return { items: copyItems(items), total: items.length };
     },
-    async getRelicById(id) { return useDatabase ? request(`/api/data/relics/${encodeURIComponent(id)}`) : window.MOCK_DATA.relics.find((item) => item.id === id) || null; },
+    async getRelicById(id) {
+      return useDatabase
+        ? request(`/api/data/relics/${encodeURIComponent(id)}`)
+        : window.MOCK_DATA.relics.find((item) => item.id === id) || null;
+    },
     async getCourses() {
       const items = useDatabase ? await request("/api/data/courses") : copyItems(window.MOCK_DATA.courses);
       return applyCourseMedia(items);
     },
-    async startQuiz() { return useQuizDatabase ? request("/api/quiz/start") : startMockQuiz(); },
-    async answerQuiz(questionId, answer) { return useQuizDatabase ? post("/api/quiz/answer", { questionId, answer }) : answerMockQuiz(questionId, answer); }
+    async startQuiz() {
+      return useQuizDatabase ? request("/api/quiz/start") : startMockQuiz();
+    },
+    async answerQuiz(questionId, answer) {
+      return useQuizDatabase
+        ? post("/api/quiz/answer", { questionId, answer })
+        : answerMockQuiz(questionId, answer);
+    },
   };
-}());
+})();

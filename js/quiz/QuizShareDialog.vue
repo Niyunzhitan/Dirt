@@ -1,7 +1,11 @@
 <script setup>
 import { nextTick, ref } from "vue";
 
-const props = defineProps({ title: { type: String, required: true }, score: { type: Number, required: true }, total: { type: Number, required: true } });
+const props = defineProps({
+  title: { type: String, required: true },
+  score: { type: Number, required: true },
+  total: { type: Number, required: true },
+});
 const dialog = ref(null);
 const copyButton = ref(null);
 const copied = ref(false);
@@ -19,14 +23,17 @@ function open() {
   nextTick(() => copyButton.value?.focus());
 }
 
-function close() { dialog.value?.close(); }
+function close() {
+  dialog.value?.close();
+}
 
+// 优先用剪贴板接口，不支持时尝试文本框复制，并给出复制结果。
 async function copyUrl() {
   copied.value = false;
   copyButtonText.value = "复制中…";
   copyFeedback.value = "正在复制当前网址……";
 
-  const copyWithTextarea = () => {
+  const copyWithTextarea = function copyWithTextarea() {
     const input = document.createElement("textarea");
     input.value = shareUrl;
     input.readOnly = true;
@@ -55,9 +62,8 @@ async function copyUrl() {
     copyCount.value += 1;
     copied.value = true;
     copyButtonText.value = copyCount.value > 1 ? "再次复制成功" : "已复制";
-    copyFeedback.value = copyCount.value > 1
-      ? `已第 ${copyCount.value} 次复制当前网址。`
-      : "网址已复制，可以发送给朋友了。";
+    copyFeedback.value =
+      copyCount.value > 1 ? `已第 ${copyCount.value} 次复制当前网址。` : "网址已复制，可以发送给朋友了。";
     window.clearTimeout(copyResetTimer);
     copyResetTimer = window.setTimeout(() => {
       copied.value = false;
@@ -75,13 +81,32 @@ defineExpose({ open });
 
 <template>
   <teleport to="body">
-    <dialog ref="dialog" class="share-dialog" aria-labelledby="shareTitle" @click.self="close" @cancel.prevent="close">
+    <dialog
+      ref="dialog"
+      class="share-dialog"
+      aria-labelledby="shareTitle"
+      @click.self="close"
+      @cancel.prevent="close"
+    >
       <div class="share-panel">
         <button class="share-close" type="button" aria-label="关闭成绩分享弹窗" @click="close">×</button>
-        <p class="eyebrow">趣味问答成绩</p><div class="share-rank" aria-hidden="true"><span>段</span></div>
-        <p class="share-kicker">本轮段位</p><h2 id="shareTitle">{{ props.title }}</h2>
+        <p class="eyebrow">趣味问答成绩</p>
+        <div class="share-rank" aria-hidden="true"><span>段</span></div>
+        <p class="share-kicker">本轮段位</p>
+        <h2 id="shareTitle">{{ props.title }}</h2>
         <p class="share-summary">本轮得分 {{ props.score }} 分，答题完成。</p>
-        <div class="share-url-row"><span class="share-url">{{ shareUrl }}</span><button ref="copyButton" class="share-copy" :class="{ 'is-copied': copied }" type="button" @click="copyUrl">{{ copyButtonText }}</button></div>
+        <div class="share-url-row">
+          <span class="share-url">{{ shareUrl }}</span
+          ><button
+            ref="copyButton"
+            class="share-copy"
+            :class="{ 'is-copied': copied }"
+            type="button"
+            @click="copyUrl"
+          >
+            {{ copyButtonText }}
+          </button>
+        </div>
         <p class="share-feedback" role="status" aria-live="polite">{{ copyFeedback }}</p>
       </div>
     </dialog>

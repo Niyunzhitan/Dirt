@@ -1,8 +1,12 @@
 (function () {
   // ==================== 01. 通用工具和页面状态 ====================
   // $ 查找一个元素，$$ 查找多个元素并转成数组，后面所有板块都会使用。
-  const $ = (selector, scope = document) => scope.querySelector(selector);
-  const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+  const $ = function $(selector, scope = document) {
+    return scope.querySelector(selector);
+  };
+  const $$ = function $$(selector, scope = document) {
+    return [...scope.querySelectorAll(selector)];
+  };
   // 这些小工具和基础状态由多个功能模块共享，因此保留在入口文件中统一提供。
   let visibleSites = [];
   // 改名后启用新的会话命名空间，避免旧会话带回历史 AI 名称。
@@ -23,31 +27,75 @@
   const interfaceConfig = {
     clockLocale: "zh-CN",
     clockRefreshInterval: 1000,
-    clockFormat: { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }
+    clockFormat: { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false },
   };
 
   // 地图点位配置：[经度, 纬度]。区县坐标优先，城市坐标用于缺少区县时兜底。
   const mapCoordinates = {
     cities: {
-      "滨州": [117.97, 37.38], "聊城": [115.98, 36.45], "德州": [116.36, 37.45], "东营": [118.67, 37.43],
-      "菏泽": [115.48, 35.23], "淄博": [118.05, 36.81], "济南": [117.12, 36.65], "潍坊": [119.16, 36.71],
-      "临沂": [118.35, 35.10], "烟台": [121.39, 37.52], "青岛": [120.38, 36.07], "济宁": [116.59, 35.41],
-      "泰安": [117.13, 36.19], "日照": [119.52, 35.42], "枣庄": [117.32, 34.81]
+      滨州: [117.97, 37.38],
+      聊城: [115.98, 36.45],
+      德州: [116.36, 37.45],
+      东营: [118.67, 37.43],
+      菏泽: [115.48, 35.23],
+      淄博: [118.05, 36.81],
+      济南: [117.12, 36.65],
+      潍坊: [119.16, 36.71],
+      临沂: [118.35, 35.1],
+      烟台: [121.39, 37.52],
+      青岛: [120.38, 36.07],
+      济宁: [116.59, 35.41],
+      泰安: [117.13, 36.19],
+      日照: [119.52, 35.42],
+      枣庄: [117.32, 34.81],
     },
     counties: {
-      "博兴": [118.13, 37.15], "高唐": [116.23, 36.85], "东阿": [116.25, 36.33], "阳谷": [115.78, 36.12],
-      "邹平": [117.74, 36.88], "高青": [117.83, 37.17], "鄄城": [115.54, 35.56], "乐陵": [117.23, 37.73],
-      "陵城": [116.58, 37.33], "利津": [118.25, 37.49], "广饶": [118.41, 37.05], "周村": [117.87, 36.80],
-      "淄川": [117.97, 36.65], "临淄": [118.31, 36.82], "商河": [117.16, 37.31], "章丘": [117.53, 36.71],
-      "莱芜": [117.68, 36.21], "临朐": [118.54, 36.51], "潍城": [119.10, 36.71], "昌乐": [118.83, 36.70],
-      "寿光": [118.79, 36.86], "安丘": [119.22, 36.48], "郯城": [118.37, 34.61], "昌邑": [119.40, 36.85],
-      "高密": [119.76, 36.38], "诸城": [119.41, 35.99], "沂水": [118.64, 35.79], "沂南": [118.46, 35.55],
-      "兰陵": [117.95, 34.86], "费": [117.98, 35.27], "福山": [121.27, 37.50], "龙口": [120.52, 37.65],
-      "莱州": [119.94, 37.18], "牟平": [121.60, 37.39], "即墨": [120.45, 36.39], "市南": [120.40, 36.08],
-      "平度": [119.99, 36.78], "邹城": [116.97, 35.40], "东平": [116.33, 35.94], "泰山": [117.13, 36.19],
-      "岱岳": [117.04, 36.19], "宁阳": [116.80, 35.76], "莒": [118.87, 35.59], "武城": [116.07, 37.21],
-      "汶上": [116.49, 35.72]
-    }
+      博兴: [118.13, 37.15],
+      高唐: [116.23, 36.85],
+      东阿: [116.25, 36.33],
+      阳谷: [115.78, 36.12],
+      邹平: [117.74, 36.88],
+      高青: [117.83, 37.17],
+      鄄城: [115.54, 35.56],
+      乐陵: [117.23, 37.73],
+      陵城: [116.58, 37.33],
+      利津: [118.25, 37.49],
+      广饶: [118.41, 37.05],
+      周村: [117.87, 36.8],
+      淄川: [117.97, 36.65],
+      临淄: [118.31, 36.82],
+      商河: [117.16, 37.31],
+      章丘: [117.53, 36.71],
+      莱芜: [117.68, 36.21],
+      临朐: [118.54, 36.51],
+      潍城: [119.1, 36.71],
+      昌乐: [118.83, 36.7],
+      寿光: [118.79, 36.86],
+      安丘: [119.22, 36.48],
+      郯城: [118.37, 34.61],
+      昌邑: [119.4, 36.85],
+      高密: [119.76, 36.38],
+      诸城: [119.41, 35.99],
+      沂水: [118.64, 35.79],
+      沂南: [118.46, 35.55],
+      兰陵: [117.95, 34.86],
+      费: [117.98, 35.27],
+      福山: [121.27, 37.5],
+      龙口: [120.52, 37.65],
+      莱州: [119.94, 37.18],
+      牟平: [121.6, 37.39],
+      即墨: [120.45, 36.39],
+      市南: [120.4, 36.08],
+      平度: [119.99, 36.78],
+      邹城: [116.97, 35.4],
+      东平: [116.33, 35.94],
+      泰山: [117.13, 36.19],
+      岱岳: [117.04, 36.19],
+      宁阳: [116.8, 35.76],
+      莒: [118.87, 35.59],
+      武城: [116.07, 37.21],
+      汶上: [116.49, 35.72],
+    },
   };
 
   function readCssTime(variableName) {
@@ -59,6 +107,7 @@
     return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
   }
 
+  // 从样式配置读取动画参数，弹窗等交互就不必各自写一套时间和曲线。
   function runElementAnimation(element, keyframes, durationVariable, easingVariable) {
     if (!element) return null;
     element.getAnimations().forEach((animation) => animation.cancel());
@@ -66,7 +115,7 @@
     return element.animate(keyframes, {
       duration,
       easing: readCssValue(easingVariable),
-      fill: "both"
+      fill: "both",
     });
   }
 
@@ -75,13 +124,13 @@
     fontSize: {
       small: "0.82rem",
       standard: "0.9rem",
-      large: "1rem"
+      large: "1rem",
     },
     lineHeight: {
       compact: "1.6",
       comfortable: "1.8",
-      loose: "2"
-    }
+      loose: "2",
+    },
   };
 
   // 动态设置：范围、步长、默认值和单位相互独立，便于以后分别调整。
@@ -89,39 +138,55 @@
     pageMotion: { min: 0, max: 100, step: 10, defaultValue: 60, unit: "%" },
     cardTilt: { min: 0, max: 6, step: 0.5, defaultValue: 4, unit: "°" },
     backgroundDust: { min: 0, max: 64, step: 4, defaultValue: 16, unit: "粒" },
-    backgroundDustSpeed: { min: 0, max: 200, step: 5, defaultValue: 100, initialValue: 25, unit: "%" }
+    backgroundDustSpeed: { min: 0, max: 200, step: 5, defaultValue: 100, initialValue: 25, unit: "%" },
   };
 
   // 动态设置到底层视觉参数的换算边界。
   const motionSettingEffects = {
-    cardLiftMax: 5
+    cardLiftMax: 5,
   };
 
   const defaultSettings = {
     themeMode: "auto",
     fontSize: "standard",
     lineHeight: "comfortable",
-    motionIntensity: systemPrefersReducedMotion ? motionSettingRanges.pageMotion.min : motionSettingRanges.pageMotion.defaultValue,
-    tiltDegrees: systemPrefersReducedMotion ? motionSettingRanges.cardTilt.min : motionSettingRanges.cardTilt.defaultValue,
-    dustQuantity: systemPrefersReducedMotion ? motionSettingRanges.backgroundDust.min : motionSettingRanges.backgroundDust.defaultValue,
-    dustSpeed: systemPrefersReducedMotion ? motionSettingRanges.backgroundDustSpeed.min : motionSettingRanges.backgroundDustSpeed.defaultValue
+    motionIntensity: systemPrefersReducedMotion
+      ? motionSettingRanges.pageMotion.min
+      : motionSettingRanges.pageMotion.defaultValue,
+    tiltDegrees: systemPrefersReducedMotion
+      ? motionSettingRanges.cardTilt.min
+      : motionSettingRanges.cardTilt.defaultValue,
+    dustQuantity: systemPrefersReducedMotion
+      ? motionSettingRanges.backgroundDust.min
+      : motionSettingRanges.backgroundDust.defaultValue,
+    dustSpeed: systemPrefersReducedMotion
+      ? motionSettingRanges.backgroundDustSpeed.min
+      : motionSettingRanges.backgroundDustSpeed.defaultValue,
   };
   let userSettings = { ...defaultSettings };
   let settingsNeedMigration = false;
 
   try {
     const currentSettings = window.localStorage.getItem(settingsStorageKey);
-    const legacySettings = legacySettingsStorageKeys.map((key) => window.localStorage.getItem(key)).find(Boolean);
+    const legacySettings = legacySettingsStorageKeys
+      .map((key) => window.localStorage.getItem(key))
+      .find(Boolean);
     const savedSettings = JSON.parse(currentSettings || legacySettings || "{}");
     if (!currentSettings && legacySettings) settingsNeedMigration = true;
     // 新增速度设置首次使用时从 25% 开始；“恢复默认”仍回到 100%。
     if (savedSettings.dustSpeed === undefined) {
-      savedSettings.dustSpeed = systemPrefersReducedMotion ? motionSettingRanges.backgroundDustSpeed.min : motionSettingRanges.backgroundDustSpeed.initialValue;
+      savedSettings.dustSpeed = systemPrefersReducedMotion
+        ? motionSettingRanges.backgroundDustSpeed.min
+        : motionSettingRanges.backgroundDustSpeed.initialValue;
       settingsNeedMigration = true;
     }
     // 兼容旧版“微尘强度 0～100%”：按比例迁移为“微尘数量 0～32 粒”。
     if (savedSettings.dustQuantity === undefined && savedSettings.dustIntensity !== undefined) {
-      savedSettings.dustQuantity = Math.round((Number(savedSettings.dustIntensity) / 100) * motionSettingRanges.backgroundDust.max / motionSettingRanges.backgroundDust.step) * motionSettingRanges.backgroundDust.step;
+      savedSettings.dustQuantity =
+        Math.round(
+          ((Number(savedSettings.dustIntensity) / 100) * motionSettingRanges.backgroundDust.max) /
+            motionSettingRanges.backgroundDust.step,
+        ) * motionSettingRanges.backgroundDust.step;
       settingsNeedMigration = true;
     }
     delete savedSettings.dustIntensity;
@@ -129,37 +194,46 @@
   } catch (_) {
     userSettings = {
       ...defaultSettings,
-      dustSpeed: systemPrefersReducedMotion ? motionSettingRanges.backgroundDustSpeed.min : motionSettingRanges.backgroundDustSpeed.initialValue
+      dustSpeed: systemPrefersReducedMotion
+        ? motionSettingRanges.backgroundDustSpeed.min
+        : motionSettingRanges.backgroundDustSpeed.initialValue,
     };
   }
 
   /* 必须由 JavaScript 计算的动态视觉参数；CSS 外观参数统一放在 tokens.css。 */
   const visualEffects = {
-    rippleLifetime: 600,       // 点击波纹保留时间（毫秒）
-    searchFocusDelay: 700,     // 平滑滚动后移动焦点的等待时间（毫秒）
+    rippleLifetime: 600, // 点击波纹保留时间（毫秒）
+    searchFocusDelay: 700, // 平滑滚动后移动焦点的等待时间（毫秒）
     searchHighlightLifetime: 1900, // 搜索目标描边保留时间（毫秒）
     cardTiltDegrees: motionSettingRanges.cardTilt.defaultValue, // 运行时由“卡片倾斜角度”设置更新
-    cardPerspective: 800,      // 卡片 3D 透视距离
+    cardPerspective: 800, // 卡片 3D 透视距离
     cardLift: Math.min(motionSettingEffects.cardLiftMax, motionSettingRanges.cardTilt.defaultValue), // 随倾斜角度联动
     dustSpeedScale: motionSettingRanges.backgroundDustSpeed.defaultValue / 100, // 运行时由“背景微尘速度”设置更新
     dustMaxParticles: motionSettingRanges.backgroundDust.max, // 粒子池数量，单位：粒
-    dustSizeMin: 0.8,          // 微尘最小半径
-    dustSizeRange: 2.2,        // 微尘半径随机增量
-    dustBaseSpeedScale: 2.5,    // 将当前基准速度提升为原来的 2.5 倍
+    dustSizeMin: 0.8, // 微尘最小半径
+    dustSizeRange: 2.2, // 微尘半径随机增量
+    dustBaseSpeedScale: 2.5, // 将当前基准速度提升为原来的 2.5 倍
     dustHorizontalSpeed: 0.35, // 微尘水平漂移速度
-    dustVerticalSpeedMin: 0.15,// 微尘最小下落速度
-    dustVerticalSpeedRange: 0.4,// 微尘下落速度随机增量
-    dustOpacityMin: 0.15,      // 单粒微尘最低透明度
-    dustOpacityRange: 0.45,    // 单粒微尘透明度随机增量
+    dustVerticalSpeedMin: 0.15, // 微尘最小下落速度
+    dustVerticalSpeedRange: 0.4, // 微尘下落速度随机增量
+    dustOpacityMin: 0.15, // 单粒微尘最低透明度
+    dustOpacityRange: 0.45, // 单粒微尘透明度随机增量
     dustPrimaryColor: "168, 51, 42", // 主要朱砂色 RGB
     dustAccentColor: "212, 175, 55", // 少量金色 RGB
-    dustPrimaryRatio: 0.6,      // 朱砂微尘占比
-    dustFrameIntervalMs: 32     // 微尘绘制间隔，约 31 FPS；页面装饰不需要 60 FPS
+    dustPrimaryRatio: 0.6, // 朱砂微尘占比
+    dustFrameIntervalMs: 32, // 微尘绘制间隔，约 31 FPS；页面装饰不需要 60 FPS
   };
 
-  const escapeHtml = (value) => String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
+  const escapeHtml = function escapeHtml(value) {
+    return String(value).replace(
+      /[&<>'"]/g,
+      (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char],
+    );
+  };
   // 数据库中的地址只能用于图片或视频，拒绝 javascript: 等危险协议。
-  const safeResourceUrl = (value) => window.MediaSecurity?.resolve(value) || "";
+  const safeResourceUrl = function safeResourceUrl(value) {
+    return window.MediaSecurity?.resolve(value) || "";
+  };
 
   // Logo 使用可选图片；配置为空或图片加载失败时保留当前“泥”字印章。
   function applyBrandLogo() {
@@ -168,19 +242,25 @@
     $$(".brand-logo-image").forEach((image) => {
       image.src = logoUrl;
       image.hidden = false;
-      image.addEventListener("error", () => {
-        image.hidden = true;
-        const fallback = image.parentElement.querySelector(".brand-logo-fallback");
-        if (fallback) fallback.hidden = false;
-      }, { once: true });
+      image.addEventListener(
+        "error",
+        function handleError() {
+          image.hidden = true;
+          const fallback = image.parentElement.querySelector(".brand-logo-fallback");
+          if (fallback) fallback.hidden = false;
+        },
+        { once: true },
+      );
       const fallback = image.parentElement.querySelector(".brand-logo-fallback");
       if (fallback) fallback.hidden = true;
     });
   }
   applyBrandLogo();
 
-  const prefersReducedMotion = () => systemPrefersReducedMotion || Number(userSettings.motionIntensity) === 0;
-  const clampNumber = (value, min, max, fallback) => {
+  const prefersReducedMotion = function prefersReducedMotion() {
+    return systemPrefersReducedMotion || Number(userSettings.motionIntensity) === 0;
+  };
+  const clampNumber = function clampNumber(value, min, max, fallback) {
     const number = Number(value);
     return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
   };
@@ -188,7 +268,7 @@
   const themeSettingOptions = {
     light: "light",
     dark: "dark",
-    auto: "auto"
+    auto: "auto",
   };
 
   // 自动主题时间由 index.html 在首帧绘制前提供，保证刷新前后使用同一判断标准。
@@ -206,6 +286,7 @@
     return isAutomaticLightTime() ? "light" : "dark";
   }
 
+  // 自动主题只需等到下一次昼夜分界再更新，不必每秒检查时间。
   function scheduleAutomaticThemeUpdate() {
     if (automaticThemeTimer) window.clearTimeout(automaticThemeTimer);
     automaticThemeTimer = null;
@@ -222,21 +303,52 @@
       nextBoundary.setHours(themeSchedule.lightStartHour, 0, 0, 0);
     }
 
-    automaticThemeTimer = window.setTimeout(() => applyDisplaySettings(false), Math.max(1000, nextBoundary.getTime() - now.getTime() + 100));
+    automaticThemeTimer = window.setTimeout(
+      () => applyDisplaySettings(false),
+      Math.max(1000, nextBoundary.getTime() - now.getTime() + 100),
+    );
   }
 
+  // 浏览器里保存的设置可能来自旧版本，先补默认值并限制数值范围。
   function normalizeSettings(settings) {
     return {
-      themeMode: Object.hasOwn(themeSettingOptions, settings.themeMode) ? settings.themeMode : defaultSettings.themeMode,
-      fontSize: Object.hasOwn(readerSettingOptions.fontSize, settings.fontSize) ? settings.fontSize : defaultSettings.fontSize,
-      lineHeight: Object.hasOwn(readerSettingOptions.lineHeight, settings.lineHeight) ? settings.lineHeight : defaultSettings.lineHeight,
-      motionIntensity: clampNumber(settings.motionIntensity, motionSettingRanges.pageMotion.min, motionSettingRanges.pageMotion.max, defaultSettings.motionIntensity),
-      tiltDegrees: clampNumber(settings.tiltDegrees, motionSettingRanges.cardTilt.min, motionSettingRanges.cardTilt.max, defaultSettings.tiltDegrees),
-      dustQuantity: clampNumber(settings.dustQuantity, motionSettingRanges.backgroundDust.min, motionSettingRanges.backgroundDust.max, defaultSettings.dustQuantity),
-      dustSpeed: clampNumber(settings.dustSpeed, motionSettingRanges.backgroundDustSpeed.min, motionSettingRanges.backgroundDustSpeed.max, defaultSettings.dustSpeed)
+      themeMode: Object.hasOwn(themeSettingOptions, settings.themeMode)
+        ? settings.themeMode
+        : defaultSettings.themeMode,
+      fontSize: Object.hasOwn(readerSettingOptions.fontSize, settings.fontSize)
+        ? settings.fontSize
+        : defaultSettings.fontSize,
+      lineHeight: Object.hasOwn(readerSettingOptions.lineHeight, settings.lineHeight)
+        ? settings.lineHeight
+        : defaultSettings.lineHeight,
+      motionIntensity: clampNumber(
+        settings.motionIntensity,
+        motionSettingRanges.pageMotion.min,
+        motionSettingRanges.pageMotion.max,
+        defaultSettings.motionIntensity,
+      ),
+      tiltDegrees: clampNumber(
+        settings.tiltDegrees,
+        motionSettingRanges.cardTilt.min,
+        motionSettingRanges.cardTilt.max,
+        defaultSettings.tiltDegrees,
+      ),
+      dustQuantity: clampNumber(
+        settings.dustQuantity,
+        motionSettingRanges.backgroundDust.min,
+        motionSettingRanges.backgroundDust.max,
+        defaultSettings.dustQuantity,
+      ),
+      dustSpeed: clampNumber(
+        settings.dustSpeed,
+        motionSettingRanges.backgroundDustSpeed.min,
+        motionSettingRanges.backgroundDustSpeed.max,
+        defaultSettings.dustSpeed,
+      ),
     };
   }
 
+  // 把设置应用到页面；初始化时可以不重复保存，用户修改时再写入本地存储。
   function applyDisplaySettings(save = true) {
     userSettings = normalizeSettings(userSettings);
     const root = document.documentElement;
@@ -254,13 +366,15 @@
     scheduleAutomaticThemeUpdate();
 
     visualEffects.cardTiltDegrees = userSettings.tiltDegrees;
-    visualEffects.cardLift = userSettings.tiltDegrees ? Math.min(motionSettingEffects.cardLiftMax, userSettings.tiltDegrees) : 0;
+    visualEffects.cardLift = userSettings.tiltDegrees
+      ? Math.min(motionSettingEffects.cardLiftMax, userSettings.tiltDegrees)
+      : 0;
     visualEffects.dustSpeedScale = userSettings.dustSpeed / 100;
     if (save) window.localStorage.setItem(settingsStorageKey, JSON.stringify(userSettings));
   }
 
   // 从休眠或后台返回时立即校正，避免错过 06:00 / 18:00 的定时切换。
-  document.addEventListener("visibilitychange", () => {
+  document.addEventListener("visibilitychange", function handleVisibilitychange() {
     if (!document.hidden && userSettings.themeMode === "auto") applyDisplaySettings(false);
   });
 
@@ -268,12 +382,20 @@
   applyDisplaySettings(false);
   if (settingsNeedMigration) window.localStorage.setItem(settingsStorageKey, JSON.stringify(userSettings));
   legacySettingsStorageKeys.forEach((key) => window.localStorage.removeItem(key));
-  const getKnowledge = () => window.SEAL_KNOWLEDGE || window.PPT_KNOWLEDGE;
-  const getSiteSearchValues = (site) => [site.city, site.name, site.period, site.admin, site.note, ...(site.tags || []), ...site.seals];
-  const findKnowledgeSites = (keyword = "") => {
+  const getKnowledge = function getKnowledge() {
+    return window.SEAL_KNOWLEDGE || window.PPT_KNOWLEDGE;
+  };
+  const getSiteSearchValues = function getSiteSearchValues(site) {
+    return [site.city, site.name, site.period, site.admin, site.note, ...(site.tags || []), ...site.seals];
+  };
+  const findKnowledgeSites = function findKnowledgeSites(keyword = "") {
     const query = keyword.trim().toLowerCase();
     const sites = getKnowledge()?.sites || [];
-    return query ? sites.filter((site) => getSiteSearchValues(site).some((value) => String(value).toLowerCase().includes(query))) : sites;
+    return query
+      ? sites.filter((site) =>
+          getSiteSearchValues(site).some((value) => String(value).toLowerCase().includes(query)),
+        )
+      : sites;
   };
 
   // AI 回复会包含少量 Markdown。先转义 HTML，再只开放常用格式，避免插入恶意标签。
@@ -285,6 +407,7 @@
       .replace(/\*([^*]+)\*/g, "<em>$1</em>");
   }
 
+  // 将聊天文本中的标题、列表等转换成页面内容；文字转义和链接检查不能省略。
   function renderMarkdown(markdown) {
     const source = String(markdown || "").replace(/\r\n?/g, "\n");
     const codeBlocks = [];
@@ -309,7 +432,11 @@
 
       if (unordered || ordered) {
         const nextType = unordered ? "ul" : "ol";
-        if (listType !== nextType) { closeList(); output.push(`<${nextType}>`); listType = nextType; }
+        if (listType !== nextType) {
+          closeList();
+          output.push(`<${nextType}>`);
+          listType = nextType;
+        }
         output.push(`<li>${renderInlineMarkdown((unordered || ordered)[1])}</li>`);
         return;
       }
@@ -317,7 +444,8 @@
       closeList();
       if (!trimmed) return;
       if (/^@@CODE_BLOCK_\d+@@$/.test(trimmed)) output.push(trimmed);
-      else if (heading) output.push(`<h${heading[1].length}>${renderInlineMarkdown(heading[2])}</h${heading[1].length}>`);
+      else if (heading)
+        output.push(`<h${heading[1].length}>${renderInlineMarkdown(heading[2])}</h${heading[1].length}>`);
       else output.push(`<p>${renderInlineMarkdown(trimmed)}</p>`);
     });
     closeList();
@@ -353,21 +481,27 @@
     return `<div class="relic-visual ${escapeHtml(item.tone)}" aria-label="${escapeHtml(item.name)}数字复原图"><div class="relic-disc"><div class="mini-inscription">${chars.map((char) => `<span>${escapeHtml(char)}</span>`).join("")}</div></div><span class="relic-code">${escapeHtml(item.id)}</span></div>`;
   }
 
+  // 根据藏品数据生成卡片；没有结果时显示空状态，不留下旧卡片。
   function renderRelics(items) {
-    $("#collectionGrid").innerHTML = items.length ? items.map((item) => {
-      const archiveLabel = item.id === "NMX-001" ? "在图录中定位" : "打开完整图录";
-      return `<article class="relic-card" data-relic-card="${escapeHtml(item.id)}" tabindex="-1">${createRelicVisual(item)}<div class="relic-info"><div><span>${escapeHtml(item.period)}</span><span>${escapeHtml(item.value)}</span></div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><button type="button" data-relic-id="${escapeHtml(item.id)}">${archiveLabel} <span>→</span></button></div></article>`;
-    }).join("") : '<div class="empty-state"><strong>暂未找到相关封泥</strong><p>换一个名称、年代或地点试试。</p></div>';
+    $("#collectionGrid").innerHTML = items.length
+      ? items
+          .map((item) => {
+            const archiveLabel = item.id === "NMX-001" ? "在图录中定位" : "打开完整图录";
+            return `<article class="relic-card" data-relic-card="${escapeHtml(item.id)}" tabindex="-1">${createRelicVisual(item)}<div class="relic-info"><div><span>${escapeHtml(item.period)}</span><span>${escapeHtml(item.value)}</span></div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.summary)}</p><button type="button" data-relic-id="${escapeHtml(item.id)}">${archiveLabel} <span>→</span></button></div></article>`;
+          })
+          .join("")
+      : '<div class="empty-state"><strong>暂未找到相关封泥</strong><p>换一个名称、年代或地点试试。</p></div>';
   }
 
   const relicArchiveLinks = {
     "NMX-001": { query: "临淄守印", siteId: 114 },
     "NMX-002": { query: "墓印篆" },
     "NMX-003": { query: "仓府" },
-    "NMX-004": { query: "齐北船丞" }
+    "NMX-004": { query: "齐北船丞" },
   };
 
   // 点击地图点位后，把该地点的信息写入右侧详情面板。
+  // 点击地图点位后，更新右侧的地点介绍和资料数量。
   function updateSitePanel(site, index = 0) {
     $("#siteNumber").textContent = String(index + 1).padStart(2, "0");
     $("#siteCity").textContent = site.city;
@@ -380,26 +514,36 @@
     $("#siteCount").textContent = `${site.count} 条`;
   }
 
+  // 生成当前筛选下的地图点位，并同步默认选中地点与立体地图。
   function renderSites(sites) {
     visibleSites = sites;
     const root = $("#mapMarkers");
-    const bounds = window.SHANDONG_TERRAIN?.bounds || { west: 114.8102646639, east: 122.706, north: 38.3997238086, south: 34.3786 };
-    root.innerHTML = sites.map((site, index) => {
-      const city = String(site.city || "").split(" · ")[0];
-      const county = String(site.city || "").split(" · ")[1]?.replace(/[县市区]$/, "");
-      // 两种地图统一使用县级经纬度；site.x/site.y 只作为缺少县级坐标时的旧数据兜底。
-      const coordinate = mapCoordinates.counties[county] || mapCoordinates.cities[city];
-      const x = coordinate
-        ? ((coordinate[0] - bounds.west) / (bounds.east - bounds.west)) * 100
-        : Number(site.x) || 0;
-      const y = coordinate
-        ? ((bounds.north - coordinate[1]) / (bounds.north - bounds.south)) * 100
-        : Number(site.y) || 0;
-      const safeX = Math.min(100, Math.max(0, x));
-      const safeY = Math.min(100, Math.max(0, y));
-      const label = county ? `${city}·${county}` : city;
-      return `<button class="map-marker${index === 0 ? " active" : ""}" type="button" style="left:${safeX}%;top:${safeY}%" data-terrain-x="${safeX}" data-terrain-y="${safeY}" data-site-id="${escapeHtml(site.id)}" aria-label="查看${escapeHtml(label)}"><i></i><span>${escapeHtml(label)}</span></button>`;
-    }).join("");
+    const bounds = window.SHANDONG_TERRAIN?.bounds || {
+      west: 114.8102646639,
+      east: 122.706,
+      north: 38.3997238086,
+      south: 34.3786,
+    };
+    root.innerHTML = sites
+      .map((site, index) => {
+        const city = String(site.city || "").split(" · ")[0];
+        const county = String(site.city || "")
+          .split(" · ")[1]
+          ?.replace(/[县市区]$/, "");
+        // 两种地图统一使用县级经纬度；site.x/site.y 只作为缺少县级坐标时的旧数据兜底。
+        const coordinate = mapCoordinates.counties[county] || mapCoordinates.cities[city];
+        const x = coordinate
+          ? ((coordinate[0] - bounds.west) / (bounds.east - bounds.west)) * 100
+          : Number(site.x) || 0;
+        const y = coordinate
+          ? ((bounds.north - coordinate[1]) / (bounds.north - bounds.south)) * 100
+          : Number(site.y) || 0;
+        const safeX = Math.min(100, Math.max(0, x));
+        const safeY = Math.min(100, Math.max(0, y));
+        const label = county ? `${city}·${county}` : city;
+        return `<button class="map-marker${index === 0 ? " active" : ""}" type="button" style="left:${safeX}%;top:${safeY}%" data-terrain-x="${safeX}" data-terrain-y="${safeY}" data-site-id="${escapeHtml(site.id)}" aria-label="查看${escapeHtml(label)}"><i></i><span>${escapeHtml(label)}</span></button>`;
+      })
+      .join("");
     if (sites.length) updateSitePanel(sites[0]);
   }
 
@@ -407,7 +551,12 @@
   function renderSourceFindings() {
     const knowledge = getKnowledge();
     if (!knowledge || !knowledge.findings) return;
-    $("#sourceFindings").innerHTML = knowledge.findings.map((item, index) => `<article><span class="card-index">${String(index + 1).padStart(2, "0")}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></article>`).join("");
+    $("#sourceFindings").innerHTML = knowledge.findings
+      .map(
+        (item, index) =>
+          `<article><span class="card-index">${String(index + 1).padStart(2, "0")}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></article>`,
+      )
+      .join("");
   }
 
   // 补充史料全部来自本地数据文件，图片、目录与证据栏均在浏览器端生成。
@@ -418,8 +567,9 @@
   }
 
   function getSupplementarySource(site) {
-    return (window.SUPPLEMENTARY_SOURCES?.entries || [])
-      .find((entry) => Number(entry.mapSiteId) === Number(site.id));
+    return (window.SUPPLEMENTARY_SOURCES?.entries || []).find(
+      (entry) => Number(entry.mapSiteId) === Number(site.id),
+    );
   }
 
   function sourceCardSupplementImageTemplate(image, index) {
@@ -481,6 +631,7 @@
   }
 
   // Measure accordion content while rendering, so the first click does not pay the layout cost.
+  // 提前记录折叠内容的高度，展开动画时就能知道应该长到多高。
   function cacheSourceSupplementHeights(root) {
     if (!root) return;
     root.querySelectorAll(".source-card-supplement-details").forEach((details) => {
@@ -491,8 +642,8 @@
     });
   }
 
-
   // Animate the accordion height while keeping the readable text visually steady.
+  // 原生 details 会直接跳开，这里先播放高度变化，再确定最终展开状态。
   async function animateSourceSupplementDetails(details, shouldOpen) {
     const summary = details.querySelector(":scope > summary");
     const content = details.querySelector(":scope > .source-card-supplement-details-content");
@@ -522,13 +673,15 @@
       ? Number(details.dataset.openHeight) || details.scrollHeight
       : summary.getBoundingClientRect().height;
 
-    const heightAnimation = details.animate([
-      { height: `${startHeight}px` },
-      { height: `${endHeight}px` }
-    ], { duration: heightDuration, delay: heightDelay, easing, fill: "both" });
+    const heightAnimation = details.animate([{ height: `${startHeight}px` }, { height: `${endHeight}px` }], {
+      duration: heightDuration,
+      delay: heightDelay,
+      easing,
+      fill: "both",
+    });
     const contentAnimation = content.animate(
       shouldOpen ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }],
-      { duration: contentDuration, easing, fill: "both" }
+      { duration: contentDuration, easing, fill: "both" },
     );
 
     try {
@@ -566,19 +719,29 @@
     if (moreLabel) moreLabel.textContent = remaining ? `查看其余 ${remaining} 处` : "查看完整图录";
   }
 
+  // 搜索词为空时显示完整图录，否则只保留匹配条目并更新结果数量。
   function renderSourceDialogIndex(keyword = "") {
     const query = keyword.trim().toLowerCase();
     const items = findKnowledgeSites(query);
     renderSourceCards($("#sourceDialogIndex"), items);
     $("#clearSourceDialogSearch").hidden = !query;
-    $("#sourceDialogFeedback").textContent = query ? `找到 ${items.length} 处匹配资料` : `显示全部 ${items.length} 处区县资料`;
+    $("#sourceDialogFeedback").textContent = query
+      ? `找到 ${items.length} 处匹配资料`
+      : `显示全部 ${items.length} 处区县资料`;
   }
 
   let openingLoaderController = null;
+  // 页面启动顺序：并行取数据，分批生成栏目，AI 在后台连接，最后结束开屏。
   async function init() {
     openingLoaderController = window.NiyunOpeningLoader.create({ $ });
     openingLoaderController.start();
-    const [stats, mapConfig, sites, relics, courseItems] = await Promise.all([ApiService.getStats(), ApiService.getMapConfig(), ApiService.getSites(), ApiService.getRelics(), ApiService.getCourses()]);
+    const [stats, mapConfig, sites, relics, courseItems] = await Promise.all([
+      ApiService.getStats(),
+      ApiService.getMapConfig(),
+      ApiService.getSites(),
+      ApiService.getRelics(),
+      ApiService.getCourses(),
+    ]);
     $("#statRelics").textContent = stats.relics;
     $("#statSites").textContent = stats.sites;
     $("#statCourses").textContent = stats.courses;
@@ -593,8 +756,12 @@
     renderRelics(relics.items);
     await openingLoaderController.yieldToBrowser();
     const courseBrowser = window.NiyunCourseBrowser.create({
-      $, $$, escapeHtml, safeResourceUrl, prefersReducedMotion,
-      mediaConfig: window.MEDIA_CONFIG
+      $,
+      $$,
+      escapeHtml,
+      safeResourceUrl,
+      prefersReducedMotion,
+      mediaConfig: window.MEDIA_CONFIG,
     });
     courseBrowser.renderCourses(courseItems);
     courseBrowser.initCourseScroll();
@@ -603,9 +770,11 @@
     renderSourcePreview();
     window.NiyunScrollStory.create({ $, $$, escapeHtml, prefersReducedMotion }).init();
     // AI 在后台连接，不让它阻塞图鉴、地图和课程的展示。
-    AiService.getStatus().then((status) => aiChatController.renderStatus(status)).catch(() => {
-      aiChatController.renderStatus({ connected: false });
-    });
+    AiService.getStatus()
+      .then((status) => aiChatController.renderStatus(status))
+      .catch(() => {
+        aiChatController.renderStatus({ connected: false });
+      });
     openingLoaderController.finish(true);
   }
 
@@ -616,55 +785,100 @@
 
   // 搜索、图录和设置弹窗共用的基础进出场动画。
   function openModalAnimation(panel) {
-    return runElementAnimation(panel, [
-      { opacity: 0, transform: `translateY(${readCssValue("--motion-search-travel-y")}) scale(${readCssValue("--motion-search-scale-from")})` },
-      { opacity: 1, transform: "translateY(0) scale(1)" }
-    ], "--motion-search-enter", "--ease-out");
+    return runElementAnimation(
+      panel,
+      [
+        {
+          opacity: 0,
+          transform: `translateY(${readCssValue("--motion-search-travel-y")}) scale(${readCssValue("--motion-search-scale-from")})`,
+        },
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+      ],
+      "--motion-search-enter",
+      "--ease-out",
+    );
   }
 
   function closeModalAnimation(panel) {
-    return runElementAnimation(panel, [
-      { opacity: 1, transform: "translateY(0) scale(1)" },
-      { opacity: 0, transform: `translateY(${readCssValue("--motion-search-travel-y")}) scale(${readCssValue("--motion-search-scale-from")})` }
-    ], "--motion-search-exit", "--ease-in-out");
+    return runElementAnimation(
+      panel,
+      [
+        { opacity: 1, transform: "translateY(0) scale(1)" },
+        {
+          opacity: 0,
+          transform: `translateY(${readCssValue("--motion-search-travel-y")}) scale(${readCssValue("--motion-search-scale-from")})`,
+        },
+      ],
+      "--motion-search-exit",
+      "--ease-in-out",
+    );
   }
 
   let siteNavigationController = null;
   let sourceArchiveController = null;
-  const getSettings = () => ({ ...userSettings });
-  const updateSetting = (name, value) => { if (name) userSettings[name] = value; };
-  const resetSettings = () => { userSettings = { ...defaultSettings }; };
+  const getSettings = function getSettings() {
+    return { ...userSettings };
+  };
+  const updateSetting = function updateSetting(name, value) {
+    if (name) userSettings[name] = value;
+  };
+  const resetSettings = function resetSettings() {
+    userSettings = { ...defaultSettings };
+  };
   const displaySettingsController = window.NiyunDisplaySettings.create({
-    $, getSettings, updateSetting, resetSettings, defaults: defaultSettings,
-    ranges: motionSettingRanges, openingKey: openingAnimationStorageKey,
-    reducedMotion: systemPrefersReducedMotion, applySettings: () => applyDisplaySettings(), showToast,
+    $,
+    getSettings,
+    updateSetting,
+    resetSettings,
+    defaults: defaultSettings,
+    ranges: motionSettingRanges,
+    openingKey: openingAnimationStorageKey,
+    reducedMotion: systemPrefersReducedMotion,
+    applySettings: () => applyDisplaySettings(),
+    showToast,
     dispatchReset: () => {
       window.dispatchEvent(new CustomEvent("media-settings-reset"));
       window.dispatchEvent(new CustomEvent("ai-pet-settings-reset"));
-    }
+    },
   });
   displaySettingsController.init();
 
   siteNavigationController = window.NiyunSiteNavigation.create({
-    $, $$, prefersReducedMotion, interfaceConfig
+    $,
+    $$,
+    prefersReducedMotion,
+    interfaceConfig,
   });
   siteNavigationController.init();
 
   sourceArchiveController = window.NiyunSourceArchive.create({
-    $, sourceDialog, sourceDialogPanel, sourceDialogSearch, clearSourceDialogSearch,
-    renderSourceDialogIndex, cacheSourceSupplementHeights, animateSourceSupplementDetails,
+    $,
+    sourceDialog,
+    sourceDialogPanel,
+    sourceDialogSearch,
+    clearSourceDialogSearch,
+    renderSourceDialogIndex,
+    cacheSourceSupplementHeights,
+    animateSourceSupplementDetails,
     getRelicArchiveLink: (relicId) => relicArchiveLinks[relicId] || {},
-    prefersReducedMotion, openModalAnimation, closeModalAnimation, showToast,
+    prefersReducedMotion,
+    openModalAnimation,
+    closeModalAnimation,
+    showToast,
     getVisibleSites: () => visibleSites,
     navigateToMapIndex: (siteId) => siteNavigationController.navigateToMapIndex(siteId),
-    setMenuOpen: (open) => siteNavigationController.setMenuOpen(open)
+    setMenuOpen: (open) => siteNavigationController.setMenuOpen(open),
   });
   sourceArchiveController.init();
 
   const mapBrowserController = window.NiyunMapBrowser.create({
-    $, $$, apiService: ApiService, getVisibleSites: () => visibleSites,
-    renderSites, updateSitePanel,
-    openCurrentSiteArchive: (siteId) => sourceArchiveController.openSite(siteId)
+    $,
+    $$,
+    apiService: ApiService,
+    getVisibleSites: () => visibleSites,
+    renderSites,
+    updateSitePanel,
+    openCurrentSiteArchive: (siteId) => sourceArchiveController.openSite(siteId),
   });
   mapBrowserController.init();
 
@@ -676,20 +890,27 @@
     window.history.pushState(null, "", "#collection");
   }
 
-  $$("[data-artifact-relic-id]").forEach((artifact) => artifact.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" && event.key !== " ") return;
-    event.preventDefault();
-    revealRelicCard(artifact.dataset.artifactRelicId);
-  }));
+  $$("[data-artifact-relic-id]").forEach((artifact) =>
+    artifact.addEventListener("keydown", function handleKeydown(event) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      revealRelicCard(artifact.dataset.artifactRelicId);
+    }),
+  );
 
-  document.addEventListener("click", async (event) => {
+  document.addEventListener("click", async function handleClick(event) {
     const artifact = event.target.closest("[data-artifact-relic-id]");
     if (artifact) {
       revealRelicCard(artifact.dataset.artifactRelicId);
       return;
     }
-    const notice = event.target.closest("[data-notice]"); if (notice) showToast(notice.dataset.notice);
-    const detail = event.target.closest("[data-relic-id]"); if (detail) { event.preventDefault(); await sourceArchiveController.openRelic(detail.dataset.relicId); }
+    const notice = event.target.closest("[data-notice]");
+    if (notice) showToast(notice.dataset.notice);
+    const detail = event.target.closest("[data-relic-id]");
+    if (detail) {
+      event.preventDefault();
+      await sourceArchiveController.openRelic(detail.dataset.relicId);
+    }
   });
 
   // 搜索和图鉴定位共用同一套滚动、描边与焦点反馈。
@@ -699,25 +920,50 @@
     target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
     target.classList.remove("search-target");
     window.requestAnimationFrame(() => target.classList.add("search-target"));
-    window.setTimeout(() => target.focus({ preventScroll: true }), reduceMotion ? 0 : visualEffects.searchFocusDelay);
+    window.setTimeout(
+      () => target.focus({ preventScroll: true }),
+      reduceMotion ? 0 : visualEffects.searchFocusDelay,
+    );
     window.setTimeout(() => target.classList.remove("search-target"), visualEffects.searchHighlightLifetime);
   }
 
   const searchDialogController = window.NiyunSearchDialog.create({
-    $, escapeHtml, prefersReducedMotion, renderSourceDialogIndex,
-    sourceDialog, sourceDialogPanel, openModalAnimation, closeModalAnimation,
-    findKnowledgeSites, revealTarget, showToast, apiService: ApiService
+    $,
+    escapeHtml,
+    prefersReducedMotion,
+    renderSourceDialogIndex,
+    sourceDialog,
+    sourceDialogPanel,
+    openModalAnimation,
+    closeModalAnimation,
+    findKnowledgeSites,
+    revealTarget,
+    showToast,
+    apiService: ApiService,
   });
   searchDialogController.init();
 
   const aiChatController = window.NiyunAiChat.create({
-    $, $$, escapeHtml, renderMarkdown, showToast, aiService: AiService,
-    sessionStorageKey: aiSessionStorageKey
+    $,
+    $$,
+    escapeHtml,
+    renderMarkdown,
+    showToast,
+    aiService: AiService,
+    sessionStorageKey: aiSessionStorageKey,
   });
   aiChatController.init();
 
   window.NiyunPageEffects.create({
-    $, $$, prefersReducedMotion, getSettings, visualEffects, motionSettingRanges
+    $,
+    $$,
+    prefersReducedMotion,
+    getSettings,
+    visualEffects,
+    motionSettingRanges,
   }).init();
-  init().catch(() => { openingLoaderController?.finish(false); showToast("部分页面资料加载失败，请稍后重试"); });
-}());
+  init().catch(() => {
+    openingLoaderController?.finish(false);
+    showToast("部分页面资料加载失败，请稍后重试");
+  });
+})();

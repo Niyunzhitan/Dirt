@@ -12,7 +12,7 @@
           { text: "正在辨识战国秦汉封泥……", progress: 15 },
           { text: "封缄受力，封泥渐生细纹……", progress: 38 },
           { text: "卷轴晃动，封泥将裂……", progress: 54 },
-          { text: "展厅已开启，欢迎进入泥云智探", progress: 100 }
+          { text: "展厅已开启，欢迎进入泥云智探", progress: 100 },
         ],
         stageIntervalMs: 750,
         preBreakHoldMs: 1400,
@@ -30,7 +30,7 @@
         earlyExpandRatio: 0.35,
         finalWidthRatio: { mobile: 0.86, desktop: 0.78 },
         finalExtraWidth: 96,
-        contentRevealRatio: 0.4
+        contentRevealRatio: 0.4,
       };
 
       const didYouKnowFacts = [
@@ -51,7 +51,7 @@
         "两枚“兰陵丞印”发现于楚王陵瓮、壶附近，提示物资封缄线索。",
         "秦封泥常见田字格，西汉早期也曾短暂沿用界格。",
         "“观阳丞印”说明诸侯王国之下仍设有县级官署。",
-        "同一方封泥，要分清印文地名、出土地与历史归属。"
+        "同一方封泥，要分清印文地名、出土地与历史归属。",
       ];
 
       const loader = $("#openingLoader");
@@ -74,7 +74,7 @@
         [$("#fragNW"), "shatter-nw"],
         [$("#fragNE"), "shatter-ne"],
         [$("#fragSW"), "shatter-sw"],
-        [$("#fragSE"), "shatter-se"]
+        [$("#fragSE"), "shatter-se"],
       ];
       const didYouKnowText = $("#openingDidYouKnowText");
 
@@ -98,6 +98,7 @@
       let finishPromise = null;
       let fragmentsStarted = false;
 
+      // 先画裂纹，再复制完整印面作为碎块；各副本的 SVG 编号必须不同，避免引用串台。
       function prepareFracture() {
         const svg = seal?.querySelector(".clay-seal-svg");
         if (!svg || !cracks) return;
@@ -110,7 +111,7 @@
           "M101 73 L116 65 L120 48 L137 34",
           "M147 95 L154 111 L172 123 L178 143",
           "M105 139 L85 147 L77 165 L57 178",
-          "M61 111 L54 91 L37 80 L29 59"
+          "M61 111 L54 91 L37 80 L29 59",
         ];
         const clip = document.createElementNS(ns, "clipPath");
         clip.id = "sealFractureClip";
@@ -127,7 +128,10 @@
             path.setAttribute("d", d);
             path.setAttribute("fill", "none");
             path.setAttribute("stroke", highlight ? "#d58d66" : "#35150e");
-            path.setAttribute("stroke-width", index < 4 ? (highlight ? "5.2" : "3.2") : (highlight ? "2.8" : "1.6"));
+            path.setAttribute(
+              "stroke-width",
+              index < 4 ? (highlight ? "5.2" : "3.2") : highlight ? "2.8" : "1.6",
+            );
             path.setAttribute("stroke-linejoin", "round");
             path.setAttribute("class", highlight ? "crack-highlight" : "crack-path");
             path.setAttribute("pathLength", "180");
@@ -150,7 +154,9 @@
           copy.querySelectorAll("*").forEach((node) => {
             for (const attr of [...node.attributes]) {
               let value = attr.value;
-              ids.forEach((next, old) => { value = value.replaceAll(`url(#${old})`, `url(#${next})`); });
+              ids.forEach((next, old) => {
+                value = value.replaceAll(`url(#${old})`, `url(#${next})`);
+              });
               if (value !== attr.value) node.setAttribute(attr.name, value);
             }
           });
@@ -160,6 +166,7 @@
         });
       }
 
+      // 建立泥屑画布。按屏幕像素密度放大画布，让高分屏上的碎屑也清晰。
       function initParticles() {
         if (!particleCanvas) return null;
         const context = particleCanvas.getContext("2d");
@@ -179,14 +186,15 @@
           if (!particleFrame) particleFrame = requestAnimationFrame(render);
         }
 
+        // 给每粒泥屑一个出发位置、速度和转速，之后按经过的时间计算运动。
         function createDebris(count = 5, burst = false) {
           if (reducedMotion) return;
           const bornAt = performance.now();
           for (let index = 0; index < count; index += 1) {
             const angle = Math.random() * Math.PI * 2;
             const distance = 10 + Math.random() * 45;
-            const speed = (burst ? 5 + Math.random() * 10 : 0.6 + Math.random() * 2.2)
-              * Math.min(1, width / 640);
+            const speed =
+              (burst ? 5 + Math.random() * 10 : 0.6 + Math.random() * 2.2) * Math.min(1, width / 640);
             const fine = index % 3 !== 0;
             particles.push({
               x: centerX + Math.cos(angle) * distance,
@@ -197,14 +205,15 @@
               size: fine ? 1 + Math.random() * 2 : 3 + Math.random() * 6,
               rotation: Math.random() * Math.PI * 2,
               vRot: (Math.random() - 0.5) * 0.25,
-              color: Math.random() > 0.4 ? "#8c3323" : (Math.random() > 0.5 ? "#ba5d45" : "#4a180e"),
+              color: Math.random() > 0.4 ? "#8c3323" : Math.random() > 0.5 ? "#ba5d45" : "#4a180e",
               bornAt,
-              alpha: 1
+              alpha: 1,
             });
           }
           wake();
         }
 
+        // 只在有泥屑时绘制；按时间而非帧数计算，避免不同刷新率下快慢不一。
         function render(timestamp = 0) {
           if (!particles.length) {
             particleFrame = null;
@@ -226,7 +235,10 @@
               continue;
             }
             context.save();
-            context.translate(particle.x + particle.vx * frames, particle.y + particle.vy * frames + 0.5 * particle.gravity * frames * frames);
+            context.translate(
+              particle.x + particle.vx * frames,
+              particle.y + particle.vy * frames + 0.5 * particle.gravity * frames * frames,
+            );
             context.rotate(particle.rotation + particle.vRot * frames);
             context.globalAlpha = Math.max(0, particle.alpha);
             context.fillStyle = particle.color;
@@ -245,29 +257,40 @@
         return { createDebris };
       }
 
+      // 大碎块沿抛物线飞散，并在 0.75 秒内渐隐；减少动态效果时不播放飞散。
       function releaseFragments() {
         if (reducedMotion) return;
         const spread = window.innerWidth < config.mobileBreakpoint ? 0.6 : 1;
-        const velocities = [[-290, -290, -110], [310, -320, 125], [-240, 40, -90], [260, 65, 140]];
+        const velocities = [
+          [-290, -290, -110],
+          [310, -320, 125],
+          [-240, 40, -90],
+          [260, 65, 140],
+        ];
         fragments.forEach(([fragment], index) => {
           if (!fragment) return;
           const [vx, vy, spin] = velocities[index];
           // Sample x = vx*t and y = vy*t + g*t*t/2 densely for compositor playback.
           const keyframes = Array.from({ length: 61 }, (_, frame) => {
             const offset = frame / 60;
-            const time = offset * config.debrisLifetimeMs / 1000;
+            const time = (offset * config.debrisLifetimeMs) / 1000;
             const x = vx * spread * time;
             const y = vy * time + 0.5 * 1000 * time * time;
             return {
               offset,
               transform: `translate(${x}px, ${y}px) rotate(${spin * time}deg)`,
-              opacity: 1 - Math.max(0, (offset - 0.55) / 0.45)
+              opacity: 1 - Math.max(0, (offset - 0.55) / 0.45),
             };
           });
-          fragment.animate(keyframes, { duration: config.debrisLifetimeMs, easing: "linear", fill: "forwards" });
+          fragment.animate(keyframes, {
+            duration: config.debrisLifetimeMs,
+            easing: "linear",
+            fill: "forwards",
+          });
         });
       }
 
+      // 开屏等待期间轮换知识短句，计时器会在退场时清理。
       function startDidYouKnow() {
         if (!didYouKnowText || !didYouKnowFacts.length) return;
         didYouKnowIndex = Math.floor(Math.random() * didYouKnowFacts.length);
@@ -278,6 +301,7 @@
         }, config.didYouKnowIntervalMs);
       }
 
+      // 随机选下一句，但不连续显示同一句。
       function nextDidYouKnowIndex() {
         if (didYouKnowFacts.length < 2) return 0;
         let nextIndex = didYouKnowIndex;
@@ -311,24 +335,33 @@
         didYouKnowText?.classList.remove("is-switching");
       }
 
+      // 给开屏图片一点准备时间，但不无限等待；多次调用共用同一个等待结果。
       function waitForPageReady() {
         if (pageReadyPromise) return pageReadyPromise;
         const openingImages = loader ? [...loader.querySelectorAll("img")] : [];
-        const imageReady = Promise.all(openingImages.map((image) => image.complete
-          ? Promise.resolve()
-          : new Promise((resolve) => {
-              image.addEventListener("load", resolve, { once: true });
-              image.addEventListener("error", resolve, { once: true });
-            })));
+        const imageReady = Promise.all(
+          openingImages.map((image) =>
+            image.complete
+              ? Promise.resolve()
+              : new Promise((resolve) => {
+                  image.addEventListener("load", resolve, { once: true });
+                  image.addEventListener("error", resolve, { once: true });
+                }),
+          ),
+        );
         const timeout = new Promise((resolve) => {
           window.setTimeout(resolve, config.resourceReadyTimeoutMs);
         });
-        pageReadyPromise = Promise.race([imageReady, timeout]).then(() => new Promise((resolve) => {
-          window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
-        }));
+        pageReadyPromise = Promise.race([imageReady, timeout]).then(
+          () =>
+            new Promise((resolve) => {
+              window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+            }),
+        );
         return pageReadyPromise;
       }
 
+      // 将进度分为受力、开裂、碎裂和展卷几个阶段，统一控制各部分的显示。
       function updateVisuals(value) {
         if (!loader) return;
         const progress = Math.max(0, Math.min(100, value));
@@ -343,8 +376,12 @@
         if (progressPercent) progressPercent.textContent = `${Math.round(progress)}%`;
         if (cord) cord.classList.toggle("cord-snapped", progress >= 55);
         if (progress >= 80 && particleEngine && !particlesPlayed) {
-          particleEngine.createDebris(window.innerWidth < config.mobileBreakpoint
-            ? config.debrisCount.mobileBurst : config.debrisCount.finalBurst, true);
+          particleEngine.createDebris(
+            window.innerWidth < config.mobileBreakpoint
+              ? config.debrisCount.mobileBurst
+              : config.debrisCount.finalBurst,
+            true,
+          );
           particlesPlayed = true;
         }
         // 进度不是单纯的数字：不同区间分别对应封泥裂纹、绳线断开和卷轴展开。
@@ -360,7 +397,10 @@
             cracks.style.opacity = `${Math.min(1, crackRatio * 1.4)}`;
             crackPaths.forEach((path) => {
               const branch = Number(path.dataset.branch);
-              const growth = Math.max(0, Math.min(1, crackRatio * 1.6 - (branch < 4 ? branch * .1 : .5 + (branch - 4) * .08)));
+              const growth = Math.max(
+                0,
+                Math.min(1, crackRatio * 1.6 - (branch < 4 ? branch * 0.1 : 0.5 + (branch - 4) * 0.08)),
+              );
               path.style.strokeDashoffset = `${180 * (1 - growth)}`;
             });
           }
@@ -368,13 +408,18 @@
         } else if (progress < 80) {
           const expandRatio = (progress - 55) / 25;
           if (cracks) cracks.style.opacity = "1";
-          crackPaths.forEach((path) => { path.style.strokeDashoffset = "0"; });
+          crackPaths.forEach((path) => {
+            path.style.strokeDashoffset = "0";
+          });
           if (seal) {
             seal.classList.add("shaking");
             seal.classList.add("is-straining");
             seal.style.transform = "none";
           }
-          const maxHalfWidth = window.innerWidth < config.mobileBreakpoint ? config.earlyExpandHalfWidth.mobile : config.earlyExpandHalfWidth.desktop;
+          const maxHalfWidth =
+            window.innerWidth < config.mobileBreakpoint
+              ? config.earlyExpandHalfWidth.mobile
+              : config.earlyExpandHalfWidth.desktop;
           const currentHalf = maxHalfWidth * expandRatio * config.earlyExpandRatio;
           if (paperContainer) paperContainer.style.width = `${currentHalf * 2}px`;
           if (rollerLeft) rollerLeft.style.transform = `translateX(-${currentHalf}px)`;
@@ -392,8 +437,14 @@
           }
           if (!cachedPaperWidth && paper) cachedPaperWidth = paper.getBoundingClientRect().width || 704;
           const paperWidth = cachedPaperWidth || 704;
-          const widthRatio = window.innerWidth < config.mobileBreakpoint ? config.finalWidthRatio.mobile : config.finalWidthRatio.desktop;
-          const targetFullWidth = Math.min(Math.max(window.innerWidth * widthRatio, paperWidth), paperWidth + config.finalExtraWidth);
+          const widthRatio =
+            window.innerWidth < config.mobileBreakpoint
+              ? config.finalWidthRatio.mobile
+              : config.finalWidthRatio.desktop;
+          const targetFullWidth = Math.min(
+            Math.max(window.innerWidth * widthRatio, paperWidth),
+            paperWidth + config.finalExtraWidth,
+          );
           const currentWidth = targetFullWidth * 0.35 + targetFullWidth * 0.65 * openRatio;
           if (paperContainer) paperContainer.style.width = `${currentWidth}px`;
           if (rollerLeft) rollerLeft.style.transform = `translateX(-${currentWidth / 2}px)`;
@@ -402,13 +453,15 @@
         }
       }
 
+      // 每帧向目标进度靠近一点，避免进度条突然跳到下一阶段。
       function tickProgress() {
         if (!loader) return;
         if (Math.abs(targetProgress - currentProgress) > config.progressStopThreshold) {
           currentProgress += (targetProgress - currentProgress) * config.progressEase;
           updateVisuals(currentProgress);
         }
-        if (Math.abs(targetProgress - currentProgress) > config.progressStopThreshold || particles.length) progressFrame = requestAnimationFrame(tickProgress);
+        if (Math.abs(targetProgress - currentProgress) > config.progressStopThreshold || particles.length)
+          progressFrame = requestAnimationFrame(tickProgress);
         else progressFrame = null;
       }
 
@@ -416,6 +469,7 @@
         if (!progressFrame) progressFrame = requestAnimationFrame(tickProgress);
       }
 
+      // 启动开屏；用户关闭动画时直接移除，加载异常时也有兜底退场。
       function start() {
         if (!loader) return;
         if (!animationEnabled) {
@@ -446,6 +500,7 @@
         }, config.stageIntervalMs);
       }
 
+      // 资料就绪后播完碎裂和展卷，再清理动画帧并移除遮罩。
       async function finishWhenReady(success, skipResourceWait) {
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
         if (intervalTimer) window.clearInterval(intervalTimer);
@@ -453,7 +508,8 @@
         status.textContent = "封泥将裂，展厅正在备妥……";
         if (!skipResourceWait) await waitForPageReady();
         if (!cachedPaperWidth && paper) cachedPaperWidth = paper.getBoundingClientRect().width || 704;
-        if (config.preBreakHoldMs > 0) await new Promise((resolve) => window.setTimeout(resolve, config.preBreakHoldMs));
+        if (config.preBreakHoldMs > 0)
+          await new Promise((resolve) => window.setTimeout(resolve, config.preBreakHoldMs));
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
         stageIndex = config.stages.length - 1;
         if (!success) status.textContent = "展厅已打开，部分资料稍后加载";
@@ -484,6 +540,7 @@
         }, config.removeDelayMs);
       }
 
+      // 正常加载与超时兜底都可能要求结束，这里确保退场流程只启动一次。
       function finish(success = true, skipResourceWait = false) {
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
         if (finishPromise) return finishPromise;
@@ -491,6 +548,7 @@
         return finishPromise;
       }
 
+      // 暂时让出执行时间，让浏览器先画一帧，避免连续生成内容时卡住动画。
       function yieldToBrowser() {
         return new Promise((resolve) => {
           if ("scheduler" in window && typeof window.scheduler?.postTask === "function") {
@@ -502,6 +560,6 @@
       }
 
       return { start, finish, yieldToBrowser };
-    }
+    },
   };
-}());
+})();

@@ -14,7 +14,7 @@ const quizBundle = fs.readFileSync(builtQuizPath);
 for (const directory of ["assets", "css", "data", "js"]) {
   fs.cpSync(path.join(projectRoot, directory), path.join(distRoot, directory), {
     recursive: true,
-    force: true
+    force: true,
   });
 }
 
