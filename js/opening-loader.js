@@ -18,7 +18,7 @@
         preBreakHoldMs: 1400,
         completedHoldMs: 900,
         removeDelayMs: 1100,
-        resourceReadyTimeoutMs: 1200,
+        resourceReadyTimeoutMs: 8000,
         initialProgress: 8,
         progressEase: 0.12,
         progressStopThreshold: 0.2,
@@ -335,28 +335,30 @@
         didYouKnowText?.classList.remove("is-switching");
       }
 
-      // 给开屏图片一点准备时间，但不无限等待；多次调用共用同一个等待结果。
+      // 等待正文初始图片解码和字体就绪，而不只等待遮罩图片；远处课件仍按需加载。
       function waitForPageReady() {
         if (pageReadyPromise) return pageReadyPromise;
-        const openingImages = loader ? [...loader.querySelectorAll("img")] : [];
-        const imageReady = Promise.all(
-          openingImages.map((image) =>
-            image.complete
-              ? Promise.resolve()
-              : new Promise((resolve) => {
-                  image.addEventListener("load", resolve, { once: true });
-                  image.addEventListener("error", resolve, { once: true });
-                }),
-          ),
-        );
-        const timeout = new Promise((resolve) => {
-          window.setTimeout(resolve, config.resourceReadyTimeoutMs);
+        const images = [...document.querySelectorAll("#openingLoader img, main img")];
+        function prepareImage(image) {
+          if (!image.getAttribute("src") || image.hidden) return Promise.resolve();
+          if (image.loading === "lazy" && image.closest(".course-slide")) return Promise.resolve();
+          image.loading = "eager";
+          return image.decode().catch(function ignoreBrokenImage() {});
+        }
+        const imageReady = Promise.all([...images.map(prepareImage), document.fonts.ready]);
+        let timeoutId;
+        const timeout = new Promise(function limitResourceWait(resolve) {
+          timeoutId = window.setTimeout(resolve, config.resourceReadyTimeoutMs);
         });
         pageReadyPromise = Promise.race([imageReady, timeout]).then(
-          () =>
-            new Promise((resolve) => {
-              window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
-            }),
+          function allowFinalPaint() {
+            window.clearTimeout(timeoutId);
+            return new Promise(function waitForPaint(resolve) {
+              window.requestAnimationFrame(function nextFrame() {
+                window.requestAnimationFrame(resolve);
+              });
+            });
+          },
         );
         return pageReadyPromise;
       }
@@ -503,11 +505,21 @@
       // 资料就绪后播完碎裂和展卷，再清理动画帧并移除遮罩。
       async function finishWhenReady(success, skipResourceWait) {
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
-        if (intervalTimer) window.clearInterval(intervalTimer);
         if (fallbackTimer) window.clearTimeout(fallbackTimer);
-        status.textContent = "封泥将裂，展厅正在备妥……";
         if (!skipResourceWait) await waitForPageReady();
         if (!cachedPaperWidth && paper) cachedPaperWidth = paper.getBoundingClientRect().width || 704;
+        // 数据很快就绪时，也要先走完裂纹阶段；不能提前清掉阶段计时器。
+        await new Promise(function waitForCracks(resolve) {
+          function checkCrackProgress() {
+            if (!loader.isConnected || currentProgress >= 53.5) {
+              resolve();
+              return;
+            }
+            window.requestAnimationFrame(checkCrackProgress);
+          }
+          checkCrackProgress();
+        });
+        if (intervalTimer) window.clearInterval(intervalTimer);
         if (config.preBreakHoldMs > 0)
           await new Promise((resolve) => window.setTimeout(resolve, config.preBreakHoldMs));
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;

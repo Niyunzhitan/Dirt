@@ -763,7 +763,7 @@
       prefersReducedMotion,
       mediaConfig: window.MEDIA_CONFIG,
     });
-    courseBrowser.renderCourses(courseItems);
+    const initialCourseReady = courseBrowser.renderCourses(courseItems);
     courseBrowser.initCourseScroll();
     await openingLoaderController.yieldToBrowser();
     renderSourceFindings();
@@ -775,6 +775,7 @@
       .catch(() => {
         aiChatController.renderStatus({ connected: false });
       });
+    await initialCourseReady;
     openingLoaderController.finish(true);
   }
 

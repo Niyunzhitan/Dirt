@@ -109,15 +109,12 @@
               if (entry.isIntersecting) {
                 section.classList.remove("is-exiting-up", "is-exiting-down");
                 section.classList.add("is-visible");
+                // 展示过的栏目保持可见，来回滚动时不重复播放整段入场动画。
+                reveal.unobserve(section);
                 return;
               }
-              section.classList.remove("is-visible");
-              const above =
-                entry.boundingClientRect.top + entry.boundingClientRect.height / 2 < window.innerHeight / 2;
-              section.classList.toggle("is-exiting-up", above);
-              section.classList.toggle("is-exiting-down", !above);
             }),
-          { rootMargin: "-8% 0px -8%", threshold: 0.01 },
+          { rootMargin: "200px 0px", threshold: 0.01 },
         );
         $$("[data-reveal]").forEach((section) => reveal.observe(section));
       }

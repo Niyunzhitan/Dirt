@@ -199,7 +199,7 @@
           downloadName: isPdf ? "" : course.resourceFileName,
           openInNewTab: isPdf,
         });
-        renderCourseSlides(course);
+        const slidesReady = renderCourseSlides(course);
         if (options.scrollToContent) {
           window.requestAnimationFrame(() => {
             $("#courseScroll")?.scrollIntoView({
@@ -208,10 +208,11 @@
             });
           });
         }
+        return slidesReady;
       }
 
       // 首次拿到课程列表后，生成课时按钮并默认打开第一课。
-      function renderCourses(items) {
+      async function renderCourses(items) {
         courses = items;
         $("#courseLessonTabs").innerHTML = items
           .map((course, index) => {
@@ -220,7 +221,7 @@
           })
           .join("");
         configureCoursePackLinks();
-        selectCourse(items[0]?.id);
+        await selectCourse(items[0]?.id);
         syncCourseLessonPanelHeight();
       }
 
