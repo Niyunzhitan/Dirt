@@ -1,14 +1,16 @@
 # 数据库说明
 
-项目默认使用 `data/` 中的本地数据，不需要 MySQL。需要在线维护地点、藏品、课程或趣味问答题库时，再启用数据库模式。
+网站默认使用 `data/` 中的本地数据，不安装 MySQL 也能运行。只有需要在线维护地点、藏品、课程或题库时，才需要启用数据库。
 
 ## 初始化
 
-1. 使用 MySQL Workbench 管理员账号执行 [schema.sql](./schema.sql)。
-2. 在项目根目录复制 `.env.example` 为 `.env`，填写数据库连接信息。
-3. 执行 `npm run db:seed`。
-4. 在 `js/config.js` 中打开需要的数据库开关。
-5. 启动服务并访问 `http://127.0.0.1:3000/api/health`。
+1. 用 MySQL 管理员账号执行 [schema.sql](./schema.sql)。
+2. 在项目根目录复制 `.env.example` 为 `.env`，填入数据库连接信息。
+3. 运行 `npm run db:seed`。
+4. 在 [js/config.js](../js/config.js) 中打开需要的数据库开关。
+5. 启动服务，访问 `http://127.0.0.1:3000/api/health` 检查连接。
+
+本地配置示例：
 
 ```env
 DB_HOST=127.0.0.1
@@ -19,34 +21,30 @@ DB_PASSWORD=你的数据库密码
 DB_CONNECTION_LIMIT=5
 ```
 
-本地端口以实际配置为准；云端 RDS 通常使用 `3306`。
+端口按本机设置填写。阿里云 RDS 通常使用 `3306`，并应与 FC 位于可互通的 VPC 中；云端 `DB_HOST` 不能写 `localhost`。
 
-## 种子数据
-
-`db/seed.js` 可以重复执行。地点、藏品和课程按主键更新，不会重复生成相同记录。
-
-题库只有在 `questions` 表为空时才会导入。已有题目不会被覆盖。
-
-## 数据库升级
-
-旧数据库如果缺少 `questions.difficulty` 字段，执行一次：
-
-```text
-db/migrations/001-add-question-difficulty.sql
-```
-
-新建数据库直接使用最新的 `schema.sql`。`difficulty` 可填“简单”“中等”或“困难”。
-
-## 开启数据库模式
-
-在 [js/config.js](../js/config.js) 中设置：
+## 数据开关
 
 ```js
 USE_DATABASE: true,
 USE_QUIZ_DATABASE: true
 ```
 
-两个开关互不依赖。
+`USE_DATABASE` 控制地点、藏品、课程等栏目，`USE_QUIZ_DATABASE` 只控制趣味问答。二者可以单独开启。
+
+## 种子数据
+
+`db/seed.js` 可以重复运行。地点、藏品、课程和文创按主键更新，不会重复插入同一条记录。
+
+题库采用不同策略：只有 `questions` 表为空时才导入本地题目，已有题目不会被覆盖。需要重建题库时，请先自行备份并明确处理旧数据。
+
+旧数据库若缺少 `questions.difficulty` 字段，执行一次：
+
+```text
+db/migrations/001-add-question-difficulty.sql
+```
+
+新数据库直接执行最新的 `schema.sql`，不需要再跑这条迁移。
 
 ## 题库字段
 
@@ -54,24 +52,21 @@ USE_QUIZ_DATABASE: true
 question_text                              题干
 option_a / option_b / option_c / option_d  四个选项
 correct_answer                             A、B、C 或 D
-explanation                                解析
+explanation                                答案解析
 difficulty                                 简单、中等或困难
-is_published                               1 参与抽题，0 暂停使用
+is_published                               1 表示参与抽题，0 表示停用
 ```
 
-每轮最多随机抽取十道已发布题目。
-
-## 接口
+每轮随机抽取最多 10 道已发布题目。开始答题接口不会返回答案；用户提交某一道题后，判题接口才返回对错、正确答案、解析和得分。
 
 ```text
-GET /api/quiz/start
+GET  /api/quiz/start
 POST /api/quiz/answer
 ```
 
-开始答题时不会返回正确答案。判题接口接收 `questionId` 和答案键，并返回是否正确、正确答案、解析和本题得分。
+## 上线注意事项
 
-## 安全
-
-- 正式部署时把数据库变量放在 FC 环境变量中，不要提交真实 `.env`。
-- RDS 不要开放 `0.0.0.0/0`。
-- 管理账号和网站运行账号分开使用，网站账号只授予实际需要的权限。
+- 数据库账号和密码只放在 `.env` 或 FC 环境变量中。
+- 网站使用单独的低权限账号，不要使用数据库管理员账号。
+- RDS 白名单不要开放为 `0.0.0.0/0`。
+- 部署后通过 `/api/health` 检查连接，但不要在日志或截图中暴露连接信息。

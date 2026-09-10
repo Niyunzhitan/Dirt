@@ -12,5 +12,5 @@ window.APP_CONFIG = {
   // 使用 Umami Cloud 时保持默认地址；自建 Umami 时改成自己服务器上的 script.js 地址。
   UMAMI_SCRIPT_URL: "https://cloud.umami.is/script.js",
   // 可选：只统计这些正式域名。多个域名用英文逗号分隔，可防止测试站访问混入报表。
-  UMAMI_DOMAINS: "nimengxinyun.cn,www.nimengxinyun.cn",
+  UMAMI_DOMAINS: "niyunzhitan.cn,www.niyunzhitan.cn",
 };

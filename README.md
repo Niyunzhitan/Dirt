@@ -1,57 +1,10 @@
 # 泥云智探
 
-泥云智探是一个介绍齐鲁封泥的智慧人文网站。网站把封泥实物、印文、出土地和历史背景整理成可浏览的资料，也提供数字手卷、山东文化地图、课程课件、封泥牌具 3D 展示、AI 问答和趣味问答。
+泥云智探是一个介绍齐鲁封泥的网站。访客可以查看封泥实物、印文、现代发现地和古代行政归属，也可以阅读数字手卷与专题故事、浏览课程课件、操作 3D 地图和牌具、向“印小灵”提问，或参加趣味问答。
 
-主要开发者：[Windy-Field](https://github.com/Windy-Field)，项目源码：[Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。普通访客可以阅读[网站使用说明](./docs/User-Safari.md)。
+项目由 [Windy-Field](https://github.com/Windy-Field) 维护，源码见 [Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。第一次使用网站，可先读[访客使用说明](./docs/User-Safari.md)。
 
-## 功能概览
-
-- 浏览封泥实物、印文、年代、出土地和研究说明
-- 通过数字手卷了解封泥在文书传递中的使用过程
-- 使用山东 3D 文化地图查看 45 个区县资料点位
-- 在“齐鲁封泥图鉴”中查看精选藏品，并打开完整区县图录
-- 阅读封泥故事，了解宫廷日常、金石考证、地方制度和漕运凭信
-- 查看三课时课程课件、支教活动回顾视频和教案学习单
-- 在“封泥牌具”中体验扑克牌和麻将主题的 Three.js 3D 模型
-- 使用“印小灵”进行文字问答和图片辅助观察
-- 参与精心设计的趣味问答
-- 切换浅色、深色或昼夜自动主题，并调整字号、行距和动效
-
-## 技术结构
-
-网站主体使用原生 HTML、CSS 和 JavaScript。趣味问答由 Vue 3 单文件组件实现，并通过 Vite 编译。`server.js` 负责提供静态文件、AI 代理和可选的 MySQL 接口。
-
-前端交互按功能拆分为几个经典脚本，脚本通过 `window` 命名空间协作，因此直接双击 `index.html` 也能运行：
-
-- [js/app.js](./js/app.js)：页面初始化、共享工具、基础数据渲染和功能模块编排。
-- [js/course-browser.js](./js/course-browser.js)：课程课时切换、课件横向阅读、连续拖动和页码定位。
-- [js/scroll-story.js](./js/scroll-story.js)：数字手卷的展卷、滚轮、拖动和章节导航。
-- [js/opening-loader.js](./js/opening-loader.js)：开屏卷轴展开、进度缓动、封泥裂解和碎片粒子效果。
-- [js/seal-glyph-paths.js](./js/seal-glyph-paths.js)：开屏封泥“泥云智探”四字的 SVG 轮廓路径，避免首帧等待字体或出现替代字体。
-- [js/search-dialog.js](./js/search-dialog.js)：全站搜索弹窗、藏品定位和图录定位。
-- [js/ai-chat.js](./js/ai-chat.js)：AI 对话、图片上传、会话保存和状态显示。
-- [js/page-effects.js](./js/page-effects.js)：页面总进度条、拖动、按钮波纹和按压反馈。
-- [js/display-settings.js](./js/display-settings.js)：主题、字号、行距和动效设置。
-- [js/site-navigation.js](./js/site-navigation.js)：导航栏、栏目跳转、时钟和滚动高亮。
-- [js/map-browser.js](./js/map-browser.js)：地图筛选、地图模式和点位选择。
-- [js/source-archive.js](./js/source-archive.js)：完整图录弹窗、资料定位和补充史料展开。
-- 其他 `js/` 文件负责 API、媒体安全、AI、地图和封泥牌具 3D 展示等独立功能。
-
-新功能文件需要在 `index.html` 中先于 `app.js` 加载；`dist/index.html` 由构建脚本自动生成，不要手工维护。
-
-数据可以来自本地文件，也可以来自数据库：
-
-- 本地模式读取 `data/` 中的数据，适合开发、演示和离线浏览。
-- 数据库模式通过 `server.js` 读取 MySQL，适合在线维护内容。
-
-两种数据库开关位于 [js/config.js](./js/config.js)：
-
-```js
-USE_DATABASE: false,
-USE_QUIZ_DATABASE: false
-```
-
-## 快速开始
+## 本地运行
 
 需要 Node.js 18 或更高版本。
 
@@ -60,171 +13,166 @@ npm install
 npm start
 ```
 
-启动后打开 `http://127.0.0.1:3000`。开发前端时也可以运行：
+`npm start` 会先构建前端，再启动 `server.js`。浏览器访问 `http://127.0.0.1:3000` 即可。
+
+只调试前端时可以运行：
 
 ```powershell
 npm run dev
 ```
 
-语法检查：
+常用命令：
 
 ```powershell
-npm run check
+npm run check       # 检查 JavaScript 语法
+npm run build       # 生成 dist/
+npm run build:three # 重新生成按需版 Three.js
+npm run db:seed     # 写入数据库种子数据
+npm run package:fc  # 生成阿里云 FC 部署包
 ```
 
-构建网站并生成可离线打开的 `dist/`：
+`index.html` 是页面源文件，`dist/index.html` 由构建脚本生成，不要手工修改。直接双击根目录的 `index.html` 可以查看大部分静态内容；AI 和数据库接口仍需要 `server.js`，趣味问答需要先运行一次 `npm run build`。
+
+## 网站功能
+
+- 数字手卷介绍封泥从书写、系绳到验封的过程，支持按钮、键盘、滚轮、拖动和触屏滑动。
+- 齐鲁封泥图鉴展示代表藏品，完整图录收录 45 个现代县区的资料。
+- 地图有精细立体版和简化平面版，可以筛选青州、兖州、徐州等历史行政体系。地点详情显示现代位置、古代归属和资料数量。
+- 课程区提供三课时课件、原始 PDF、教案学习单和支教活动回顾视频。课件进度条和视频进度条都可以拖动。
+- 封泥牌具用 Three.js 展示麻将和扑克牌，可旋转、缩放、翻面、切换款式和全屏查看。
+- “印小灵”支持文字提问和图片辅助观察。一次最多上传 4 张 JPEG、PNG 或 WebP 图片，每张不超过 5 MB。
+- 趣味问答每轮最多抽取 10 道题，提交答案后显示解析。
+- 显示设置包含浅色、深色、昼夜自动主题，以及字号、行距、动效、背景微尘、开屏动画、音乐和宠物设置。
+
+## 代码结构
+
+页面主体使用原生 HTML、CSS 和 JavaScript，趣味问答使用 Vue 3，并由 Vite 编译。前端脚本通过 `window` 命名空间协作，以兼容本地双击预览。
+
+常改的文件如下：
+
+- [index.html](./index.html)：页面结构和脚本加载顺序。
+- [css/tokens.css](./css/tokens.css)：颜色、字体、间距、布局尺寸和动效参数。
+- [js/app.js](./js/app.js)：页面初始化、共享工具和基础数据渲染。
+- [js/theme-bootstrap.js](./js/theme-bootstrap.js)：在 CSS 加载前恢复主题，避免刷新时闪出错误颜色。
+- [js/course-browser.js](./js/course-browser.js)：课程切换、课件翻页和进度条。
+- [js/scroll-story.js](./js/scroll-story.js)：数字手卷。
+- [js/map-browser.js](./js/map-browser.js) 与 [js/three-map.js](./js/three-map.js)：地图筛选、模式切换和 3D 地形。
+- [js/source-archive.js](./js/source-archive.js)：完整图录与补充史料。
+- [js/three-showcase.js](./js/three-showcase.js)：封泥牌具。
+- [js/ai-chat.js](./js/ai-chat.js)、[js/ai-service.js](./js/ai-service.js)：AI 对话界面和请求。
+- [js/media-coordinator.js](./js/media-coordinator.js)：背景音乐与视频之间的播放协调。
+- [server.js](./server.js)：静态文件、视频分段请求、AI 代理和数据库 API。
+
+`js/seal-glyph-paths.js` 保存开屏四字的 SVG 路径，`js/offline-texture-loader.js` 只在 `file://` 模式加载内嵌 3D 贴图。新增前端模块后，还要在 `index.html` 中按依赖顺序引入，并在需要时加入 `npm run check`。
+
+CSS 的加载顺序不可随意交换：
+
+```text
+tokens.css
+01-base-opening.css
+02-content-layout.css
+03-museum-archive.css
+04-scroll.css
+05-typography.css
+06-enhancements.css
+```
+
+## 数据和配置
+
+项目默认读取 `data/` 中的本地数据：
+
+```js
+USE_DATABASE: false,
+USE_QUIZ_DATABASE: false
+```
+
+这两个开关位于 [js/config.js](./js/config.js)，可以分别启用栏目数据库和题库数据库。数据库准备方法见[数据库说明](./db/README.md)。
+
+课程文件、音乐和牌具贴图的路径集中在 [data/media-config.js](./data/media-config.js)。本地资源使用 `./assets/` 下的相对路径；外部资源必须使用 HTTPS，并将主机名加入 `allowedExternalHosts`。该配置会发送给浏览器，不能写入密码、Token、Cookie 或私密签名。
+
+资源维护说明：
+
+- [课程资源](./assets/courses/README.md)
+- [封泥牌具贴图](./assets/textures/README.md)
+- [山东地形数据](./assets/terrain/README.md)
+
+## AI 配置
+
+复制 `.env.example` 为 `.env`，至少填写百炼 API Key：
+
+```env
+DASHSCOPE_API_KEY=你的百炼API Key
+DASHSCOPE_APP_ID=c786fc9824414081980b6aa3258bb787
+QWEN_VL_MODEL=qwen-vl-plus
+```
+
+API Key 只能放在本地 `.env` 或 FC 环境变量中。不要把真实密钥写入 HTML、前端 JavaScript、文档或 Git 仓库。
+
+服务启动后可检查：
+
+```text
+GET http://127.0.0.1:3000/api/health
+GET http://127.0.0.1:3000/api/ai/status
+```
+
+## Umami 统计
+
+当前 [js/config.js](./js/config.js) 已接入 Umami Cloud，并将统计域名限制为 `niyunzhitan.cn` 和 `www.niyunzhitan.cn`。本地双击页面不会加载统计脚本；浏览器启用 Do Not Track 时也不会记录访问。
+
+更换 Umami 站点时，修改以下三项：
+
+```js
+UMAMI_WEBSITE_ID: "新的 Website ID",
+UMAMI_SCRIPT_URL: "https://cloud.umami.is/script.js",
+UMAMI_DOMAINS: "niyunzhitan.cn,www.niyunzhitan.cn",
+```
+
+留空 `UMAMI_WEBSITE_ID` 即可关闭统计。使用自建 Umami 时，还要在 `server.js` 的 CSP 中放行新的脚本和上报域名。
+
+## Three.js 和地图
+
+[js/vendor/three.js](./js/vendor/three.js) 是基于 Three.js 0.160.0 生成的按需版本，导出列表位于 [scripts/three-entry.js](./scripts/three-entry.js)。新增 `THREE.xxx` 调用后，先补充对应导出，再运行 `npm run build:three`。不要直接删改生成文件里的内部类或着色器。
+
+地图参数放在 `js/three-map.js` 顶部的 `MAP_VIEW`，牌具参数放在 `js/three-showcase.js` 顶部。Three.js 许可证见 [LICENSE.three.txt](./js/vendor/LICENSE.three.txt)。
+
+## 构建和发布
+
+构建前端：
 
 ```powershell
 npm run build
 ```
 
-`index.html` 是唯一的页面源文件。构建完成后仍可直接双击它测试；趣味问答会读取 `dist/assets/quiz-bundle.js`。如果刚修改过 Vue 问答代码，请先重新运行 `npm run build`。直接打开文件时，数据库和 AI 接口可能不可用。
+生成 FC 包：
 
-开屏封泥四字已经转换为 SVG 路径，公网部署不要求访客安装 `YiShanBeiZhuanTi.ttf`。该字体文件保留在 `assets/fonts/` 作为字形来源；部署时应一并发布 `js/seal-glyph-paths.js`，通常直接部署完整 `dist/` 目录即可。
-
-## AI 配置
-
-复制 `.env.example` 为 `.env`，至少填写：
-
-```env
-DASHSCOPE_API_KEY=你的百炼API Key
+```powershell
+npm run package:fc
 ```
 
-默认配置如下，通常不用修改：
-
-```env
-DASHSCOPE_APP_ID=c786fc9824414081980b6aa3258bb787
-QWEN_VL_MODEL=qwen-vl-plus
-```
-
-API Key 只能放在 `.env`、函数计算环境变量或其他服务端密钥配置中。不要写入 HTML、前端 JavaScript 或 Git 仓库。AI 功能还需要能够访问 `dashscope.aliyuncs.com`。
-
-## Umami 访客统计
-
-网站已预留 Umami Cloud 统计接入，默认关闭，不会产生任何统计请求。启用步骤：
-
-1. 登录 Umami，在网站列表中新建站点并填写正式域名。
-2. 在站点设置中复制 Website ID。
-3. 将 `js/config.js` 中的 `UMAMI_WEBSITE_ID` 设置为该 ID。
-4. 可将 `UMAMI_DOMAINS` 设置为正式域名，例如 `example.com,www.example.com`，避免测试域名进入统计。
-5. 重新运行 `npm run build` 并部署 `dist/`；FC 部署还需重新生成代码包。
-
-默认使用官方脚本 `https://cloud.umami.is/script.js`，并尊重浏览器的 Do Not Track 设置。若使用自托管 Umami，需要同时修改 `UMAMI_SCRIPT_URL`，并在 `server.js` 的 CSP 中将对应域名加入 `script-src` 和 `connect-src`。
-
-检查服务：
+打包脚本会检查源码、重建 `dist/`、同步 FC 运行文件，并输出：
 
 ```text
-http://127.0.0.1:3000/api/health
-http://127.0.0.1:3000/api/ai/status
+releases/niyun-zhitan-fc.zip
 ```
 
-## 数据库
+`dist/`、`deploy/fc/dist/` 和 `releases/` 都是生成目录。FC 包装层位于 `deploy/fc/`；其中 `package.json` 和锁文件保留精简运行依赖，`server.js`、`server/` 和 `dist/` 由打包脚本同步。详细步骤见 [FC 部署说明](./docs/deployment/DEPLOY-FC.md)。
 
-在 `.env` 中填写 MySQL 连接信息：
-
-```env
-DB_HOST=127.0.0.1
-DB_PORT=3307
-DB_NAME=nimeng_xinyun
-DB_USER=nimeng_app
-DB_PASSWORD=你的数据库密码
-DB_CONNECTION_LIMIT=5
-```
-
-初始化：
-
-1. 使用管理员账号执行 `db/schema.sql`。
-2. 执行 `npm run db:seed`。
-3. 在 `js/config.js` 中打开需要的数据库开关。
-4. 启动网站并访问 `/api/health`。
-
-详细说明见[数据库说明](./db/README.md)。
-
-## 媒体和 3D 资源
-
-课程课件、教案、视频、音乐和牌具贴图的公开路径集中在 [data/media-config.js](./data/media-config.js)。
-
-- 课程文件放入 `assets/courses/`，并登记到 `courses` 或 `coursePack`。
-- 音乐放入 `assets/media/music/`。
-- 音乐播放器支持曲目选择、音量调整和轮播；相关配置位于 `data/media-config.js`，用户可从右上角音符按钮或显示设置中控制。
-- 封泥牌具贴图放入 `assets/textures/`。
-- 同名替换不需要改代码；换文件名时修改 `media-config.js`。
-- 外部媒体必须使用 HTTPS，并加入 `allowedExternalHosts`。
-
-相关说明：
-
-- [课程资源配置](./assets/courses/README.md)
-- [封泥牌具贴图](./assets/textures/README.md)
-- [山东 DEM 地形数据](./assets/terrain/README.md)
-
-前端配置会公开给访客，不要放入密码、Token、Cookie 或长期私密签名。
-
-## 地图
-
-### Three.js 库与业务代码
-
-网站使用 [js/vendor/three.js](./js/vendor/three.js)，这是基于 Three.js **0.160.0（r160）**生成的未压缩按需构建。只导出地图和牌具使用的 30 个接口，构建工具自动保留内部依赖、移除可安全剔除的未用代码。来源、许可证和维护说明见 [第三方库说明](./js/vendor/README.md)。
-
-按需版约 898 kB，比完整未压缩版约 1.32 MB 小约 32%，仍保留正常缩进。浏览器加载普通 `<script>`，通过 `THREE` 全局对象访问，兼容直接双击网页。构建入口位于 `scripts/three-entry.js`；新增 `THREE.xxx` 调用时应补充导出，并运行 `npm run build:three`。完整 `npm run build` 也会自动执行这一步。不要手工删除生成文件中的内部类或着色器，它们可能是渲染器依赖。
-
-日常修改地图应编辑 `js/three-map.js`，修改麻将和扑克牌展示应编辑 `js/three-showcase.js`，修改牌具资料与顺序应编辑 `data/3d-products.js`。通常不需要改第三方库内部代码。更新库后先运行 `npm run build`，再检查地图、牌面切换、旋转和缩放。
-
-山东 3D 文化地图由 [js/three-map.js](./js/three-map.js) 读取轻量 DEM、山东边界和 45 个资料点位。地图用于文化展示和历史地理理解，不用于测绘、导航或工程计算。
-
-主要参数位于文件顶部的 `MAP_VIEW`：
-
-```js
-maxZoomFactor: 5,
-maxElevation: 1.20
-```
-
-## 趣味问答
-
-```text
-GET  /api/quiz/start
-POST /api/quiz/answer
-```
-
-开始答题时不会返回正确答案。前端会打乱选项显示顺序，提交时仍使用原始答案键。每轮最多抽取十道已发布题目，题目不足十道时返回全部已发布题目。
-
-本地题库位于 [data/mock-data.js](./data/mock-data.js)。题目 `id` 必须唯一，`correctAnswer` 只能是 `A`、`B`、`C` 或 `D`，`difficulty` 只能是“简单”“中等”或“困难”。
-
-## 检查和部署
-
-修改页面后，建议检查 `320px`、`375px`、`414px`、`768px`、`1024px` 和 `1440px` 宽度，重点看导航、图录弹窗、地图、课程、封泥牌具、AI 和问答是否溢出或遮挡。
-
-部署说明见 [FC 部署说明](./docs/deployment/DEPLOY-FC.md)。公网发布前请确认 `.env`、API Key 和数据库密码没有进入 Git，RDS 没有对公网开放，HTTPS 稳定后再启用 HSTS。
-
-## 目录
+## 目录一览
 
 ```text
 Web/
-├─ index.html              页面源码和本地双击入口
-├─ server.js               静态网站和 API 服务
-├─ assets/                 图片、字体、音乐、视频和贴图
-├─ css/                    设计变量和按功能拆分的页面样式
-├─ data/                   展示数据和媒体配置
-├─ db/                     数据库结构、迁移和种子脚本
-├─ docs/                   使用、部署、研究和验收资料
-├─ js/                     页面交互、功能模块、AI、问答和 Three.js 场景
-└─ templates/              可复用页面模板
+├─ assets/       图片、字体、课件、音视频、地形和贴图
+├─ css/          页面样式
+├─ data/         展示数据与公开配置
+├─ db/           数据库结构、迁移和种子脚本
+├─ deploy/fc/    FC 运行包装层
+├─ docs/         使用说明和部署文档
+├─ js/           前端功能模块
+├─ releases/     本地生成的发布包，不提交 Git
+├─ scripts/      构建和打包脚本
+├─ templates/    可复用模板
+├─ index.html    页面源文件
+└─ server.js     Node.js 服务入口
 ```
 
-`dist/` 是构建产物，不是源代码。它可以删除，运行 `npm run build` 或 `npm start` 后会重新生成。
-
-CSS 加载顺序固定为：`tokens.css` → `01-base-opening.css` → `02-content-layout.css` → `03-museum-archive.css` → `04-scroll.css` → `05-typography.css` → `06-enhancements.css`。设计变量和主题放在 `tokens.css`，后面的文件按页面结构、展陈视觉、数字手卷、字体和增强动效依次覆盖。不要随意交换这些链接的顺序。
-
-## 环境变量
-
-```text
-DASHSCOPE_API_KEY       百炼 API Key
-DASHSCOPE_APP_ID        百炼应用 ID
-QWEN_VL_MODEL           视觉模型，默认 qwen-vl-plus
-PORT / FC_SERVER_PORT   本地或 FC 监听端口
-DB_HOST / DB_PORT       MySQL 或 RDS 地址和端口
-DB_NAME / DB_USER       数据库名和账号
-DB_PASSWORD             数据库密码
-DB_CONNECTION_LIMIT     连接池上限
-FRONTEND_ORIGIN         允许访问 API 的前端地址
-ENABLE_HSTS             HTTPS 稳定后设为 true
-```
+提交或部署前，请确认 `.env`、API Key、数据库密码和本地调试文件没有进入 Git 或压缩包。页面修改后至少检查手机和桌面宽度，并实际测试地图、课件、视频、AI 与问答。

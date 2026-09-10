@@ -1,40 +1,32 @@
 # 封泥牌具贴图
 
-Three.js 模型负责牌具的形状、圆角、材质和光照。贴图只负责表面图案。贴图缺失或加载失败时，网页会使用占位图，模型和切换功能仍然可以使用。
-
-## 目录结构
+Three.js 负责牌具的形状、圆角、材质和光照，这里的图片只负责牌面图案。贴图缺失时，网页会显示占位材质，模型仍能旋转和切换。
 
 ```text
-poker/
-├─ front/   扑克牌正面
-└─ back/    扑克牌公共背面
-
-mahjong/
-├─ front/   麻将正面
-├─ back/    麻将背面
-└─ side/    可选的麻将侧面贴图
+assets/textures/
+├─ poker/
+│  ├─ front/   扑克牌正面
+│  └─ back/    扑克牌背面
+└─ mahjong/
+   ├─ front/   麻将正面
+   ├─ back/    麻将背面
+   └─ side/    可选的麻将侧面
 ```
 
-## 建议尺寸
+建议尺寸：
 
-- 扑克牌正面、背面：`750 x 1050px`
-- 麻将正面、背面：`768 x 1024px`
-- 麻将侧面：`512 x 512px`
+- 扑克牌正面和背面：`750 x 1050 px`
+- 麻将正面和背面：`768 x 1024 px`
+- 麻将侧面：`512 x 512 px`
 - 色彩空间：sRGB
-- 格式：优先 WebP，也支持 PNG
+- 当前内嵌构建支持 PNG 和 JPEG
 
-重要文字和印文距离边缘至少保留画布宽度的 `6%`。不要在贴图里重复绘制圆角和立体投影，这些效果由模型完成。
+重要文字和印文与边缘至少留出画布宽度的 6%。圆角和立体阴影由模型生成，不必画进贴图。
 
-麻将未配置侧面图片时，`js/three-showcase.js` 会自动生成默认外围材质：左右侧面采用纵向暖白木纹、灰蓝双边线和朱砂细线，顶面与底面使用横向纹理及无文字菱形暗记。
+贴图路径集中在 [data/media-config.js](../../data/media-config.js) 的 `textures` 配置中。保留文件名时直接覆盖图片；更换文件名时只改配置，不要到 `js/three-showcase.js` 中查找路径。外部贴图必须使用 HTTPS，并将主机名加入 `allowedExternalHosts`。
 
-## 替换贴图
+麻将没有侧面图片时，程序会生成暖白木纹、灰蓝边线和朱砂细线的默认侧面。
 
-路径集中在 [data/media-config.js](../../data/media-config.js) 的 `textures` 配置中。
+直接双击 `index.html` 时，WebGL 从 `data/texture-inline.js` 读取内嵌贴图；通过 HTTP 或公网访问时，则加载这里的普通图片。`npm run build` 会执行 `scripts/build-inline-textures.js`，重新内嵌脚本中登记的六张默认贴图。新增纹理配置时，也要在该构建脚本中补上路径和 MIME 类型。
 
-- 保留文件名：直接覆盖同名文件，不需要改代码。
-- 使用新文件名：只修改 `media-config.js`，不要修改 `three-showcase.js`。
-- 使用外部贴图：必须使用 HTTPS，并把域名加入 `allowedExternalHosts`。
-
-直接双击 `index.html` 时，WebGL 会使用 `data/texture-inline.js` 中的内嵌贴图；通过 HTTP 或公网访问时仍加载本目录中的普通图片文件。运行 `npm run build` 会先执行 `scripts/build-inline-textures.js`，自动同步已经登记的本地贴图。
-
-贴图会公开给访客，不要放入账号、Token、Cookie、私密水印或未获授权的素材。
+贴图会公开给访客，不要放入私密水印、凭据或没有使用许可的素材。

@@ -2,7 +2,7 @@
 
 项目名称：泥云智探｜齐鲁封泥智慧人文平台
 
-本项目可以把 `server.js` 部署为 FC Web 函数，用来提供 AI、数据库 API，以及可选的静态网页服务。
+本项目通过 `scripts/package-fc.ps1` 生成 FC Web 函数代码包，用来提供静态网页、AI 代理和数据库 API。
 
 ## 推荐架构
 
@@ -14,11 +14,13 @@
           FC Web 函数 → 百炼 / RDS
 ```
 
-部分 FC 默认域名或浏览器环境可能把 HTML 响应当作附件下载。如果 FC 地址能够正常内联显示网页，也可以让同一个 `server.js` 同时托管前端和 API；否则前端放在 OSS，FC 只作为 API 地址使用。
+当前项目使用同一个 `server.js` 托管前端和 API。若以后拆分到 OSS，仍可让 FC 只提供 `/api/*`。
 
 ## 当前服务配置
 
-- 入口：项目根目录 `server.js`
+- 服务端源码：项目根目录 `server.js`
+- FC 包装目录：`deploy/fc/`
+- 最终上传文件：`releases/niyun-zhitan-fc.zip`
 - 监听地址：`0.0.0.0`
 - 监听端口：优先读取 `PORT`，其次读取 `FC_SERVER_PORT`
 - 文字问答：百炼应用 Completion API
@@ -72,7 +74,27 @@ HTTPS 已经稳定后才设置 `ENABLE_HSTS=true`。所有密钥和密码只能�
 内存：建议 512 MB 或更高
 ```
 
-部署包至少需要 `server.js`、`server/`、`package*.json`、前端资源目录和实际使用的数据文件。不要把 `.env`、`.git`、研究原始资料、QA 截图或本地渲染审计目录打进代码包。
+## 生成部署包
+
+在项目根目录执行：
+
+```powershell
+npm run package:fc
+```
+
+脚本会执行 `npm run check` 和 `npm run build`，清理并重建 `deploy/fc/dist/`，同步根目录的 `server.js` 与 `server/`，然后生成 `releases/niyun-zhitan-fc.zip`。脚本还会检查部署入口是否齐全，并拒绝包含 `.env`、`.git`、`docs/` 或 `node_modules/` 的压缩包。
+
+上传 zip 后，解压根目录应直接包含：
+
+```text
+server.js
+server/
+package.json
+package-lock.json
+dist/
+```
+
+不要上传整个项目目录，也不要让这些文件外面再套一层 `deploy/fc/`。`deploy/fc/dist/` 是生成目录，不要手工编辑；页面改动应写入源码后重新打包。
 
 ## 前端地址配置
 

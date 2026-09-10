@@ -4,7 +4,6 @@
 !.env.example
 *.log
 *.zip
-zip.txt
 
 # 依赖与临时目录
 node_modules/
@@ -19,8 +18,11 @@ Rubbish/
 .vscode/
 .idea/
 
-# 交付压缩包和历史版本
+# 构建产物、FC 同步目录和发布归档
 dist/
+deploy/fc/dist/
+deploy/fc/node_modules/
+releases/
 
 # 研究原始资料与视觉验收截图不参与网站运行
 docs/research/
