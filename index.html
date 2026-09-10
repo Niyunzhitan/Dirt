@@ -12,33 +12,8 @@
   <link rel="icon" href="./assets/branding/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="apple-touch-icon" href="./assets/branding/apple-touch-icon.png" sizes="180x180">
   <title>泥云智探｜齐鲁封泥智慧人文平台</title>
-  <script>
-    // 必须在 CSS 前同步确定主题，否则开馆动画会先按系统主题绘制一帧。
-    // 自动模式时间配置：06:00（含）至 18:00（不含）为浅色，其余时间为深色。
-    window.NIYUN_THEME_SCHEDULE = Object.freeze({ lightStartHour: 6, lightEndHour: 18 });
-    try {
-      const settingsStorageKey = "niyun-display-settings";
-      const savedSettings = JSON.parse(
-        localStorage.getItem(settingsStorageKey)
-        || localStorage.getItem("nimeng-display-settings")
-        || localStorage.getItem("niyun-settings")
-        || "{}"
-      );
-      const themeMode = savedSettings.themeMode || "auto";
-      const currentHour = new Date().getHours();
-      const usesLightThemeNow = currentHour >= window.NIYUN_THEME_SCHEDULE.lightStartHour
-        && currentHour < window.NIYUN_THEME_SCHEDULE.lightEndHour;
-      document.documentElement.dataset.theme = themeMode === "dark" || (themeMode === "auto" && !usesLightThemeNow) ? "dark" : "light";
-      document.documentElement.dataset.themeMode = themeMode;
-      if (localStorage.getItem("niyun-opening-animation-enabled") === "false") {
-        document.documentElement.classList.add("skip-opening-loader");
-      }
-    } catch (_) {
-      const currentHour = new Date().getHours();
-      document.documentElement.dataset.theme = currentHour >= 6 && currentHour < 18 ? "light" : "dark";
-      document.documentElement.dataset.themeMode = "auto";
-    }
-  </script>
+  <!-- 同源外部脚本可通过严格 CSP，并在 CSS 首次计算前恢复主题，避免刷新时闪出浅色开屏。 -->
+  <script src="./js/theme-bootstrap.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -758,12 +733,7 @@
   <script src="./js/seal-glyph-paths.js"></script>
   <!-- 常用媒体替换入口必须最先加载，课程和 Three.js 都从这里读取安全路径。 -->
   <script src="./data/media-config.js"></script>
-  <script>
-    // WebGL 禁止普通 file:// 图片上传为纹理；仅本地双击模式同步加载内嵌贴图。
-    if (window.location.protocol === "file:") {
-      document.write('<script src="./data/texture-inline.js"><\/script>');
-    }
-  </script>
+  <script src="./js/offline-texture-loader.js"></script>
   <script src="./data/ai-pet-config.js"></script>
   <script src="./data/ppt-knowledge.js"></script>
   <script src="./data/supplementary-sources.js"></script>

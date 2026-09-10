@@ -357,6 +357,7 @@
 
     root.dataset.theme = effectiveTheme;
     root.dataset.themeMode = userSettings.themeMode;
+    root.style.colorScheme = effectiveTheme;
     root.dataset.readerSize = userSettings.fontSize;
     root.dataset.lineHeight = userSettings.lineHeight;
     root.dataset.motion = String(userSettings.motionIntensity);
