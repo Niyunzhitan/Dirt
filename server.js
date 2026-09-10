@@ -96,9 +96,41 @@ function serveStatic(request, response) {
 
   fs.stat(filePath, (statError, stat) => {
     if (statError || !stat.isFile()) return sendJson(response, 404, { error: "文件不存在" });
+    // 视频拖动进度条时，浏览器不会重新下载整段视频，而是用 Range 请求读取目标时间附近的数据。
+    // 这里兼容“从某字节开始”“指定起止字节”和“读取末尾若干字节”三种单段范围格式。
+    const rangeHeader = request.headers.range;
+    let range = null;
+    if (rangeHeader) {
+      const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
+      if (match && (match[1] || match[2])) {
+        if (!match[1]) {
+          const suffixLength = Number(match[2]);
+          if (Number.isSafeInteger(suffixLength) && suffixLength > 0) {
+            range = { start: Math.max(0, stat.size - suffixLength), end: stat.size - 1 };
+          }
+        } else {
+          const start = Number(match[1]);
+          const requestedEnd = match[2] ? Number(match[2]) : stat.size - 1;
+          if (Number.isSafeInteger(start) && Number.isSafeInteger(requestedEnd) && start <= requestedEnd) {
+            range = { start, end: Math.min(requestedEnd, stat.size - 1) };
+          }
+        }
+      }
+      // 范围格式不正确或起点超出文件末尾时，按 HTTP 规范告诉浏览器文件的真实总长度。
+      if (!range || range.start >= stat.size) {
+        response.writeHead(416, {
+          "Content-Range": `bytes */${stat.size}`,
+          "Accept-Ranges": "bytes",
+          "Cache-Control": "no-cache",
+        });
+        response.end();
+        return;
+      }
+    }
     const staticHeaders = {
       "Content-Type": MIME_TYPES[path.extname(filePath).toLowerCase()] || "application/octet-stream",
       "Content-Disposition": "inline",
+      "Accept-Ranges": "bytes",
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -108,10 +140,18 @@ function serveStatic(request, response) {
         "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; object-src 'none'; script-src 'self' 'unsafe-eval' https://cloud.umami.is; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' https:; connect-src 'self' https: https://cloud.umami.is;",
       "Cache-Control": "no-cache",
     };
+    if (range) {
+      // 分段响应必须同时给出实际范围和长度，浏览器才能把这段数据放到正确的播放位置。
+      staticHeaders["Content-Range"] = `bytes ${range.start}-${range.end}/${stat.size}`;
+      staticHeaders["Content-Length"] = String(range.end - range.start + 1);
+    } else {
+      staticHeaders["Content-Length"] = String(stat.size);
+    }
     if (process.env.ENABLE_HSTS === "true")
       staticHeaders["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
-    response.writeHead(200, staticHeaders);
-    fs.createReadStream(filePath).pipe(response);
+    // 有 Range 时只读取对应片段并返回 206；普通请求仍返回完整文件和 200。
+    response.writeHead(range ? 206 : 200, staticHeaders);
+    fs.createReadStream(filePath, range || undefined).pipe(response);
   });
 }
 

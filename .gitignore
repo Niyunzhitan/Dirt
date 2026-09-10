@@ -4,6 +4,7 @@
 !.env.example
 *.log
 *.zip
+zip.txt
 
 # 依赖与临时目录
 node_modules/
