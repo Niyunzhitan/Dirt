@@ -149,7 +149,7 @@ npm run build
 npm run package:fc
 ```
 
-打包脚本会检查源码、重建 `dist/`、同步 FC 运行文件，并输出：
+打包脚本会检查源码、重建 `dist/`、同步 FC 运行文件、安装精简生产依赖（`node_modules/` 随包上传，FC 运行时不执行 `npm install`），并输出：
 
 ```text
 releases/niyun-zhitan-fc.zip

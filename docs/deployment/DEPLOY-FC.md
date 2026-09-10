@@ -82,7 +82,9 @@ HTTPS 已经稳定后才设置 `ENABLE_HSTS=true`。所有密钥和密码只能�
 npm run package:fc
 ```
 
-脚本会执行 `npm run check` 和 `npm run build`，清理并重建 `deploy/fc/dist/`，同步根目录的 `server.js` 与 `server/`，然后生成 `releases/niyun-zhitan-fc.zip`。脚本还会检查部署入口是否齐全，并拒绝包含 `.env`、`.git`、`docs/` 或 `node_modules/` 的压缩包。
+脚本会执行 `npm run check` 和 `npm run build`，清理并重建 `deploy/fc/dist/`，同步根目录的 `server.js` 与 `server/`，在 `deploy/fc/` 内执行 `npm ci --omit=dev` 安装生产依赖（`dotenv` 和 `mysql2`），然后生成 `releases/niyun-zhitan-fc.zip`。脚本还会检查部署入口是否齐全，并拒绝包含 `.env`、`.git` 或 `docs/` 的压缩包。
+
+FC 自定义运行时不会执行 `npm install`，因此 `node_modules/` 必须随压缩包一起上传。打包使用 .NET `ZipArchive` 写入正斜杠条目名，避免 Windows PowerShell 5.1 的 `Compress-Archive` 生成反斜杠条目名导致 Linux 解压失败。
 
 上传 zip 后，解压根目录应直接包含：
 
@@ -91,6 +93,7 @@ server.js
 server/
 package.json
 package-lock.json
+node_modules/
 dist/
 ```
 
