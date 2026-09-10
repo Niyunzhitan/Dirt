@@ -10,6 +10,23 @@
         const pageScrollTrack = $("#pageScrollTrack");
         const pageProgressBar = $("#pageProgressBar");
         let scrollTicking = false;
+
+        const revealItems = $$('[data-reveal]');
+        if ("IntersectionObserver" in window) {
+          const revealObserver = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => entry.target.classList.toggle("is-visible", entry.isIntersecting));
+            },
+            {
+              threshold: 0.06,
+              rootMargin: "-8% 0px -8% 0px",
+            },
+          );
+          revealItems.forEach((item) => revealObserver.observe(item));
+        } else {
+          revealItems.forEach((item) => item.classList.add("is-visible"));
+        }
+
         const getPageScrollRange = function getPageScrollRange() {
           return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
         };

@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="description" content="泥云智探：齐鲁封泥智慧人文平台">
   <meta name="author" content="Windy-Field/Octorange">
+  <meta name="theme-color" content="#a8332a">
+  <link rel="icon" href="./assets/branding/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="icon" href="./assets/branding/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="./assets/branding/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="./assets/branding/apple-touch-icon.png" sizes="180x180">
   <title>泥云智探｜齐鲁封泥智慧人文平台</title>
   <script>
     // 必须在 CSS 前同步确定主题，否则开馆动画会先按系统主题绘制一帧。
@@ -36,12 +42,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- 开幕封泥字形已从沂山碑篆体转为 SVG 路径，首帧无需等待字体。 -->
-  <script src="./js/seal-glyph-paths.js"></script>
-
-
-
 
   <link rel="stylesheet" href="./css/tokens.css">
   <link rel="stylesheet" href="./css/01-base-opening.css">
@@ -153,7 +153,6 @@
               <!-- 篆体印文：右列“泥云”，左列“智探”，遵循从右到左、从上到下的阅读顺序。 -->
               <g class="seal-inscription" role="img" aria-label="泥云智探">
               </g>
-              <script>window.NiyunSealGlyphs.render(document.currentScript.previousElementSibling);</script>
 
               <!-- SVG 预制核心深层裂纹（随进度逐渐加深延伸） -->
               <g class="seal-cracks-group" id="sealCracksSvg" opacity="0">
@@ -590,7 +589,7 @@
     </div>
     <div class="footer-compliance">
       <p class="footer-contact">联系我们：<a href="mailto:3519936734@qq.com">3519936734@qq.com</a></p>
-      <p class="footer-icp">ICP备案号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">XXX</a></p>
+      <p class="footer-icp">备案号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">沪 ICP 备 2026044790 号 - 1</a></p>
       <p class="copyright">© 2026 泥云智探 齐鲁封泥智慧人文平台. 版权归网站运营方所有。</p>
     </div>
   </footer>
@@ -755,6 +754,8 @@
     脚本加载顺序很重要：先准备数据和配置，再加载服务，最后运行页面交互。
     config.js 必须放在 ai-service.js 前面，否则 AI 服务不知道云端接口地址。
   -->
+  <!-- 开幕封泥字形已转为 SVG 路径；在 SVG 解析完成后由外部脚本绘制，以兼容严格 CSP。 -->
+  <script src="./js/seal-glyph-paths.js"></script>
   <!-- 常用媒体替换入口必须最先加载，课程和 Three.js 都从这里读取安全路径。 -->
   <script src="./data/media-config.js"></script>
   <script>
@@ -771,7 +772,9 @@
   <script src="./data/shandong-terrain.js"></script>
   <script src="./data/shandong-terrain-inline.js"></script>
   <script src="./data/shandong-prefectures.js"></script>
+  <!-- 先读取公开配置，再由统计加载器判断是否启用 Umami；Website ID 留空时不会发送请求。 -->
   <script src="./js/config.js"></script>
+  <script src="./js/analytics.js"></script>
   <script src="./js/api.js"></script>
   <script src="./js/media-coordinator.js"></script>
   <script src="./js/course-browser.js"></script>

@@ -99,6 +99,18 @@ QWEN_VL_MODEL=qwen-vl-plus
 
 API Key 只能放在 `.env`、函数计算环境变量或其他服务端密钥配置中。不要写入 HTML、前端 JavaScript 或 Git 仓库。AI 功能还需要能够访问 `dashscope.aliyuncs.com`。
 
+## Umami 访客统计
+
+网站已预留 Umami Cloud 统计接入，默认关闭，不会产生任何统计请求。启用步骤：
+
+1. 登录 Umami，在网站列表中新建站点并填写正式域名。
+2. 在站点设置中复制 Website ID。
+3. 将 `js/config.js` 中的 `UMAMI_WEBSITE_ID` 设置为该 ID。
+4. 可将 `UMAMI_DOMAINS` 设置为正式域名，例如 `example.com,www.example.com`，避免测试域名进入统计。
+5. 重新运行 `npm run build` 并部署 `dist/`；FC 部署还需重新生成代码包。
+
+默认使用官方脚本 `https://cloud.umami.is/script.js`，并尊重浏览器的 Do Not Track 设置。若使用自托管 Umami，需要同时修改 `UMAMI_SCRIPT_URL`，并在 `server.js` 的 CSP 中将对应域名加入 `script-src` 和 `connect-src`。
+
 检查服务：
 
 ```text

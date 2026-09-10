@@ -1,0 +1,12 @@
+<!-- Hallmark · component: favicon · genre: editorial · theme: project brand -->
+<!-- Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V4 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>泥云智探</title>
+  <path fill="#5a1e14" d="M12 7h39l6 6v38l-7 6H13l-6-7V14z"/>
+  <path fill="#a8332a" d="M12 5h39l8 8v37l-8 9H13l-8-8V13z"/>
+  <path fill="none" stroke="#f5eee2" stroke-width="3" d="M14.5 12.5h35l2 2v35l-2 2h-35l-2-2v-35z"/>
+  <g fill="#f5eee2">
+    <path d="M20 17l5 4-5 4-4-4zm0 12l5 4-5 4-4-4zm0 12l5 4-5 4-4-4z"/>
+    <path fill-rule="evenodd" d="M29 18h18v30H29zm4 5v8h10v-8zm0 12v8h10v-8z"/>
+  </g>
+</svg>

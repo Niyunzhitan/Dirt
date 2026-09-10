@@ -15,4 +15,10 @@
       });
     }
   };
+
+  function renderSealInscriptions() {
+    document.querySelectorAll(".seal-inscription").forEach(window.NiyunSealGlyphs.render);
+  }
+
+  renderSealInscriptions();
 }());

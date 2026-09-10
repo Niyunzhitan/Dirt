@@ -484,6 +484,7 @@
           loader.remove();
           return;
         }
+        window.NiyunSealGlyphs?.render(loader.querySelector(".seal-inscription"));
         // 接口加载异常时也不能让开屏层永久挡住页面，9 秒后走兜底完成流程。
         fallbackTimer = window.setTimeout(() => {
           if (!loader?.isConnected || loader.classList.contains("is-closing")) return;

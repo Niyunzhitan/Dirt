@@ -1,0 +1,17 @@
+{
+  "name": "niyun-zhitan-web-fc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "泥云智探阿里云函数计算部署包",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "mysql2": "^3.14.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
