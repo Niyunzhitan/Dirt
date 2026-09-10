@@ -71,8 +71,18 @@
       function renderStatus(status) {
         const element = $("#aiStatus");
         if (!element) return;
-        element.classList.toggle("disconnected", !status.connected);
-        element.innerHTML = `<i></i> ${status.connected ? "印小灵已经准备好啦" : "印小灵暂时打了个小盹"}`;
+        const ready = status.connected === true;
+        const unavailable = status.configured === false;
+        // “checking”包含冷启动、超时和短暂上游抖动，不应使用确定离线的红色状态。
+        const checking = !ready && !unavailable;
+        element.classList.toggle("disconnected", unavailable);
+        element.classList.toggle("checking", checking);
+        const label = ready
+          ? "印小灵已经准备好啦"
+          : unavailable
+            ? "印小灵暂时打了个小盹"
+            : "连接稍慢，仍可继续提问";
+        element.innerHTML = `<i></i> ${label}`;
       }
 
       // 集中绑定发送、快捷提问、上传和清空事件，页面初始化时调用一次。

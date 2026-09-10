@@ -540,6 +540,7 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
 .ai-console-head strong { font: 600 1rem var(--serif); }
 .ai-console-head small { margin-top: .25rem; color: var(--muted); font-size: .62rem; }
 .ai-console-head small i { display: inline-block; width: .4rem; height: .4rem; margin-right: .35rem; border-radius: 50%; background: #4d8b61; }
+.ai-console-head small.checking i { background: #b08a3e; }
 .ai-console-head small.disconnected i { background: var(--red); }
 .ai-console-head button { width: 2.3rem; height: 2.3rem; border: 0; background: transparent; cursor: pointer; font-size: 1.2rem; }
 .chat-messages { min-height: 18rem; max-height: 22rem; padding: 1.25rem .25rem; flex: 1; overflow: auto; }

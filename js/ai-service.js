@@ -20,8 +20,11 @@
     ),
   ];
   let activeBaseUrl = "";
+  // 保留最近一次状态的配置结论；网络超时时沿用它，但不会把超时误报成确定离线。
+  let lastKnownStatus = null;
 
   function notifyStatus(status) {
+    lastKnownStatus = status;
     window.dispatchEvent(new CustomEvent("ai-status-change", { detail: status }));
   }
 
@@ -45,11 +48,15 @@
     // 页面启动时调用状态接口，用来显示“AI助手已连接/未连接”。
     async getStatus() {
       let latestStatus = null;
+      let latestBaseUrl = "";
       for (const baseUrl of API_BASE_URLS) {
         try {
-          const response = await fetch(`${baseUrl}/api/ai/status`, { signal: AbortSignal.timeout(4000) });
+          const response = await fetch(`${baseUrl}/api/ai/status`, { signal: AbortSignal.timeout(10000) });
           const status = response.ok ? await response.json() : null;
-          if (status) latestStatus = status;
+          if (status) {
+            latestStatus = status;
+            latestBaseUrl = baseUrl;
+          }
           // 兼容尚未返回 verified 字段的旧版后端；真正请求失败时，chat() 仍会显示具体错误。
           if (status?.connected && (status.verified === true || status.verified === undefined)) {
             activeBaseUrl = baseUrl;
@@ -60,11 +67,26 @@
           // 当前候选不可用时继续尝试下一后端。
         }
       }
+      if (latestStatus) {
+        // 已配置但探测失败的后端仍允许聊天尝试，真实请求成功后会立即刷新为在线。
+        activeBaseUrl = latestStatus.configured === false ? "" : latestBaseUrl;
+        const status =
+          latestStatus.configured === false
+            ? latestStatus
+            : { ...latestStatus, checking: true };
+        notifyStatus(status);
+        return status;
+      }
       activeBaseUrl = "";
-      const status = latestStatus || { connected: false, configured: false, appId: "" };
-      const disconnectedStatus = { ...status, connected: false };
-      notifyStatus(disconnectedStatus);
-      return disconnectedStatus;
+      // 状态请求超时只说明“暂时无法确认”，不能据此断言实际聊天不可用。
+      const unknownStatus = {
+        connected: null,
+        configured: lastKnownStatus?.configured ?? null,
+        verified: false,
+        checking: true,
+      };
+      notifyStatus(unknownStatus);
+      return unknownStatus;
     },
 
     // 把文字、图片和会话编号统一交给后端；后端再决定调用文字模型还是视觉模型。
@@ -102,6 +124,13 @@
           lastError = `AI 网络请求失败（错误码：AI_NETWORK_ERROR）。${error.message || "请检查网络连接或服务端状态"}`;
         }
       }
+      // 所有候选都失败时只报告连接不稳定；是否真正不可用仍由具体错误信息说明。
+      notifyStatus({
+        connected: false,
+        configured: lastKnownStatus?.configured ?? true,
+        verified: false,
+        checking: true,
+      });
       throw new Error(
         lastError === "fetch failed"
           ? "AI 网络连接失败（错误码：AI_NETWORK_ERROR）。请检查本机代理，或使用已部署的云端后端"

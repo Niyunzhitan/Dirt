@@ -28,7 +28,11 @@ const QUIZ_SCORE_PER_QUESTION = 10;
 
 const dbPool = createPool();
 let aiStatusCache = { checkedAt: 0, connected: false };
+let aiStatusProbe = null;
 const aiRateLimit = new Map();
+// 成功状态可稳定复用；失败状态只短暂缓存，避免一次网络抖动造成持续误报。
+const AI_STATUS_SUCCESS_CACHE_MS = 5 * 60 * 1000;
+const AI_STATUS_FAILURE_CACHE_MS = 15 * 1000;
 
 // ==================== 02. 通用响应和静态网页服务 ====================
 // 所有 API 都用这个函数返回 JSON，并附带跨域和安全响应头。
@@ -420,18 +424,28 @@ async function requestDashScope(url, body, errorLabel) {
 // 用真实应用请求验证网络、Key 和应用 ID；结果短暂缓存，避免每次刷新重复计费。
 async function isAiUpstreamReachable() {
   if (!API_KEY || !APP_ID) return false;
-  if (Date.now() - aiStatusCache.checkedAt < 5 * 60 * 1000) return aiStatusCache.connected;
-  try {
-    await requestDashScope(
-      `${DASHSCOPE_BASE_URL}/${encodeURIComponent(APP_ID)}/completion`,
-      { input: { prompt: "请只回复OK" }, parameters: {}, debug: {} },
-      "百炼应用",
-    );
-    return true;
-  } catch (_) {
-    aiStatusCache = { checkedAt: Date.now(), connected: false };
-    return false;
-  }
+  const cacheDuration = aiStatusCache.connected
+    ? AI_STATUS_SUCCESS_CACHE_MS
+    : AI_STATUS_FAILURE_CACHE_MS;
+  if (Date.now() - aiStatusCache.checkedAt < cacheDuration) return aiStatusCache.connected;
+  // FC 冷启动后可能同时收到多个页面探测，复用进行中的请求以免重复调用上游。
+  if (aiStatusProbe) return aiStatusProbe;
+  aiStatusProbe = (async () => {
+    try {
+      await requestDashScope(
+        `${DASHSCOPE_BASE_URL}/${encodeURIComponent(APP_ID)}/completion`,
+        { input: { prompt: "请只回复OK" }, parameters: {}, debug: {} },
+        "百炼应用",
+      );
+      return true;
+    } catch (_) {
+      aiStatusCache = { checkedAt: Date.now(), connected: false };
+      return false;
+    } finally {
+      aiStatusProbe = null;
+    }
+  })();
+  return aiStatusProbe;
 }
 
 // ==================== 03. 纯文字问答：调用百炼应用 ====================
