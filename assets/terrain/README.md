@@ -15,6 +15,7 @@ shandong-mask.png        山东轮廓遮罩
 - `data/shandong-terrain-inline.js`：本地双击页面时使用的轻量数据
 - `data/shandong-prefectures.js`：山东 16 个地级市边界
 - `data/shandong-rivers.js`：主要河流概化中心线，供蓝色河槽示意使用
+- `data/shandong-rivers-reference.js`：按用户参考图相对位置补绘的河流、运河示意
 - `assets/maps/shandong-map-flat.webp`：简化平面版地图
 - `js/three-map.js`：相机、缩放、抬升、点位投影和渲染逻辑
 
@@ -31,6 +32,8 @@ shandong-mask.png        山东轮廓遮罩
 河流来自 [Natural Earth 1:10m 河流与湖泊中心线](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_rivers_lake_centerlines.geojson)，为公共领域数据，通过 `node scripts/update-rivers.cjs` 更新。此处 1:10m 表示 1:1000 万比例尺，不是 10 米分辨率。当前只筛选地图包围盒内的连续顶点，包含黄河、沂河及范围内漳河河段，不是完整山东水网。
 
 蓝色河槽通过降低中心线附近的显示网格顶点形成，宽度和深度均为示意参数，未修改原始高度图。地图没有完整湖泊、水库面数据，不能将低地或地形阴影直接当成水体。
+
+参考图补绘单独保存在 `data/shandong-rivers-reference.js`，包含马颊河、徒骇河、漳卫新河、卫运河、小清河、大汶河、泗河、洙赵新河、东鱼河、京杭运河、弥河、潍河、胶莱河、大沽河、五龙河、大沽夹河和沭河。坐标根据参考图走向与地名粗略对齐，不是从测绘数据提取的经纬度，不能据此判断河流实际位置、支流连接或水面范围。公开数据更新脚本不会覆盖这份补绘文件。
 
 ## 授权说明
 

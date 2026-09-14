@@ -408,7 +408,11 @@
                 <input id="mapRotation" type="range" min="0" max="32" step="1" value="0" orient="vertical" aria-label="地图向上抬升角度">
                 <output id="mapRotationValue" for="mapRotation">0°</output>
               </label>
-              <div class="map-legend"><span><i></i>封泥著录与出土点位</span><span>浅色：市界 · 蓝色：主要河槽（示意）</span></div>
+              <div class="map-legend">
+                <span><i></i>封泥著录与出土点位</span>
+                <span class="map-caption">泥鉴齐鲁——封泥出土地数字图谱</span>
+                <small class="map-accuracy-note">受绘图精度限制，本图部分地理特征可能与实际情况存在差异，仅供文化展示参考。</small>
+              </div>
             </div>
             <aside class="site-panel" id="sitePanel" aria-live="polite">
               <div class="panel-kicker"><span id="siteNumber">01</span><span>调研地点</span></div><p class="site-city" id="siteCity">淄博 · 临淄</p><h3 id="siteName">齐故城封泥发现地</h3><p id="siteDescription"></p>
@@ -745,6 +749,8 @@
     <script src="./data/shandong-terrain-inline.js"></script>
     <script src="./data/shandong-prefectures.js"></script>
     <script src="./data/shandong-rivers.js"></script>
+    <!-- 手工补绘与公开水系数据分开维护，均只用于河槽示意。 -->
+    <script src="./data/shandong-rivers-reference.js"></script>
     <!-- 先读取公开配置，再由统计加载器判断是否启用 Umami；Website ID 留空时不会发送请求。 -->
     <script src="./js/config.js"></script>
     <script src="./js/analytics.js"></script>

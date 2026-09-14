@@ -30,8 +30,6 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     fitScreenPadding: 0.82,
     boundaryHeightOffset: 0.006,
     boundaryColor: 0xe6d4b5,
-    // 省界内缩检测距离（百分比坐标），用于去掉市级数据自带的山东外轮廓线。
-    boundaryInteriorMargin: 0.7,
   };
   MAP_VIEW.minDistance = MAP_VIEW.defaultDistance / MAP_VIEW.maxZoomFactor;
 
@@ -322,14 +320,44 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     // 先把经纬度折线转成模型线段，距离计算不再关心数据源格式。
     function createRiverSegments() {
       const segments = [];
-      (window.SHANDONG_RIVERS || []).forEach(function projectRiver(river) {
-        const points = river.coordinates.map(([longitude, latitude]) => [
+      const rivers = [
+        ...(window.SHANDONG_RIVERS || []),
+        ...(window.SHANDONG_REFERENCE_RIVERS || []),
+      ];
+      // 每条河流单独生成线段，禁止把不同来源或不同河流的首尾相连。
+      rivers.forEach(function projectRiver(river) {
+        const coordinates = extendRiverMouth(river);
+        const points = coordinates.map(([longitude, latitude]) => [
           (longitude - config.bounds.west) / (config.bounds.east - config.bounds.west) * terrainWidth - terrainWidth / 2,
           terrainHeightDimension / 2 - (config.bounds.north - latitude) / (config.bounds.north - config.bounds.south) * terrainHeightDimension,
         ]);
         for (let index = 1; index < points.length; index++) segments.push([points[index - 1], points[index]]);
       });
       return segments;
+    }
+
+    // 仅补绘数据明确标出的入海末端；上限为 0.25 度，找不到海岸就保留原端点。
+    function extendRiverMouth(river) {
+      const points = river.coordinates;
+      if (!river.extendEndToCoast || !maskSamples || points.length < 2) return points;
+      const end = points[points.length - 1];
+      const previous = points[points.length - 2];
+      const dx = end[0] - previous[0];
+      const dy = end[1] - previous[1];
+      const length = Math.hypot(dx, dy);
+      if (!length) return points;
+      function isLand([longitude, latitude]) {
+        const x = (longitude - config.bounds.west) / (config.bounds.east - config.bounds.west) * 100;
+        const y = (config.bounds.north - latitude) / (config.bounds.north - config.bounds.south) * 100;
+        return x >= 0 && x <= 100 && y >= 0 && y <= 100 && sampleMask(x, y) >= 128;
+      }
+      if (!isLand(end)) return points;
+      for (let distance = 0.002; distance <= 0.25; distance += 0.002) {
+        const next = [end[0] + dx / length * distance, end[1] + dy / length * distance];
+        // 补到第一个海面像元，显示仍由 alphaMap 裁在省界上，不跨海连接岛屿。
+        if (!isLand(next)) return [...points, next];
+      }
+      return points;
     }
 
     function distanceToRiverSegment(x, y, start, end) {
@@ -347,17 +375,28 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       const segments = createRiverSegments();
       // 半径为 0.85 个网格间距，不是实测河宽；每次都在新采样的 DEM 上开槽。
       const radius = terrainWidth / (MAP_VIEW.gridColumns - 1) * 0.85;
+      const distances = new Float64Array(position.count).fill(radius);
+      const columns = MAP_VIEW.gridColumns;
+      const rows = MAP_VIEW.gridRows;
+      const cellWidth = terrainWidth / (columns - 1);
+      const cellHeight = terrainHeightDimension / (rows - 1);
+      // 只遍历线段包围盒内的顶点，避免每个顶点扫描整个省的水系。
+      for (const [start, end] of segments) {
+        const left = Math.max(0, Math.floor((Math.min(start[0], end[0]) - radius + terrainWidth / 2) / cellWidth));
+        const right = Math.min(columns - 1, Math.ceil((Math.max(start[0], end[0]) + radius + terrainWidth / 2) / cellWidth));
+        const top = Math.max(0, Math.floor((terrainHeightDimension / 2 - Math.max(start[1], end[1]) - radius) / cellHeight));
+        const bottom = Math.min(rows - 1, Math.ceil((terrainHeightDimension / 2 - Math.min(start[1], end[1]) + radius) / cellHeight));
+        for (let row = top; row <= bottom; row++) {
+          for (let column = left; column <= right; column++) {
+            const index = row * columns + column;
+            distances[index] = Math.min(distances[index], distanceToRiverSegment(
+              position.getX(index), position.getY(index), start, end));
+          }
+        }
+      }
       let carved = 0;
       for (let index = 0; index < position.count; index++) {
-        const x = position.getX(index);
-        const y = position.getY(index);
-        let distance = radius;
-        for (const [a, b] of segments) {
-          if (x < Math.min(a[0], b[0]) - radius || x > Math.max(a[0], b[0]) + radius ||
-              y < Math.min(a[1], b[1]) - radius || y > Math.max(a[1], b[1]) + radius) continue;
-          distance = Math.min(distance, distanceToRiverSegment(x, y, a, b));
-        }
-        const amount = 1 - distance / radius;
+        const amount = 1 - distances[index] / radius;
         position.setZ(index, position.getZ(index) - amount * 0.055);
         terrainColors.setXYZ(index, 0.091 + amount * (0.025 - 0.091),
           0.184 + amount * (0.32 - 0.184), 0.147 + amount * (0.48 - 0.147));
@@ -365,6 +404,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       }
       terrainColors.needsUpdate = true;
       mapRoot.dataset.riverVertices = String(carved);
+      mapRoot.dataset.referenceRivers = String((window.SHANDONG_REFERENCE_RIVERS || []).length);
     }
 
     const terrain = new THREE.Mesh(geometry, material);
@@ -388,18 +428,9 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
 
     function isInsideProvince(percentX, percentY) {
       if (!maskSamples) return true;
-      const margin = MAP_VIEW.boundaryInteriorMargin;
-      return [
-        [0, 0],
-        [-margin, 0],
-        [margin, 0],
-        [0, -margin],
-        [0, margin],
-        [-margin, -margin],
-        [margin, -margin],
-        [-margin, margin],
-        [margin, margin],
-      ].every(([offsetX, offsetY]) => sampleMask(percentX + offsetX, percentY + offsetY) >= 128);
+      // 外轮廓已由共享边筛选排除，不再内缩省界，否则市界会提前断开。
+      return percentX >= 0 && percentX <= 100 && percentY >= 0 && percentY <= 100 &&
+        sampleMask(percentX, percentY) >= 128;
     }
 
     // 将经纬度转换为模型坐标，边界线还要贴近当地地形高度。
@@ -412,6 +443,18 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         terrainHeightDimension / 2 - (percentY / 100) * terrainHeightDimension,
         terrainHeight(percentX, percentY) + MAP_VIEW.boundaryHeightOffset,
       );
+    }
+
+    // 在线段跨过遮罩时二分查找陆地侧交点，避免丢掉最后一个网格间距。
+    function findBoundaryCoastPoint(inside, outside) {
+      let land = inside;
+      let sea = outside;
+      for (let iteration = 0; iteration < 18; iteration++) {
+        const middle = [(land[0] + sea[0]) / 2, (land[1] + sea[1]) / 2];
+        if (createBoundaryPoint(...middle)) land = middle;
+        else sea = middle;
+      }
+      return createBoundaryPoint(...land);
     }
 
     // 沿网格边和对角线切分：每段位于同一三角面内，插值高度才能全程贴地。
@@ -478,6 +521,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       window.SHANDONG_PREFECTURES.forEach(function drawCityBoundaries(prefecture) {
         prefecture.rings.forEach(function drawBoundaryRing(ring) {
           let segment = [];
+          let previousCoordinate = null;
+          let previousInside = false;
           const flushSegment = function flushSegment() {
             if (segment.length < 2) {
               segment = [];
@@ -495,6 +540,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
             if (excludedEdges.has(key) || edgeOwners.get(key).size < 2 || drawnEdges.has(key)) {
               // 被跳过的边必须断开，不能让其前后端点被自动连成新的直线。
               flushSegment();
+              previousCoordinate = null;
               continue;
             }
             drawnEdges.add(key);
@@ -502,8 +548,17 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
             points.forEach(function appendDrapedBoundary([longitude, latitude], pointIndex) {
               if (segment.length && pointIndex === 0) return;
               const point = createBoundaryPoint(longitude, latitude);
+              const coordinate = [longitude, latitude];
+              if (previousCoordinate && Boolean(point) !== previousInside) {
+                const coast = point
+                  ? findBoundaryCoastPoint(coordinate, previousCoordinate)
+                  : findBoundaryCoastPoint(previousCoordinate, coordinate);
+                if (coast) segment.push(coast);
+              }
               if (point) segment.push(point);
               else flushSegment();
+              previousCoordinate = coordinate;
+              previousInside = Boolean(point);
             });
           }
           flushSegment();

@@ -16,6 +16,8 @@ const sharp = require(process.env.SHARP_MODULE || 'sharp');
       await page.waitForTimeout(3500);
       await map.scrollIntoViewIfNeeded();
       const before = await map.screenshot();
+      await map.screenshot({ path: path.join(process.env.TEMP, `terrain-top-${viewport.width}.png`) });
+      assert.equal(await map.getAttribute('data-reference-rivers'), '17');
       await page.locator('#mapRotation').evaluate((input) => {
         input.value = '67';
         input.dispatchEvent(new Event('input', { bubbles: true }));
