@@ -535,7 +535,9 @@ html[data-motion="0"] .hero-relic { transform: none !important; }
 .ai-intro li::before { content: "＋"; margin-right: .75rem; color: var(--red); }
 .ai-console { min-height: 38rem; padding: 1.3rem; display: flex; flex-direction: column; background: var(--color-paper-soft); border: 1px solid var(--line); }
 .ai-console-head { display: grid; grid-template-columns: 3.1rem 1fr 2.5rem; align-items: center; gap: .85rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
-.mascot-mark { width: 3rem; aspect-ratio: 1; display: grid; place-items: center; clip-path: polygon(8% 20%, 25% 5%, 49% 9%, 67% 4%, 92% 22%, 96% 51%, 85% 84%, 54% 94%, 21% 89%, 5% 61%); color: #f1e5d8; background: var(--red); font: 700 1.3rem var(--serif); }
+.mascot-mark { width: 3rem; aspect-ratio: 1; position: relative; overflow: hidden; border: 1px solid rgba(168, 51, 42, .35); border-radius: 50%; background: #f4dfb1; }
+/* The source canvas includes the body and tail, so align the face instead of the full PNG. */
+.mascot-mark img { position: absolute; width: 235%; max-width: none; left: 62%; top: 73%; transform: translate(-50%, -50%); }
 .ai-console-head strong, .ai-console-head small { display: block; }
 .ai-console-head strong { font: 600 1rem var(--serif); }
 .ai-console-head small { margin-top: .25rem; color: var(--muted); font-size: .62rem; }

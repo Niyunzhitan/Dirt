@@ -17,7 +17,7 @@ window.SEAL_3D_PRODUCTS = {
         suit: "♠",
         title: "临淄守印",
         subtitle: "官制与权力 · 西汉",
-        description: "这张黑桃 K 使用临淄官署封泥作为主要纹样，背面以泥云智探印面和缠枝网格组成统一牌背。",
+        description: "这张黑桃 K 以临淄官署封泥作为主要纹样。它的背面用泥云智探印面和缠枝网格组成统一牌背。",
         front: texturePath("pokerSpadeKFront", "./assets/textures/poker/front/k.jpg"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       },
@@ -27,7 +27,7 @@ window.SEAL_3D_PRODUCTS = {
         suit: "♦",
         title: "齐北船丞",
         subtitle: "仓储与漕运 · 汉代",
-        description: "这张方片 J 取材于齐北船丞封泥，牌面文字对应汉代水运和船政事务，并与黑桃 K 共用泥云智探牌背。",
+        description: "这张方片 J 取材于齐北船丞封泥，牌面文字对应汉代水运和船政事务。它与黑桃 K 共用泥云智探牌背。",
         front: texturePath("pokerDiamondJFront", "./assets/textures/poker/front/j.jpg"),
         back: texturePath("pokerDefaultBack", "./assets/textures/poker/back/default.webp")
       }
@@ -42,7 +42,7 @@ window.SEAL_3D_PRODUCTS = {
         code: "东",
         title: "齐都临淄",
         subtitle: "风牌 · 齐鲁地理",
-        description: "东风牌以北周武帝皇后随葬金印为中心纹样，配合木纹和朱砂色“东”字呈现。",
+        description: "东风牌用北周武帝皇后随葬金印作为中心纹样，再配合木纹和朱砂色“东”字。",
         front: texturePath("mahjongEastFront", "./assets/textures/mahjong/front/east.webp"),
         back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp")
       },
@@ -51,7 +51,7 @@ window.SEAL_3D_PRODUCTS = {
         code: "一万",
         title: "官署封泥",
         subtitle: "万子 · 官制谱系",
-        description: "“一万”牌以西汉《河间王玺》封泥为中心纹样，将封泥印蜕、木纹和朱砂字融入牌面。",
+        description: "“一万”牌用西汉《河间王玺》封泥作为中心纹样，把封泥印蜕、木纹和朱砂字组合在牌面上。",
         front: texturePath("mahjongWan1Front", "./assets/textures/mahjong/front/wan-1.webp"),
         back: texturePath("mahjongDefaultBack", "./assets/textures/mahjong/back/default.webp")
       }

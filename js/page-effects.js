@@ -273,7 +273,7 @@
           const compassOuter = $(".compass-outer-ring", heroVisualArea);
           const greetings = [
             "你好，我是印小灵。我们一起看看两千年前的封泥吧。",
-            "临淄、琅琊等地留下了不少封泥，我们可以从一方小泥块讲起。",
+            "临淄、琅琊等地出土了不少封泥，我们可以从一块封泥讲起。",
             "今天想了解哪一方齐鲁封泥？你可以到下面的 AI 导览中问我。",
           ];
           let greetingIndex = 0;

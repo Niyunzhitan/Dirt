@@ -568,19 +568,28 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       });
     }
 
+    // 触摸点位也属于地图手势区域。手机上点位密集，如果把 .map-marker 当普通按钮排除，
+    // 第二根手指落在点位上时就收不到完整的双指序列，表现为地图无法捏合缩放。
+    function isMapGestureTarget(event) {
+      const interactive = event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control");
+      return !interactive || (event.pointerType === "touch" && interactive.matches(".map-marker"));
+    }
+
     mapRoot.addEventListener("pointerdown", function handlePointerdown(event) {
-      if (event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control"))
-        return;
+      if (!isMapGestureTarget(event)) return;
       if (event.pointerType === "mouse" && event.button !== 0) return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      // 每根触摸指针都交给地图保存，手指移出点位或容器后仍能继续收到移动和抬起事件。
+      mapRoot.setPointerCapture(event.pointerId);
       if (activePointers.size === 2) {
         const [first, second] = [...activePointers.values()];
         pinchDistance = Math.hypot(first.x - second.x, first.y - second.y);
+        isDragging = false;
+        mapRoot.classList.remove("is-dragging");
         return;
       }
       isDragging = true;
       lastPointer = { x: event.clientX, y: event.clientY };
-      mapRoot.setPointerCapture(event.pointerId);
       mapRoot.classList.add("is-dragging");
     });
     mapRoot.addEventListener("pointermove", function handlePointermove(event) {
@@ -622,8 +631,11 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     function stopDragging(event) {
       if (event?.pointerId !== undefined) activePointers.delete(event.pointerId);
       if (activePointers.size < 2) pinchDistance = 0;
-      isDragging = false;
-      mapRoot.classList.remove("is-dragging");
+      // 双指缩放结束后若仍有一根手指按着，直接接回单指平移，避免必须全部抬起再操作。
+      const remainingPointer = activePointers.values().next().value;
+      isDragging = activePointers.size === 1;
+      if (remainingPointer) lastPointer = remainingPointer;
+      mapRoot.classList.toggle("is-dragging", isDragging);
       if (event?.pointerId !== undefined && mapRoot.hasPointerCapture(event.pointerId))
         mapRoot.releasePointerCapture(event.pointerId);
     }

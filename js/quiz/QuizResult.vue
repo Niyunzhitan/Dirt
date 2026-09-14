@@ -14,7 +14,7 @@ defineEmits(["share", "restart"]);
     <span>本轮称号</span>
     <h3>{{ title }}</h3>
     <strong>{{ score }}<small>分</small></strong>
-    <p>共答对 {{ correctCount }} / {{ total }} 题。每一次辨认，都是走近齐鲁金石的一步。</p>
+    <p>共答对 {{ correctCount }} / {{ total }} 题。答完这一轮，你对齐鲁金石又多了一点了解。</p>
     <button class="button quiz-share-button" type="button" @click="$emit('share')">
       分享成绩 <span aria-hidden="true">↗</span>
     </button>

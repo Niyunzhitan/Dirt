@@ -18,7 +18,7 @@ window.MOCK_DATA = {
       tone: "clay",
       value: "官制与史料价值",
       imageUrl: "./assets/relics/seal-linzi.png",
-      summary: "这枚封泥是汉代齐郡郡守级官署使用的凭信。它的缪篆方正严整，边栏留有自然残缺，也为研究汉初郡国并行制度和补充《汉书·百官公卿表》的记载提供了实物线索。"
+      summary: "这枚封泥是汉代齐郡郡守级官署使用的凭信。它的缪篆方正严整，边栏保留了自然残缺。它也为研究汉初郡国并行制度、补充《汉书·百官公卿表》的记载提供了实物线索。"
     },
     {
       id: "NMX-002",
@@ -58,9 +58,9 @@ window.MOCK_DATA = {
     }
   ],
   courses: [
-    { id: "COURSE-01", title: "泥藏千年：初识齐鲁封泥，了解来源与作用", lesson: 1, duration: "45 分钟", description: "第一课从古文字猜读进入封泥主题，讲清封泥怎样用于保密、防伪和确认身份，并结合麋圈、橘官等故事认识秦汉社会。", videoUrl: "", posterUrl: "" },
-    { id: "COURSE-02", title: "字印藏韵：聆听封泥故事，鉴赏千年美学", lesson: 2, duration: "40 分钟", description: "第二课介绍封泥的发现与传承，比较秦印和汉印的文字风格。学生还会从文字、手工痕迹与自然残损中理解封泥的美。", videoUrl: "", posterUrl: "" },
-    { id: "COURSE-03", title: "纸笔创泥：手绘创意封泥，实践传统文化", lesson: 3, duration: "45 分钟", description: "第三课先认识私印封泥，再从外形、篆文、纹饰和配色入手完成手绘作品。学生可以选择古韵复刻，也可以加入自己的创意。", videoUrl: "", posterUrl: "" }
+    { id: "COURSE-01", title: "初识齐鲁封泥：来源与作用", lesson: 1, duration: "45 分钟", description: "第一课从古文字猜读进入封泥主题，讲清封泥怎样用于保密、防伪和确认身份，并结合麋圈、橘官等故事认识秦汉社会。", videoUrl: "", posterUrl: "" },
+    { id: "COURSE-02", title: "封泥的文字之美：发现与传承", lesson: 2, duration: "40 分钟", description: "第二课介绍封泥的发现与传承，比较秦印和汉印的文字风格。学生还会从文字、手工痕迹与自然残损中理解封泥的美。", videoUrl: "", posterUrl: "" },
+    { id: "COURSE-03", title: "手绘创意封泥：从临摹到创作", lesson: 3, duration: "45 分钟", description: "第三课先认识私印封泥，再从外形、篆文、纹饰和配色入手完成手绘作品。学生可以选择古韵复刻，也可以加入自己的创意。", videoUrl: "", posterUrl: "" }
   ],
   questions: [
     { id: 1, difficulty: "简单", question: "封泥在古代最主要的用途是什么？", optionA: "装饰陶器", optionB: "封缄文书", optionC: "制作钱币", optionD: "固定信件", correctAnswer: "B", explanation: "封泥通常与绳结、封检和印章配合，用于封缄简牍文书、容器或货物。" },
