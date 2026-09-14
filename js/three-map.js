@@ -28,7 +28,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     maxPanY: 4,
     viewportPadding: 1.16,
     fitScreenPadding: 0.82,
-    boundaryHeightOffset: 0.045,
+    boundaryHeightOffset: 0.006,
     boundaryColor: 0xe6d4b5,
     // 省界内缩检测距离（百分比坐标），用于去掉市级数据自带的山东外轮廓线。
     boundaryInteriorMargin: 0.7,
@@ -298,8 +298,11 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       for (let index = 0; index < position.count; index += 1) {
         position.setZ(index, sampledHeights[index]);
       }
+      position.needsUpdate = true;
       geometry.computeVertexNormals();
+      geometry.computeBoundingSphere();
       drawAdministrativeBoundaries();
+      invalidateMarkerProjection();
       mapRoot.dataset.terrainData = "dem";
     }
 
@@ -321,7 +324,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       color: MAP_VIEW.boundaryColor,
       transparent: true,
       opacity: 0.72,
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
     });
     const administrativeBoundaries = new THREE.Group();
@@ -399,6 +402,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     let lastPointer = { x: 0, y: 0 };
     const activePointers = new Map();
     let pinchDistance = 0;
+    let suppressGestureClick = false;
 
     // 根据旋转、缩放和拖动状态摆放相机，再让点位跟随新视角。
     function updateCamera() {
@@ -493,25 +497,23 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     }
 
     function terrainHeight(percentX, percentY) {
-      const demValue = sampleHeight(percentX, percentY);
-      if (maskSamples) {
-        const maskX = Math.min(
-          heightWidth - 1,
-          Math.max(0, Math.round((percentX / 100) * (heightWidth - 1))),
-        );
-        const maskY = Math.min(
-          heightHeight - 1,
-          Math.max(0, Math.round((percentY / 100) * (heightHeight - 1))),
-        );
-        if (maskSamples[maskY * heightWidth + maskX] < 128) return config.terrain.baseDepth + 0.12;
-      }
-      if (demValue !== null)
-        return (
-          config.terrain.baseDepth +
-          demValue * config.terrain.reliefScale * config.terrain.heightExaggeration +
-          0.12
-        );
-      return 0.12;
+      // 与 PlaneGeometry 的三角剖分一致，包含省界附近修补过的顶点。
+      const columns = MAP_VIEW.gridColumns;
+      const rows = MAP_VIEW.gridRows;
+      const x = THREE.MathUtils.clamp(percentX / 100, 0, 1) * (columns - 1);
+      const y = THREE.MathUtils.clamp(percentY / 100, 0, 1) * (rows - 1);
+      const column = Math.min(Math.floor(x), columns - 2);
+      const row = Math.min(Math.floor(y), rows - 2);
+      const u = x - column;
+      const v = y - row;
+      const a = row * columns + column;
+      const topLeft = position.getZ(a);
+      const topRight = position.getZ(a + 1);
+      const bottomLeft = position.getZ(a + columns);
+      const bottomRight = position.getZ(a + columns + 1);
+      return u + v <= 1
+        ? topLeft + u * (topRight - topLeft) + v * (bottomLeft - topLeft)
+        : bottomRight + (1 - u) * (bottomLeft - bottomRight) + (1 - v) * (topRight - bottomRight);
     }
 
     // 点位与地形共享同一组百分比坐标，旋转或缩放时重新投影到屏幕。
@@ -568,33 +570,30 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       });
     }
 
-    // 触摸点位也属于地图手势区域。手机上点位密集，如果把 .map-marker 当普通按钮排除，
-    // 第二根手指落在点位上时就收不到完整的双指序列，表现为地图无法捏合缩放。
-    function isMapGestureTarget(event) {
-      const interactive = event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control");
-      return !interactive || (event.pointerType === "touch" && interactive.matches(".map-marker"));
-    }
-
     mapRoot.addEventListener("pointerdown", function handlePointerdown(event) {
-      if (!isMapGestureTarget(event)) return;
+      const interactive = event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control");
+      if (interactive && !(event.pointerType === "touch" && interactive.matches(".map-marker"))) return;
       if (event.pointerType === "mouse" && event.button !== 0) return;
+      if (activePointers.size === 0) suppressGestureClick = false;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      // 每根触摸指针都交给地图保存，手指移出点位或容器后仍能继续收到移动和抬起事件。
-      mapRoot.setPointerCapture(event.pointerId);
       if (activePointers.size === 2) {
+        // 双指都交给地图；单点点位时保留按钮的原生点击目标。
+        activePointers.forEach((_, id) => mapRoot.setPointerCapture(id));
         const [first, second] = [...activePointers.values()];
         pinchDistance = Math.hypot(first.x - second.x, first.y - second.y);
+        suppressGestureClick = true;
         isDragging = false;
         mapRoot.classList.remove("is-dragging");
         return;
       }
       isDragging = true;
       lastPointer = { x: event.clientX, y: event.clientY };
+      if (!interactive) mapRoot.setPointerCapture(event.pointerId);
       mapRoot.classList.add("is-dragging");
     });
     mapRoot.addEventListener("pointermove", function handlePointermove(event) {
-      if (activePointers.has(event.pointerId))
-        activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (!activePointers.has(event.pointerId)) return;
+      activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (activePointers.size === 2) {
         const [first, second] = [...activePointers.values()];
         const nextDistance = Math.hypot(first.x - second.x, first.y - second.y);
@@ -611,6 +610,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       if (!isDragging) return;
       const deltaX = event.clientX - lastPointer.x;
       const deltaY = event.clientY - lastPointer.y;
+      if (Math.hypot(deltaX, deltaY) > 3) suppressGestureClick = true;
       const rect = mapRoot.getBoundingClientRect();
       const worldPerPixelX = (camera.right - camera.left) / (camera.zoom * rect.width);
       const worldPerPixelY = (camera.top - camera.bottom) / (camera.zoom * rect.height);
@@ -629,18 +629,24 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       updateCamera();
     });
     function stopDragging(event) {
+      if (!activePointers.has(event?.pointerId)) return;
       if (event?.pointerId !== undefined) activePointers.delete(event.pointerId);
       if (activePointers.size < 2) pinchDistance = 0;
-      // 双指缩放结束后若仍有一根手指按着，直接接回单指平移，避免必须全部抬起再操作。
-      const remainingPointer = activePointers.values().next().value;
       isDragging = activePointers.size === 1;
-      if (remainingPointer) lastPointer = remainingPointer;
+      if (isDragging) lastPointer = activePointers.values().next().value;
       mapRoot.classList.toggle("is-dragging", isDragging);
       if (event?.pointerId !== undefined && mapRoot.hasPointerCapture(event.pointerId))
         mapRoot.releasePointerCapture(event.pointerId);
     }
     mapRoot.addEventListener("pointerup", stopDragging);
     mapRoot.addEventListener("pointercancel", stopDragging);
+    mapRoot.addEventListener("lostpointercapture", stopDragging);
+    mapRoot.addEventListener("click", (event) => {
+      if (suppressGestureClick && event.detail !== 0) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
     mapRoot.addEventListener(
       "wheel",
       function handleWheel(event) {
