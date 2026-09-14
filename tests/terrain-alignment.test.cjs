@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const test = require('node:test');
 
-async function setupMap() {
+async function setupMap(prefectures = []) {
   const THREE = await import('three');
   let scene;
   let camera;
@@ -37,7 +37,7 @@ async function setupMap() {
         heightBase64: Buffer.from([0, 255, 0, 255, 255, 0, 255, 0, 0, 255, 0, 255, 255, 0, 255, 0]).toString('base64'),
         maskBase64: Buffer.alloc(16, 255).toString('base64'),
       },
-      SHANDONG_PREFECTURES: [],
+      SHANDONG_PREFECTURES: prefectures,
     },
     ResizeObserver: class { observe() {} },
     IntersectionObserver: class { observe() {} },
@@ -69,6 +69,27 @@ test('DEM updates reach the GPU and overlays follow mesh triangles', async () =>
     const projected = hit.point.project(camera);
     assert.ok(Math.abs(parseFloat(marker.style.top) - (1 - projected.y) * 50) < 0.0001,
       `marker floats above rendered triangle at ${angle} degrees`);
+  }
+});
+
+test('boundary segments follow terrain between source vertices', async () => {
+  const { THREE, scene } = await setupMap([{ name: 'fixture', rings: [[[115, 35], [122, 38]]] }]);
+  const terrain = scene.children.find((item) => item.isMesh);
+  terrain.updateMatrixWorld(true);
+  const lines = terrain.children[0].children;
+  assert.ok(lines.length);
+  for (const line of lines) {
+    const positions = line.geometry.attributes.position;
+    for (let i = 1; i < positions.count; i++) {
+      const midpoint = new THREE.Vector3().fromBufferAttribute(positions, i - 1)
+        .add(new THREE.Vector3().fromBufferAttribute(positions, i)).multiplyScalar(0.5);
+      terrain.localToWorld(midpoint);
+      const ray = new THREE.Raycaster(new THREE.Vector3(midpoint.x, midpoint.y, 10), new THREE.Vector3(0, 0, -1));
+      const hit = ray.intersectObject(terrain, false)[0];
+      assert.ok(hit);
+      assert.ok(midpoint.z - hit.point.z > 0 && midpoint.z - hit.point.z < 0.007,
+        'boundary must remain just above the rendered triangle throughout each segment');
+    }
   }
 });
 

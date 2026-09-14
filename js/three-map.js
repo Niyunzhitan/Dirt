@@ -362,8 +362,31 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     }
 
     // 把行政区轮廓连成线，旧线先移除，避免更新时重复叠加。
+    // 沿网格边和对角线切分：每段位于同一三角面内，插值高度才能全程贴地。
+    function splitBoundaryEdge(start, end) {
+      const columns = MAP_VIEW.gridColumns - 1;
+      const rows = MAP_VIEW.gridRows - 1;
+      const gridPoint = ([longitude, latitude]) => [
+        (longitude - config.bounds.west) / (config.bounds.east - config.bounds.west) * columns,
+        (config.bounds.north - latitude) / (config.bounds.north - config.bounds.south) * rows,
+      ];
+      const [x0, y0] = gridPoint(start);
+      const [x1, y1] = gridPoint(end);
+      const fractions = [0, 1];
+      for (const [a, b] of [[x0, x1], [y0, y1], [x0 + y0, x1 + y1]]) {
+        if (Math.abs(b - a) < 1e-10) continue;
+        for (let edge = Math.floor(Math.min(a, b)) + 1; edge < Math.max(a, b); edge++) {
+          fractions.push((edge - a) / (b - a));
+        }
+      }
+      return [...new Set(fractions)].sort((a, b) => a - b).map(function interpolateBoundary(t) {
+        return [start[0] + (end[0] - start[0]) * t, start[1] + (end[1] - start[1]) * t];
+      });
+    }
+
     function drawAdministrativeBoundaries() {
       if (!heightSamples || !Array.isArray(window.SHANDONG_PREFECTURES)) return;
+      administrativeBoundaries.children.forEach((line) => line.geometry.dispose());
       administrativeBoundaries.clear();
       boundaryFitPoints = [];
       window.SHANDONG_PREFECTURES.forEach((prefecture) => {
@@ -381,11 +404,15 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
             administrativeBoundaries.add(line);
             segment = [];
           };
-          ring.forEach(([longitude, latitude]) => {
-            const point = createBoundaryPoint(longitude, latitude);
-            if (point) segment.push(point);
-            else flushSegment();
-          });
+          for (let index = 1; index < ring.length; index++) {
+            const points = splitBoundaryEdge(ring[index - 1], ring[index]);
+            points.forEach(function appendDrapedBoundary([longitude, latitude], pointIndex) {
+              if (index > 1 && pointIndex === 0) return;
+              const point = createBoundaryPoint(longitude, latitude);
+              if (point) segment.push(point);
+              else flushSegment();
+            });
+          }
           flushSegment();
         });
       });
@@ -482,8 +509,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         terrain.localToWorld(point);
         corners.push(point.project(camera));
       });
-      const maxProjectedX = Math.max(...corners.map((point) => Math.abs(point.x)), 0.01);
-      const maxProjectedY = Math.max(...corners.map((point) => Math.abs(point.y)), 0.01);
+      const maxProjectedX = corners.reduce((max, point) => Math.max(max, Math.abs(point.x)), 0.01);
+      const maxProjectedY = corners.reduce((max, point) => Math.max(max, Math.abs(point.y)), 0.01);
       const fitFactor = Math.min(
         MAP_VIEW.fitScreenPadding / maxProjectedX,
         MAP_VIEW.fitScreenPadding / maxProjectedY,
