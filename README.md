@@ -1,12 +1,14 @@
 # 泥云智探
 
-泥云智探是一个介绍齐鲁封泥的网站。访客可以查看封泥实物、印文、现代发现地和古代行政归属，也可以阅读数字手卷与专题故事、浏览课程课件、操作 3D 地图和牌具、向“印小灵”提问，或参加趣味问答。
+泥云智探是一个介绍齐鲁封泥的网站，整理了封泥图片、印文和相关地理资料。网站还提供数字手卷、支教课件、3D 地图与牌具、AI 问答和知识测验。
 
-项目由 [Windy-Field](https://github.com/Windy-Field) 维护，源码见 [Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。第一次使用网站，可先读[访客使用说明](./docs/User-Safari.md)。
+完整项目由 [Windy-Field](https://github.com/Windy-Field) 开发并维护，源码见 [Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。
+
+若你第一次使用网站，可先读[访客使用说明](./docs/User-Safari.md)。
 
 ## 本地运行
 
-需要 Node.js 18 或更高版本。
+本地安装和构建需要 Node.js 20.19+ 或 22.12+。这是当前 Vite 的版本要求，建议选择仍在维护的 LTS 版本。
 
 ```powershell
 npm install
@@ -31,7 +33,9 @@ npm run db:seed     # 写入数据库种子数据
 npm run package:fc  # 生成阿里云 FC 部署包
 ```
 
-`index.html` 是页面源文件，`dist/index.html` 由构建脚本生成，不要手工修改。直接双击根目录的 `index.html` 可以查看大部分静态内容；AI 和数据库接口仍需要 `server.js`，趣味问答需要先运行一次 `npm run build`。
+维护者应在根目录的 `index.html` 中修改页面结构。构建脚本会生成 `dist/index.html`，不要直接编辑该生成文件。
+
+双击根目录的 `index.html` 可以预览大部分静态内容。预览趣味问答前，开发者需要先运行一次 `npm run build`；使用 AI 和数据库功能时，还需要启动 `server.js`。
 
 ## 网站功能
 
@@ -46,7 +50,9 @@ npm run package:fc  # 生成阿里云 FC 部署包
 
 ## 代码结构
 
-页面主体使用原生 HTML、CSS 和 JavaScript，趣味问答使用 Vue 3，并由 Vite 编译。前端脚本通过 `window` 命名空间协作，以兼容本地双击预览。
+页面主体使用原生 HTML、CSS 和 JavaScript，趣味问答使用 Vue 3，由 Vite 编译。普通前端脚本通过 `window` 上的对象共享功能，因此也能支持本地双击预览。
+
+模块职责、生成文件来源和验证方法见[源码阅读导航](./docs/CODE-READING.md)。
 
 常改的文件如下：
 
@@ -88,7 +94,7 @@ USE_QUIZ_DATABASE: false
 
 这两个开关位于 [js/config.js](./js/config.js)，可以分别启用栏目数据库和题库数据库。数据库准备方法见[数据库说明](./db/README.md)。
 
-课程文件、音乐和牌具贴图的路径集中在 [data/media-config.js](./data/media-config.js)。本地资源使用 `./assets/` 下的相对路径；外部资源必须使用 HTTPS，并将主机名加入 `allowedExternalHosts`。该配置会发送给浏览器，不能写入密码、Token、Cookie 或私密签名。
+课程文件、音乐和牌具贴图的路径集中在 [data/media-config.js](./data/media-config.js)。本地资源使用 `./assets/` 下的相对路径。添加外部资源时，维护者需要使用 HTTPS 地址，并将主机名加入 `allowedExternalHosts`。浏览器会加载这份公开配置，因此文件中不能包含密码、Token、Cookie 或私密签名。
 
 资源维护说明：
 
@@ -115,9 +121,13 @@ GET http://127.0.0.1:3000/api/health
 GET http://127.0.0.1:3000/api/ai/status
 ```
 
+`/api/ai/status` 会调用百炼应用，可能消耗额度。服务端将成功结果缓存 5 分钟，失败结果缓存 15 秒。维护者不应频繁调用该接口来监测服务器是否在线。`configured: true` 表示配置齐全，是否连通要看 `connected`。
+
+服务端优先读取 FC 环境变量中的应用 ID，未设置时才使用代码中的默认值。打包脚本不会将本地 `.env` 加入部署包，维护者需要在 FC 控制台单独配置线上密钥。
+
 ## Umami 统计
 
-当前 [js/config.js](./js/config.js) 已接入 Umami Cloud，并将统计域名限制为 `niyunzhitan.cn` 和 `www.niyunzhitan.cn`。本地双击页面不会加载统计脚本；浏览器启用 Do Not Track 时也不会记录访问。
+网站通过 [js/config.js](./js/config.js) 接入 Umami Cloud，统计域名限制为 `niyunzhitan.cn` 和 `www.niyunzhitan.cn`。本地双击页面时，网站不会加载统计脚本；访客在浏览器中启用 Do Not Track 时，Umami 也不会记录访问。
 
 更换 Umami 站点时，修改以下三项：
 
@@ -135,6 +145,8 @@ UMAMI_DOMAINS: "niyunzhitan.cn,www.niyunzhitan.cn",
 
 地图参数放在 `js/three-map.js` 顶部的 `MAP_VIEW`，牌具参数放在 `js/three-showcase.js` 顶部。Three.js 许可证见 [LICENSE.three.txt](./js/vendor/LICENSE.three.txt)。
 
+浅色线为现代市界，蓝色为主要河槽示意，不是历史行政界线或完整水网。数据来源、更新脚本和局部展示排除见[山东地形数据说明](./assets/terrain/README.md)。
+
 ## 构建和发布
 
 构建前端：
@@ -149,13 +161,13 @@ npm run build
 npm run package:fc
 ```
 
-打包脚本会检查源码、重建 `dist/`、同步 FC 运行文件、安装精简生产依赖（`node_modules/` 随包上传，FC 运行时不执行 `npm install`），并输出：
+打包脚本会检查源码、重建 `dist/`，再复制服务端文件并安装运行依赖。生成的压缩包包含 `node_modules/`，FC 启动时不需要再安装依赖。输出文件为：
 
 ```text
 releases/niyun-zhitan-fc.zip
 ```
 
-`dist/`、`deploy/fc/dist/` 和 `releases/` 都是生成目录。FC 包装层位于 `deploy/fc/`；其中 `package.json` 和锁文件保留精简运行依赖，`server.js`、`server/` 和 `dist/` 由打包脚本同步。详细步骤见 [FC 部署说明](./docs/deployment/DEPLOY-FC.md)。
+`dist/`、`deploy/fc/dist/` 和 `releases/` 都是生成目录。`deploy/fc/` 用来整理部署文件，其中的 `package.json` 和锁文件只列出运行依赖；`server.js`、`server/` 和 `dist/` 由打包脚本同步。打包不会自动上传或部署，后续操作见 [FC 部署说明](./docs/deployment/DEPLOY-FC.md)。
 
 ## 目录一览
 

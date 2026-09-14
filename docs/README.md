@@ -5,6 +5,7 @@
 ```text
 docs/
 ├─ User-Safari.md                  访客使用说明
+├─ CODE-READING.md                 源码阅读导航
 ├─ deployment/DEPLOY-FC.md         阿里云 FC 部署说明
 └─ 泥云智探更新与使用手册.docx      完整图文手册
 ```
@@ -12,6 +13,7 @@ docs/
 常用入口：
 
 - [访客使用说明](./User-Safari.md)
+- [源码阅读导航](./CODE-READING.md)
 - [FC 部署说明](./deployment/DEPLOY-FC.md)
 - [项目总览](../README.md)
 
