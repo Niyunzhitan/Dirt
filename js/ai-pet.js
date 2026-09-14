@@ -1,4 +1,4 @@
-(function () {
+(function initializeAiPet() {
   const config = window.AI_PET_CONFIG || {};
   const root = document.querySelector("#aiPet");
   if (!root || config.enabled === false || !window.AiService) return;
@@ -83,13 +83,13 @@
     nextLayer.src = nextSrc;
 
     if (isReducedMotion) {
-      layers.forEach((l, idx) => {
-        if (idx === nextLayerIndex) {
-          l.classList.add("is-active");
-          l.classList.remove("is-fading-out");
+      layers.forEach((layer, layerIndex) => {
+        if (layerIndex === nextLayerIndex) {
+          layer.classList.add("is-active");
+          layer.classList.remove("is-fading-out");
         } else {
-          l.classList.remove("is-active");
-          l.classList.remove("is-fading-out");
+          layer.classList.remove("is-active");
+          layer.classList.remove("is-fading-out");
         }
       });
       currentLayerIndex = nextLayerIndex;
@@ -97,7 +97,7 @@
     }
 
     // 触发平滑交叉淡入淡出（Cross-fade）
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function crossfadePetTexture() {
       nextLayer.classList.remove("is-fading-out");
       nextLayer.classList.add("is-active");
 
@@ -164,11 +164,11 @@
     const visibleMs = Math.max(1000, Number(timing.visibleMs) || 5000);
     const hiddenMs = Math.max(500, Number(timing.hiddenMs) || 3000);
     const initialDelayMs = Math.max(0, Number(timing.initialDelayMs) || 0);
-    const showNextGreeting = () => {
+    const showNextGreeting = function showNextGreeting() {
       if (!dynamicGreetingEnabled) return;
       updateGreeting(root.dataset.state || "idle");
       root.classList.add("has-greeting");
-      greetingTimer = window.setTimeout(() => {
+      greetingTimer = window.setTimeout(function hideGreetingBeforeNextCycle() {
         root.classList.remove("has-greeting");
         greetingTimer = window.setTimeout(showNextGreeting, hiddenMs);
       }, visibleMs);
@@ -225,7 +225,7 @@
     };
     panel.addEventListener("animationend", finishClosing, { once: true });
     closeTimer = window.setTimeout(
-      () => {
+      function finishClosingAfterTimeout() {
         panel.hidden = true;
         panel.classList.remove("is-closing");
         root.classList.remove("is-panel-open");
@@ -424,7 +424,7 @@
     else resetToDefaultPosition();
   });
   if (typeof ResizeObserver === "function") {
-    new ResizeObserver(() => adaptCustomPosition()).observe(petButton);
+    new ResizeObserver(adaptCustomPosition).observe(petButton);
   }
 
   const enabled = window.localStorage.getItem(storageKey) !== "false";
@@ -444,7 +444,7 @@
         y: Math.min(1, Math.max(0, savedPosition.y)),
       };
       hasCustomPosition = true;
-      requestAnimationFrame(() => {
+      requestAnimationFrame(function restorePetPositionAfterLayout() {
         adaptCustomPosition();
         requestAnimationFrame(adaptCustomPosition);
       });

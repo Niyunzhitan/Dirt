@@ -11,6 +11,7 @@ function Format-Number([float]$value) {
 }
 
 function Get-GlyphPath([string]$character, [float]$centerX, [float]$centerY) {
+  # Fit the font outline into one seal cell while preserving its aspect ratio.
   $path = [System.Drawing.Drawing2D.GraphicsPath]::new()
   $format = [System.Drawing.StringFormat]::GenericTypographic
   $format.FormatFlags = $format.FormatFlags -bor [System.Drawing.StringFormatFlags]::NoClip
@@ -28,6 +29,7 @@ function Get-GlyphPath([string]$character, [float]$centerX, [float]$centerY) {
   $commands = [System.Collections.Generic.List[string]]::new()
   $index = 0
   while ($index -lt $points.Length) {
+    # GDI+ stores the segment type in the low bits and closure in bit 7.
     $kind = $types[$index] -band 7
     $closed = ($types[$index] -band 128) -ne 0
     if ($kind -eq 0) {
@@ -70,7 +72,7 @@ foreach ($glyph in $glyphs) {
 $json = $pathMap | ConvertTo-Json -Compress
 $outputPath = Join-Path $PSScriptRoot '..\js\seal-glyph-paths.js'
 $javascript = @'
-(function () {
+(function registerSealGlyphs() {
   "use strict";
 
   const paths = __PATH_DATA__;
@@ -87,6 +89,12 @@ $javascript = @'
       });
     }
   };
+
+  function renderSealInscriptions() {
+    document.querySelectorAll(".seal-inscription").forEach(window.NiyunSealGlyphs.render);
+  }
+
+  renderSealInscriptions();
 }());
 '@.Replace('__PATH_DATA__', $json)
 [System.IO.File]::WriteAllText($outputPath, $javascript, [System.Text.UTF8Encoding]::new($false))

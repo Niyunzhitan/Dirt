@@ -1,4 +1,4 @@
-(function () {
+(function registerDisplaySettings() {
   "use strict";
 
   window.NiyunDisplaySettings = {

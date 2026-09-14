@@ -9,6 +9,7 @@ if (!fs.existsSync(builtQuizPath)) {
   throw new Error("未找到 dist/assets/quiz-bundle.js，请先运行 Vite 构建。");
 }
 
+// assets 的复制可能覆盖刚生成的问答包，因此先保留构建结果，复制后恢复。
 const quizBundle = fs.readFileSync(builtQuizPath);
 
 for (const directory of ["assets", "css", "data", "js"]) {
@@ -28,7 +29,7 @@ const glyphDataMatch = glyphScript.match(/const paths = (\{.*?\});/s);
 if (!glyphDataMatch) throw new Error("无法从 js/seal-glyph-paths.js 读取开屏封泥字形。");
 const glyphPaths = JSON.parse(glyphDataMatch[1]);
 const glyphMarkup = ["ni", "yun", "zhi", "tan"]
-  .map((name) => {
+  .map(function renderStaticSealGlyph(name) {
     if (!glyphPaths[name]) throw new Error(`开屏封泥缺少 ${name} 字形。`);
     return `                <path class="seal-inscription-glyph glyph-${name}" d="${glyphPaths[name]}"></path>`;
   })

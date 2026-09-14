@@ -57,7 +57,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     let markersNeedProjection = true;
     const requestMapRender = function requestMapRender() {
       if (!mapVisible || mapRenderFrame) return;
-      mapRenderFrame = window.requestAnimationFrame(() => {
+        mapRenderFrame = window.requestAnimationFrame(function renderRequestedMapFrame() {
         mapRenderFrame = 0;
         if (!mapVisible) return;
         if (markersNeedProjection) {
@@ -73,7 +73,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     const invalidateMarkerProjection = function invalidateMarkerProjection() {
       markersNeedProjection = true;
       requestMapRender();
-      window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(function reprojectAfterLayout() {
         markersNeedProjection = true;
         requestMapRender();
       });
@@ -163,7 +163,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         return;
       }
       const image = new Image();
-      image.onload = () => {
+      image.onload = function readLoadedHeightMap() {
         const heightCanvas = document.createElement("canvas");
         heightCanvas.width = image.naturalWidth;
         heightCanvas.height = image.naturalHeight;
@@ -184,13 +184,13 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
           heightSamples[index] = pixels[index * 4];
         applyHeightMap();
       };
-      image.onerror = () => {
+      image.onerror = function handleHeightMapError() {
         heightSamples = null;
       };
       image.src = config.heightDataUrl;
       if (isFilePage) return;
       const maskImage = new Image();
-      maskImage.onload = () => {
+      maskImage.onload = function readLoadedProvinceMask() {
         // 读取掩膜像素，供高度采样使用；可见边界由 alphaMap 负责裁剪。
         const maskCanvas = document.createElement("canvas");
         maskCanvas.width = maskImage.naturalWidth;
@@ -298,6 +298,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       for (let index = 0; index < position.count; index += 1) {
         position.setZ(index, sampledHeights[index]);
       }
+      // CPU 改顶点不会自动上传 GPU；漏掉此标记会让覆盖物悬在旧平面上。
       position.needsUpdate = true;
       geometry.computeVertexNormals();
       geometry.computeBoundingSphere();
@@ -455,7 +456,6 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       invalidateMarkerProjection();
     }
 
-    // 根据当前抬升角计算地形投影包络，避免山东东西或南北边缘被裁掉。
     // 计算能容纳整张地图的视野，初始化或复位时不把省界裁掉。
     function fitFullView() {
       // 用默认地图距离计算“全貌基准”，不要把用户当前缩放状态混进 fitZoom。
@@ -641,7 +641,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     mapRoot.addEventListener("pointerup", stopDragging);
     mapRoot.addEventListener("pointercancel", stopDragging);
     mapRoot.addEventListener("lostpointercapture", stopDragging);
-    mapRoot.addEventListener("click", (event) => {
+    mapRoot.addEventListener("click", function suppressClickAfterMapGesture(event) {
       if (suppressGestureClick && event.detail !== 0) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -694,7 +694,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       else flatMapImage.addEventListener("load", invalidateMarkerProjection, { once: true });
     }
     const mapVisibilityObserver = new IntersectionObserver(
-      ([entry]) => {
+      function updateMapVisibility([entry]) {
         mapVisible = entry.isIntersecting;
         if (mapVisible) {
           invalidateMarkerProjection();

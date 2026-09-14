@@ -31,6 +31,7 @@ async function main() {
   });
   const connection = await pool.getConnection();
   try {
+    // 整批导入共用事务；任一表失败时回滚，避免展示数据只更新一部分。
     await connection.beginTransaction();
     for (const site of data.SEAL_KNOWLEDGE.sites) {
       await connection.execute(
@@ -139,7 +140,7 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+main().catch(function reportSeedFailure(error) {
   console.error(error.message);
   process.exitCode = 1;
 });

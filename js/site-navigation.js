@@ -1,4 +1,4 @@
-(function () {
+(function registerSiteNavigation() {
   "use strict";
   window.NiyunSiteNavigation = {
     create({ $, $$, prefersReducedMotion, interfaceConfig }) {
@@ -86,7 +86,7 @@
           });
         };
         const observer = new IntersectionObserver(
-          (entries) => {
+          function updateActiveSection(entries) {
             entries.forEach((entry) => {
               if (entry.isIntersecting) setActiveNav(entry.target.id);
             });
@@ -97,13 +97,13 @@
         const hero = $(".hero");
         if (hero)
           new IntersectionObserver(
-            ([entry]) => {
+            function updateHeroNavigation([entry]) {
               if (entry.isIntersecting) setActiveNav(hero.id);
             },
             { threshold: 0.55 },
           ).observe(hero);
         const reveal = new IntersectionObserver(
-          (entries) =>
+          function revealSections(entries) {
             entries.forEach((entry) => {
               const section = entry.target;
               if (entry.isIntersecting) {
@@ -112,7 +112,8 @@
                 reveal.unobserve(section);
                 return;
               }
-            }),
+            });
+          },
           // 提前 200px 开始入场，让快速下翻时内容尽量在进入视口前显现。
           { rootMargin: "200px 0px", threshold: 0.01 },
         );

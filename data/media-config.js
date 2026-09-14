@@ -12,12 +12,12 @@ window.MEDIA_CONFIG = {
    * ==================== 音乐快速配置区 ====================
    * 修改音乐时优先调整这里，不需要改 js/media-coordinator.js。
    * defaultTrackId 必须对应 tracks 中的 id；defaultVolume 使用 0～1，0.06 表示 6%。
-   * tracks.volumeScale 是单曲音量系数：1 为正常，0.6 为总音量的一半。
+   * tracks.volumeScale 是单曲音量系数：1 为正常，0.6 为总音量的 60%。
    */
   backgroundMusic: {
     title: "泥云智探背景音乐",
     defaultTrackId: "lane", // 默认曲目：古巷
-    defaultVolume: 0.06, // 默认音量：3%
+    defaultVolume: 0.06, // 默认音量：6%
     defaultEnabled: false, // 默认关闭，用户可通过导航栏或设置开启
     defaultCarouselEnabled: false, // 默认关闭轮播，开启后按 tracks 顺序播放全部歌曲
     tracks: [

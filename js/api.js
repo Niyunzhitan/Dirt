@@ -1,4 +1,4 @@
-(function () {
+(function initializeDataService() {
   const baseUrl = String(window.APP_CONFIG?.API_BASE_URL || "").replace(/\/$/, "");
   const useDatabase = Boolean(window.APP_CONFIG?.USE_DATABASE);
   const useQuizDatabase = Boolean(window.APP_CONFIG?.USE_QUIZ_DATABASE);
@@ -34,7 +34,7 @@
   };
   // 常用媒体配置按课程 id 补充视频、课件等公开资源，数据库和 mock 模式共用。
   const applyCourseMedia = function applyCourseMedia(items) {
-    return items.map((course) => {
+    return items.map(function mergeCourseMedia(course) {
       const media = window.MEDIA_CONFIG?.courses?.[course.id] || {};
       return {
         ...course,

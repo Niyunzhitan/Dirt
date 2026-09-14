@@ -98,7 +98,7 @@ function serveStatic(request, response) {
     );
   if (blockedFile) return sendJson(response, 404, { error: "文件不存在" });
 
-  fs.stat(filePath, (statError, stat) => {
+  fs.stat(filePath, function sendStaticFile(statError, stat) {
     if (statError || !stat.isFile()) return sendJson(response, 404, { error: "文件不存在" });
     // 视频拖动进度条时，浏览器不会重新下载整段视频，而是用 Range 请求读取目标时间附近的数据。
     // 这里兼容“从某字节开始”“指定起止字节”和“读取末尾若干字节”三种单段范围格式。
@@ -161,10 +161,10 @@ function serveStatic(request, response) {
 
 // 读取 POST 请求中的 JSON，同时限制总大小，避免超大请求拖垮服务。
 function readJson(request) {
-  return new Promise((resolve, reject) => {
+  return new Promise(function collectJsonBody(resolve, reject) {
     let size = 0;
     const chunks = [];
-    request.on("data", (chunk) => {
+    request.on("data", function collectRequestChunk(chunk) {
       size += chunk.length;
       if (size > MAX_BODY_BYTES) {
         const error = new Error("请求内容过大");
@@ -176,8 +176,10 @@ function readJson(request) {
       }
       chunks.push(chunk);
     });
-    request.setTimeout(REQUEST_TIMEOUT, () => reject(new Error("请求超时")));
-    request.on("end", () => {
+    request.setTimeout(REQUEST_TIMEOUT, function rejectTimedOutBody() {
+      reject(new Error("请求超时"));
+    });
+    request.on("end", function parseCompletedBody() {
       try {
         resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
       } catch {
@@ -205,7 +207,7 @@ function validateImages(images) {
     error.httpStatus = 400;
     throw error;
   }
-  images.forEach((image) => {
+  images.forEach(function validateImage(image) {
     if (!["image/jpeg", "image/png", "image/webp"].includes(image.type)) {
       const error = new Error(`${image.name || "文件"} 不是支持的图片格式`);
       error.errorCode = "AI_UNSUPPORTED_IMAGE_TYPE";
@@ -430,7 +432,7 @@ async function isAiUpstreamReachable() {
   if (Date.now() - aiStatusCache.checkedAt < cacheDuration) return aiStatusCache.connected;
   // FC 冷启动后可能同时收到多个页面探测，复用进行中的请求以免重复调用上游。
   if (aiStatusProbe) return aiStatusProbe;
-  aiStatusProbe = (async () => {
+  aiStatusProbe = (async function probeBailianApplication() {
     try {
       await requestDashScope(
         `${DASHSCOPE_BASE_URL}/${encodeURIComponent(APP_ID)}/completion`,
@@ -515,7 +517,7 @@ async function askQwenVision({ message, images }) {
 const server = http.createServer(async function handleRequest(request, response) {
   if (request.method === "OPTIONS") return sendJson(response, 204, {});
 
-  // 前端启动时调用：只报告配置是否齐全，不会返回真实 API Key。
+  // 前端启动时调用：验证真实上游连通性（可能消耗额度），只公开脱敏配置。
   if (request.method === "GET" && request.url === "/api/ai/status") {
     return sendJson(response, 200, {
       connected: await isAiUpstreamReachable(),

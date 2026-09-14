@@ -51,7 +51,7 @@ test("status transport failure remains unknown instead of claiming AI is offline
   assert.equal(status.checking, true);
 });
 
-test("configured but temporarily unreachable AI remains available to try", () => {
+test("verified connection failure is displayed as disconnected", () => {
   const context = runBrowserScript("js/ai-chat.js");
   const classes = new Set();
   const statusElement = {
@@ -75,9 +75,35 @@ test("configured but temporarily unreachable AI remains available to try", () =>
 
   controller.renderStatus({ connected: false, configured: true, verified: true });
 
-  assert.match(statusElement.innerHTML, /仍可继续提问/);
-  assert.equal(classes.has("disconnected"), false);
-  assert.equal(classes.has("checking"), true);
+  assert.match(statusElement.innerHTML, /连接失败/);
+  assert.equal(classes.has("disconnected"), true);
+  assert.equal(classes.has("checking"), false);
+});
+
+test("failed probe and failed chat are not marked as still checking; success recovers", async () => {
+  const browserWindow = new EventTarget();
+  browserWindow.location = { protocol: "https:", origin: "https://example.test" };
+  const statuses = [];
+  browserWindow.addEventListener("ai-status-change", (event) => statuses.push(event.detail));
+  let succeeds = false;
+  const context = runBrowserScript("js/ai-service.js", {
+    window: browserWindow,
+    fetch: async (url) => ({
+      ok: url.endsWith("/status") || succeeds,
+      status: succeeds ? 200 : 500,
+      json: async () => url.endsWith("/status")
+        ? { connected: false, configured: true, verified: true }
+        : succeeds ? { reply: "OK" } : { error: "InternalError", errorCode: "UPSTREAM_HTTP_500" },
+    }),
+  });
+  const status = await context.window.AiService.getStatus();
+  assert.equal(Boolean(status.checking), false);
+  await assert.rejects(context.window.AiService.chat({ message: "test" }), /UPSTREAM_HTTP_500/);
+  assert.equal(statuses.at(-1).connected, false);
+  assert.equal(statuses.at(-1).checking, false);
+  succeeds = true;
+  await context.window.AiService.chat({ message: "test" });
+  assert.equal(statuses.at(-1).connected, true);
 });
 
 test("missing AI configuration is still shown as unavailable", () => {

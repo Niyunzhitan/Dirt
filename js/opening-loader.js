@@ -1,4 +1,4 @@
-(function () {
+(function registerOpeningLoader() {
   "use strict";
 
   window.NiyunOpeningLoader = {
@@ -289,7 +289,7 @@
         if (!didYouKnowText || !didYouKnowFacts.length) return;
         didYouKnowIndex = Math.floor(Math.random() * didYouKnowFacts.length);
         setDidYouKnowText(didYouKnowFacts[didYouKnowIndex], true);
-        didYouKnowTimer = window.setInterval(() => {
+        didYouKnowTimer = window.setInterval(function rotateKnowledgeFact() {
           didYouKnowIndex = nextDidYouKnowIndex();
           setDidYouKnowText(didYouKnowFacts[didYouKnowIndex]);
         }, config.didYouKnowIntervalMs);
@@ -314,7 +314,7 @@
         }
         if (didYouKnowSwitchTimer) window.clearTimeout(didYouKnowSwitchTimer);
         didYouKnowText.classList.add("is-switching");
-        didYouKnowSwitchTimer = window.setTimeout(() => {
+        didYouKnowSwitchTimer = window.setTimeout(function replaceKnowledgeFact() {
           didYouKnowText.textContent = text;
           didYouKnowText.classList.remove("is-switching");
           didYouKnowSwitchTimer = null;
@@ -479,7 +479,7 @@
         }
         window.NiyunSealGlyphs?.render(loader.querySelector(".seal-inscription"));
         // 接口加载异常时也不能让开屏层永久挡住页面，9 秒后走兜底完成流程。
-        fallbackTimer = window.setTimeout(() => {
+        fallbackTimer = window.setTimeout(function finishStalledOpening() {
           if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
           fallbackTimer = null;
           finish(false, true);
@@ -493,7 +493,7 @@
         fragmentsStarted = false;
         status.textContent = config.stages[stageIndex].text;
         targetProgress = config.stages[stageIndex].progress;
-        intervalTimer = window.setInterval(() => {
+        intervalTimer = window.setInterval(function advanceOpeningStage() {
           if (stageIndex < config.stages.length - 2) {
             stageIndex += 1;
             targetProgress = config.stages[stageIndex].progress;
@@ -528,9 +528,9 @@
         if (!success) status.textContent = "展厅已打开，部分资料稍后加载";
         targetProgress = 100;
         wakeProgress();
-        await new Promise((resolve) => {
+        await new Promise(function waitForFinalProgress(resolve) {
           const startedAt = performance.now();
-          const waitForProgress = (timestamp) => {
+          const waitForProgress = function waitForProgress(timestamp) {
             if (!loader?.isConnected || currentProgress >= 99.5) return resolve();
             if (timestamp - startedAt > 1800) {
               currentProgress = 100;
@@ -545,7 +545,7 @@
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
         stopDidYouKnow();
         loader.classList.add("is-closing");
-        removeTimer = window.setTimeout(() => {
+        removeTimer = window.setTimeout(function disposeOpeningLayer() {
           if (particleFrame) cancelAnimationFrame(particleFrame);
           if (progressFrame) cancelAnimationFrame(progressFrame);
           loader.remove();
@@ -563,7 +563,7 @@
 
       // 暂时让出执行时间，让浏览器先画一帧，避免连续生成内容时卡住动画。
       function yieldToBrowser() {
-        return new Promise((resolve) => {
+        return new Promise(function scheduleBrowserYield(resolve) {
           if ("scheduler" in window && typeof window.scheduler?.postTask === "function") {
             window.scheduler.postTask(resolve, { priority: "user-visible" });
             return;

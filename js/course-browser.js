@@ -1,4 +1,4 @@
-(function () {
+(function registerCourseBrowser() {
   "use strict";
 
   // 课程浏览器独立管理课时切换、课件横向阅读和进度条拖动。
@@ -90,7 +90,7 @@
         let timer;
         await Promise.race([
           image.decode().catch(() => {}),
-          new Promise((resolve) => {
+          new Promise(function limitSlideDecodeWait(resolve) {
             timer = window.setTimeout(resolve, 4000);
           }),
         ]);
@@ -202,7 +202,7 @@
         // 保存准备课件的 Promise，调用方可以等待它，而不是误以为调用后立即加载完成。
         const slidesReady = renderCourseSlides(course);
         if (options.scrollToContent) {
-          window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(function revealSelectedCourse() {
             $("#courseScroll")?.scrollIntoView({
               behavior: prefersReducedMotion() ? "auto" : "smooth",
               block: "start",

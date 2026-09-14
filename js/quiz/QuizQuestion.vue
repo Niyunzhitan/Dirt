@@ -11,7 +11,8 @@ const props = defineProps({
   answered: { type: Boolean, default: false },
 });
 
-const currentAnswerResult = computed(() => {
+// 只显示当前题的判题结果，防止切题时上一题的异步结果短暂闪现。
+const currentAnswerResult = computed(function getCurrentAnswerResult() {
   if (!props.answerResult || String(props.answerResult.questionId) !== String(props.question.id)) return null;
   return props.answerResult;
 });

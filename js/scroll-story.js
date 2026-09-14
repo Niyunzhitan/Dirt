@@ -1,4 +1,4 @@
-(function () {
+(function registerScrollStory() {
   "use strict";
 
   window.NiyunScrollStory = {

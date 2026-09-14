@@ -1,4 +1,4 @@
-(function () {
+(function registerAiChatController() {
   "use strict";
 
   window.NiyunAiChat = {
@@ -72,16 +72,15 @@
         const element = $("#aiStatus");
         if (!element) return;
         const ready = status.connected === true;
-        const unavailable = status.configured === false;
-        // “checking”包含冷启动、超时和短暂上游抖动，不应使用确定离线的红色状态。
+        const unavailable = status.configured === false || status.connected === false;
+        // 仅未知状态使用检查样式；明确失败优先于 checking 标记。
         const checking = !ready && !unavailable;
         element.classList.toggle("disconnected", unavailable);
         element.classList.toggle("checking", checking);
-        const label = ready
-          ? "印小灵已经准备好啦"
-          : unavailable
-            ? "印小灵暂时打了个小盹"
-            : "连接稍慢，仍可继续提问";
+        let label = "暂未确认连接状态";
+        if (ready) label = "印小灵已经准备好啦";
+        else if (status.configured === false) label = "印小灵暂时打了个小盹";
+        else if (unavailable) label = "连接失败，请稍后重试";
         element.innerHTML = `<i></i> ${label}`;
       }
 

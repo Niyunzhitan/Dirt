@@ -1,4 +1,4 @@
-(function () {
+(function registerSearchDialog() {
   "use strict";
 
   window.NiyunSearchDialog = {
@@ -159,7 +159,7 @@
           if (resultButton.dataset.searchId) {
             const relic = await apiService.getRelicById(resultButton.dataset.searchId);
             close();
-            window.setTimeout(() => {
+            window.setTimeout(function revealRelicSearchResult() {
               const target = $(`[data-relic-card="${resultButton.dataset.searchId}"]`);
               if (!target) return $("#collection")?.scrollIntoView();
               revealTarget(target);
@@ -176,7 +176,7 @@
           sourceDialog.classList.remove("is-closing");
           sourceDialog.showModal();
           openModalAnimation(sourceDialogPanel);
-          window.setTimeout(() => {
+          window.setTimeout(function revealSiteSearchResult() {
             const targetCard = $(`#sourceDialogIndex [data-source-card="${site.id}"]`);
             targetCard?.classList.add("search-target");
             targetCard?.scrollIntoView({

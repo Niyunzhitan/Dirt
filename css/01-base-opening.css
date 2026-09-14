@@ -1,15 +1,15 @@
 /* Hallmark · macrostructure: Digital Museum Scroll · tone: Qilu epigraphy · anchor hue: cinnabar */
 /* Hallmark · pre-emit critique: P5 H4 E5 S5 R4 V4 · contrast: pass · mobile: pass */
 /*
- * 泥云智探主样式表
- * 阅读顺序：全局基础 -> 顶部导航 -> 首屏 -> 各内容板块 -> 弹窗/页脚 -> 响应式 -> 视觉增强。
- * tokens.css 管理可复用设计变量；本文件管理具体元素如何排版和显示。
+ * 全局基础与开屏样式。
+ * tokens.css 管理设计变量；导航、栏目和弹窗布局在 02-content-layout.css。
+ * 后续专题样式按 index.html 顺序叠加，本文件不再包含全部页面样式。
  *
  * 视觉修改速查：
  * - 改全站颜色、字体、内容宽度、栏目留白：css/tokens.css 顶部
  * - 改栏目进入/消失速度和位移：--motion-reveal-* 与 --motion-child-*
  * - 改按钮等小交互速度：--dur-short / --dur-medium / --dur-long
- * - 改某个具体板块的布局：查找本文件中的“==================== 板块名”注释
+ * - 改某个具体板块的布局：在 css 目录搜索对应板块名或类名
  */
 
 /* ==================== 01. 全局基础：字体、颜色、光标和页面背景 ==================== */

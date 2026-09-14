@@ -1,4 +1,4 @@
-(function () {
+(function registerSourceArchive() {
   "use strict";
 
   window.NiyunSourceArchive = {
@@ -49,7 +49,7 @@
 
       // 等弹窗排版完成后定位卡片，否则滚动位置可能算不准。
       function focusCard(siteId, message) {
-        window.setTimeout(() => {
+        window.setTimeout(function focusArchiveCardAfterLayout() {
           const target = $(`#sourceDialogIndex [data-source-card="${siteId}"]`);
           target?.classList.add("search-target");
           target?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
@@ -72,7 +72,7 @@
         if (link.siteId) {
           focusCard(link.siteId);
         } else {
-          window.setTimeout(() => {
+          window.setTimeout(function reportMissingArchiveMatch() {
             const message = link.query ? `完整图录中暂未找到“${link.query}”同名条目` : "完整图录已打开";
             showToast(message);
             sourceDialogSearch.focus();

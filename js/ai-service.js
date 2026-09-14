@@ -1,4 +1,4 @@
-(function () {
+(function initializeAiService() {
   // 云端优先、本地兜底；真实 Key 始终只保存在对应后端。
   // 地址为空时使用同源后端，支持通过 server.js 同时托管网页和 AI API。
   // 直接双击 index.html 时 origin 为 null，不会误发起 file:// 请求。
@@ -23,6 +23,8 @@
   // 保留最近一次状态的配置结论；网络超时时沿用它，但不会把超时误报成确定离线。
   let lastKnownStatus = null;
 
+  // connected: true 表示成功，false 表示失败，null 表示探测未取得结论。
+  // configured 只说明配置齐全，不能代替上游可用性判断。
   function notifyStatus(status) {
     lastKnownStatus = status;
     window.dispatchEvent(new CustomEvent("ai-status-change", { detail: status }));
@@ -30,16 +32,19 @@
 
   // 浏览器不能直接把 File 对象放进 JSON，所以先转成后端可读取的 Data URL。
   function fileToDataUrl(file) {
-    return new Promise((resolve, reject) => {
+    return new Promise(function readImageAsDataUrl(resolve, reject) {
       const reader = new FileReader();
-      reader.onload = () =>
+      reader.onload = function handleImageRead() {
         resolve({
           name: file.name,
           type: file.type,
           size: file.size,
           dataUrl: reader.result,
         });
-      reader.onerror = () => reject(new Error(`无法读取图片：${file.name}`));
+      };
+      reader.onerror = function handleImageReadError() {
+        reject(new Error(`无法读取图片：${file.name}`));
+      };
       reader.readAsDataURL(file);
     });
   }
@@ -70,10 +75,7 @@
       if (latestStatus) {
         // 已配置但探测失败的后端仍允许聊天尝试，真实请求成功后会立即刷新为在线。
         activeBaseUrl = latestStatus.configured === false ? "" : latestBaseUrl;
-        const status =
-          latestStatus.configured === false
-            ? latestStatus
-            : { ...latestStatus, checking: true };
+        const status = { ...latestStatus, checking: false };
         notifyStatus(status);
         return status;
       }
@@ -124,12 +126,12 @@
           lastError = `AI 网络请求失败（错误码：AI_NETWORK_ERROR）。${error.message || "请检查网络连接或服务端状态"}`;
         }
       }
-      // 所有候选都失败时只报告连接不稳定；是否真正不可用仍由具体错误信息说明。
+      // 实际聊天已失败，不能继续显示为等待确认或响应较慢。
       notifyStatus({
         connected: false,
         configured: lastKnownStatus?.configured ?? true,
         verified: false,
-        checking: true,
+        checking: false,
       });
       throw new Error(
         lastError === "fetch failed"

@@ -1,4 +1,4 @@
-(function () {
+(function restoreInitialTheme() {
   "use strict";
 
   // 这段脚本必须在主题样式表之前同步执行，确保浏览器第一次绘制就是保存的主题。

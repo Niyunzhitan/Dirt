@@ -1,4 +1,4 @@
-(function () {
+(function initializeMediaCoordinator() {
   const config = window.MEDIA_CONFIG?.backgroundMusic || {};
   const storageKey = "niyun-background-music-settings";
   const defaultVolume = Math.min(1, Math.max(0, Number(config.defaultVolume) || 0.03));
@@ -118,7 +118,7 @@
     if (fadeTimer) window.clearInterval(fadeTimer);
     const start = audio.volume;
     const began = performance.now();
-    fadeTimer = window.setInterval(() => {
+    fadeTimer = window.setInterval(function advanceVolumeFade() {
       const progress = Math.min(1, (performance.now() - began) / duration);
       audio.volume = start + (target - start) * progress;
       if (progress >= 1) {
@@ -147,10 +147,10 @@
 
   function pauseMusic() {
     const requestId = ++pauseRequestId;
-    // 先立即暂停，保证按钮状态马上反映“已关闭”；音量淡出只负责收尾视觉。
+    // 先暂停声音再归零音量；延迟同步只在没有新播放请求时生效。
     audio.pause();
     fadeTo(0, 180);
-    window.setTimeout(() => {
+    window.setTimeout(function syncCompletedPause() {
       if (requestId === pauseRequestId) {
         syncControls();
       }

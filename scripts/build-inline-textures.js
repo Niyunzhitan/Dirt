@@ -12,7 +12,7 @@ const textures = {
 };
 
 const encoded = Object.fromEntries(
-  Object.entries(textures).map(([relativePath, mimeType]) => {
+  Object.entries(textures).map(function encodeTexture([relativePath, mimeType]) {
     const sourcePath = path.join(projectRoot, relativePath.replace(/^\.\//, ""));
     const data = fs.readFileSync(sourcePath).toString("base64");
     return [relativePath, `data:${mimeType};base64,${data}`];

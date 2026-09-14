@@ -65,7 +65,7 @@ async function copyUrl() {
     copyFeedback.value =
       copyCount.value > 1 ? `已第 ${copyCount.value} 次复制当前网址。` : "已复制当前网址，可发送给朋友了。";
     window.clearTimeout(copyResetTimer);
-    copyResetTimer = window.setTimeout(() => {
+    copyResetTimer = window.setTimeout(function resetCopyFeedback() {
       copied.value = false;
       copyButtonText.value = "再次复制";
       copyFeedback.value = "已复制当前网址，可发送给朋友了。";

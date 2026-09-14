@@ -1,4 +1,4 @@
-(function () {
+(function initializeWebsite() {
   // ==================== 01. 通用工具和页面状态 ====================
   // $ 查找一个元素，$$ 查找多个元素并转成数组，后面所有板块都会使用。
   const $ = function $(selector, scope = document) {
@@ -412,7 +412,7 @@
   function renderMarkdown(markdown) {
     const source = String(markdown || "").replace(/\r\n?/g, "\n");
     const codeBlocks = [];
-    const protectedSource = source.replace(/```(?:[\w-]+)?\n?([\s\S]*?)```/g, (_, code) => {
+    const protectedSource = source.replace(/```(?:[\w-]+)?\n?([\s\S]*?)```/g, function protectCodeBlock(_, code) {
       const token = `@@CODE_BLOCK_${codeBlocks.length}@@`;
       codeBlocks.push(`<pre><code>${escapeHtml(code.trim())}</code></pre>`);
       return token;
@@ -425,7 +425,7 @@
       listType = "";
     }
 
-    protectedSource.split("\n").forEach((line) => {
+    protectedSource.split("\n").forEach(function renderMarkdownLine(line) {
       const trimmed = line.trim();
       const unordered = trimmed.match(/^[-*+]\s+(.+)/);
       const ordered = trimmed.match(/^\d+[.)]\s+(.+)/);
@@ -501,7 +501,6 @@
     "NMX-004": { query: "齐北船丞" },
   };
 
-  // 点击地图点位后，把该地点的信息写入右侧详情面板。
   // 点击地图点位后，更新右侧的地点介绍和资料数量。
   function updateSitePanel(site, index = 0) {
     $("#siteNumber").textContent = String(index + 1).padStart(2, "0");
@@ -526,7 +525,7 @@
       south: 34.3786,
     };
     root.innerHTML = sites
-      .map((site, index) => {
+      .map(function renderMapMarker(site, index) {
         const city = String(site.city || "").split(" · ")[0];
         const county = String(site.city || "")
           .split(" · ")[1]
@@ -560,7 +559,6 @@
       .join("");
   }
 
-  // 补充史料全部来自本地数据文件，图片、目录与证据栏均在浏览器端生成。
   // 补充史料直接嵌入45区县图录卡片，数据仍只来自本地前端文件。
   function supplementaryList(items) {
     if (!Array.isArray(items) || !items.length) return "";
@@ -631,7 +629,6 @@
     cacheSourceSupplementHeights(root);
   }
 
-  // Measure accordion content while rendering, so the first click does not pay the layout cost.
   // 提前记录折叠内容的高度，展开动画时就能知道应该长到多高。
   function cacheSourceSupplementHeights(root) {
     if (!root) return;
@@ -643,7 +640,6 @@
     });
   }
 
-  // Animate the accordion height while keeping the readable text visually steady.
   // 原生 details 会直接跳开，这里先播放高度变化，再确定最终展开状态。
   async function animateSourceSupplementDetails(details, shouldOpen) {
     const summary = details.querySelector(":scope > summary");
@@ -774,7 +770,7 @@
     // AI 在后台连接，不让它阻塞图鉴、地图和课程的展示。
     AiService.getStatus()
       .then((status) => aiChatController.renderStatus(status))
-      .catch(() => {
+      .catch(function handleInitialAiStatusFailure() {
         aiChatController.renderStatus({ connected: false });
       });
     // 结束开屏前，再确认最先展示的课件已完成准备流程。
@@ -840,7 +836,7 @@
     reducedMotion: systemPrefersReducedMotion,
     applySettings: () => applyDisplaySettings(),
     showToast,
-    dispatchReset: () => {
+    dispatchReset: function dispatchMediaSettingsReset() {
       window.dispatchEvent(new CustomEvent("media-settings-reset"));
       window.dispatchEvent(new CustomEvent("ai-pet-settings-reset"));
     },
@@ -966,7 +962,7 @@
     visualEffects,
     motionSettingRanges,
   }).init();
-  init().catch(() => {
+  init().catch(function handleWebsiteInitializationFailure() {
     openingLoaderController?.finish(false);
     showToast("部分页面资料加载失败，请稍后重试");
   });

@@ -1,4 +1,4 @@
-(function () {
+(function registerMapBrowser() {
   "use strict";
   window.NiyunMapBrowser = {
     create({ $, $$, apiService, getVisibleSites, renderSites, updateSitePanel, openCurrentSiteArchive }) {

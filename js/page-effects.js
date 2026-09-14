@@ -1,4 +1,4 @@
-(function () {
+(function registerPageEffects() {
   "use strict";
 
   window.NiyunPageEffects = {
@@ -14,7 +14,7 @@
         const revealItems = $$('[data-reveal]');
         if ("IntersectionObserver" in window) {
           const revealObserver = new IntersectionObserver(
-            (entries) => {
+            function updateRevealedSections(entries) {
               entries.forEach((entry) => entry.target.classList.toggle("is-visible", entry.isIntersecting));
             },
             {
@@ -83,7 +83,7 @@
           "scroll",
           function handleScroll() {
             if (scrollTicking) return;
-            window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(function renderScrollEffects() {
               const scrollTop = window.scrollY;
               const docHeight = document.documentElement.scrollHeight - window.innerHeight;
               const percent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
@@ -205,7 +205,7 @@
           let frameId = 0;
           let lastTime = 0;
           let visible = true;
-          const animateDust = (timestamp = 0) => {
+          const animateDust = function animateDust(timestamp = 0) {
             if (document.hidden || !visible) {
               frameId = 0;
               return;
@@ -239,7 +239,7 @@
             frameId = requestAnimationFrame(animateDust);
           };
           new IntersectionObserver(
-            ([entry]) => {
+            function updateDustVisibility([entry]) {
               visible = entry.isIntersecting;
               if (visible && !document.hidden && !frameId) frameId = requestAnimationFrame(animateDust);
             },
@@ -282,7 +282,7 @@
           let targetY = 0;
           let currentX = 0;
           let currentY = 0;
-          const updateParallax = () => {
+          const updateParallax = function updateParallax() {
             currentX += (targetX - currentX) * 0.1;
             currentY += (targetY - currentY) * 0.1;
             if (compassOuter)

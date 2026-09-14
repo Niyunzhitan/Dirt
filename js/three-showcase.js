@@ -192,7 +192,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
       const inlineSource = window.SEAL_INLINE_TEXTURES?.[path];
       if (!inlineSource) return fallback;
       try {
-        const image = await new Promise((resolve, reject) => {
+        const image = await new Promise(function decodeInlineTexture(resolve, reject) {
           const localImage = new Image();
           localImage.addEventListener(
             "load",
@@ -229,7 +229,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
   function disposeModel() {
     while (modelRoot.children.length) {
       const child = modelRoot.children.pop();
-      child.traverse((object) => {
+      child.traverse(function disposeObjectResources(object) {
         object.geometry?.dispose();
         const materials = Array.isArray(object.material) ? object.material : [object.material];
         materials.filter(Boolean).forEach((material) => {
@@ -483,7 +483,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
 
   // 3D 展厅离开视口或页面切到后台时暂停渲染，回来后再从当前状态继续。
   const showcaseVisibilityObserver = new IntersectionObserver(
-    ([entry]) => {
+    function updateShowcaseVisibility([entry]) {
       showcaseVisible = entry.isIntersecting;
       if (showcaseVisible && !document.hidden && !animationFrameId) animate();
     },
