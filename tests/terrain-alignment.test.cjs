@@ -14,7 +14,7 @@ async function setupMap(prefectures = [], rivers = []) {
   const captures = new Set();
   const root = {
     dataset: {}, classList: { add() {}, remove() {}, toggle() {} },
-    addEventListener(type, handler) { handlers[type] = handler; },
+    addEventListener(type, handler, options) { handlers[options === true ? `${type}Capture` : type] = handler; },
     setPointerCapture(id) { captures.add(id); },
     hasPointerCapture(id) { return captures.has(id); },
     releasePointerCapture(id) { captures.delete(id); },
@@ -73,9 +73,44 @@ test('DEM updates reach the GPU and overlays follow mesh triangles', async () =>
   }
 });
 
+test('reset responds to a single click after dragging while gesture clicks stay suppressed', async () => {
+  const { root, handlers, input } = await setupMap();
+  const ground = { closest: () => null };
+  const pointer = { pointerId: 1, pointerType: 'mouse', button: 0, clientX: 100, clientY: 100, target: ground };
+  handlers.pointerdown(pointer);
+  handlers.pointermove({ ...pointer, clientX: 180 });
+  handlers.pointerup(pointer);
+  let blocked = false;
+  const click = { detail: 1, target: ground, preventDefault() {}, stopImmediatePropagation() { blocked = true; } };
+  handlers.clickCapture(click);
+  assert.equal(blocked, true, 'drag-generated clicks must remain blocked');
+  handlers.wheel({ deltaY: -200, preventDefault() {} });
+  input.value = '45';
+  input.input();
+  const reset = { closest: () => ({ matches: () => false }) };
+  handlers.pointerdown({ ...pointer, target: reset });
+  blocked = false;
+  const resetClick = { ...click, target: reset };
+  handlers.clickCapture(resetClick);
+  if (!blocked) handlers.click(resetClick);
+  assert.equal(blocked, false, 'reset button must not inherit the previous drag suppression');
+  assert.equal(root.dataset.cameraDistance, '18.50');
+  assert.equal(root.dataset.cameraElevation, '0.0000');
+  assert.equal(root.dataset.cameraTargetX, '0.000');
+});
+
 test('single-city duplicated rings are not inter-city boundaries', async () => {
   const ring = [[118.227585, 38.037874], [118.410001, 38.053277], [118.40779, 38.026212], [118.2234, 38.00095], [118.227585, 38.037874]];
   const { scene } = await setupMap([{ name: 'Dongying', rings: [ring, [...ring].reverse()] }]);
+  assert.equal(scene.children.find((item) => item.isMesh).children[0].children.length, 0);
+});
+
+test('reported Dongying-Binzhou rectangle is excluded even with two owners', async () => {
+  const ring = [[118.40779,38.026212],[118.419951,38.025503],[118.419319,38.053119],[118.410001,38.053277],[118.40779,38.026212]];
+  const { scene } = await setupMap([
+    { name: 'Dongying', rings: [ring] },
+    { name: 'Binzhou', rings: [[...ring].reverse()] },
+  ]);
   assert.equal(scene.children.find((item) => item.isMesh).children[0].children.length, 0);
 });
 

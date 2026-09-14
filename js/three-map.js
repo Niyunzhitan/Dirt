@@ -319,7 +319,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     }
     geometry.computeVertexNormals();
 
-    function carveRiverChannels() {
+    // 先把经纬度折线转成模型线段，距离计算不再关心数据源格式。
+    function createRiverSegments() {
       const segments = [];
       (window.SHANDONG_RIVERS || []).forEach(function projectRiver(river) {
         const points = river.coordinates.map(([longitude, latitude]) => [
@@ -328,7 +329,23 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         ]);
         for (let index = 1; index < points.length; index++) segments.push([points[index - 1], points[index]]);
       });
-      // 网格约半像素宽的河槽用于省域展示，不表示真实河宽或水深。
+      return segments;
+    }
+
+    function distanceToRiverSegment(x, y, start, end) {
+      const dx = end[0] - start[0];
+      const dy = end[1] - start[1];
+      const lengthSquared = dx * dx + dy * dy;
+      // 投影限制在线段内；重复坐标退化为点，避免除以零。
+      const projection = lengthSquared
+        ? THREE.MathUtils.clamp(((x - start[0]) * dx + (y - start[1]) * dy) / lengthSquared, 0, 1)
+        : 0;
+      return Math.hypot(x - start[0] - projection * dx, y - start[1] - projection * dy);
+    }
+
+    function carveRiverChannels() {
+      const segments = createRiverSegments();
+      // 半径为 0.85 个网格间距，不是实测河宽；每次都在新采样的 DEM 上开槽。
       const radius = terrainWidth / (MAP_VIEW.gridColumns - 1) * 0.85;
       let carved = 0;
       for (let index = 0; index < position.count; index++) {
@@ -338,11 +355,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         for (const [a, b] of segments) {
           if (x < Math.min(a[0], b[0]) - radius || x > Math.max(a[0], b[0]) + radius ||
               y < Math.min(a[1], b[1]) - radius || y > Math.max(a[1], b[1]) + radius) continue;
-          const dx = b[0] - a[0];
-          const dy = b[1] - a[1];
-          const lengthSquared = dx * dx + dy * dy;
-          const t = lengthSquared ? THREE.MathUtils.clamp(((x - a[0]) * dx + (y - a[1]) * dy) / lengthSquared, 0, 1) : 0;
-          distance = Math.min(distance, Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy));
+          distance = Math.min(distance, distanceToRiverSegment(x, y, a, b));
         }
         const amount = 1 - distance / radius;
         position.setZ(index, position.getZ(index) - amount * 0.055);
@@ -401,7 +414,6 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       );
     }
 
-    // 把行政区轮廓连成线，旧线先移除，避免更新时重复叠加。
     // 沿网格边和对角线切分：每段位于同一三角面内，插值高度才能全程贴地。
     function splitBoundaryEdge(start, end) {
       const columns = MAP_VIEW.gridColumns - 1;
@@ -424,17 +436,25 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       });
     }
 
-    function drawAdministrativeBoundaries() {
-      if (!heightSamples || !Array.isArray(window.SHANDONG_PREFECTURES)) return;
-      administrativeBoundaries.children.forEach((line) => line.geometry.dispose());
-      administrativeBoundaries.clear();
-      boundaryFitPoints = [];
-      // 市界必须由两个不同城市共享；单个城市的海域边、孔洞边不属于市际界线。
+    // 端点排序让正向和反向线段使用同一个键；保留源坐标精度，不做模糊吸附。
+    function edgeKey(start, end) {
+      return [start.join(','), end.join(',')].sort().join('|');
+    }
+
+    function createExcludedBoundaryEdges() {
+      // DataV 东营/滨州的独立四边形共同边：行政含义待核实，暂不作为市界展示。
+      // 精确排除已报告的四条边，不按面积过滤，避免隐藏其他真实飞地或闭合边界。
+      const unverifiedRectangle = [
+        [118.40779, 38.026212], [118.419951, 38.025503],
+        [118.419319, 38.053119], [118.410001, 38.053277], [118.40779, 38.026212],
+      ];
+      return new Set(unverifiedRectangle.slice(1).map((point, index) =>
+        edgeKey(unverifiedRectangle[index], point)));
+    }
+
+    function collectBoundaryOwners(prefectures) {
       const edgeOwners = new Map();
-      function edgeKey(start, end) {
-        return [start.join(','), end.join(',')].sort().join('|');
-      }
-      window.SHANDONG_PREFECTURES.forEach(function collectCityEdges(prefecture) {
+      prefectures.forEach(function collectCityEdges(prefecture) {
         prefecture.rings.forEach(function collectRingEdges(ring) {
           for (let index = 1; index < ring.length; index++) {
             const key = edgeKey(ring[index - 1], ring[index]);
@@ -443,9 +463,20 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
           }
         });
       });
+      return edgeOwners;
+    }
+
+    // 顺序：清理旧显存 -> 统计共享边 -> 排除/去重 -> 切分贴地 -> 更新全貌视野。
+    function drawAdministrativeBoundaries() {
+      if (!heightSamples || !Array.isArray(window.SHANDONG_PREFECTURES)) return;
+      administrativeBoundaries.children.forEach((line) => line.geometry.dispose());
+      administrativeBoundaries.clear();
+      boundaryFitPoints = [];
+      const edgeOwners = collectBoundaryOwners(window.SHANDONG_PREFECTURES);
+      const excludedEdges = createExcludedBoundaryEdges();
       const drawnEdges = new Set();
-      window.SHANDONG_PREFECTURES.forEach((prefecture) => {
-        prefecture.rings.forEach((ring) => {
+      window.SHANDONG_PREFECTURES.forEach(function drawCityBoundaries(prefecture) {
+        prefecture.rings.forEach(function drawBoundaryRing(ring) {
           let segment = [];
           const flushSegment = function flushSegment() {
             if (segment.length < 2) {
@@ -461,7 +492,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
           };
           for (let index = 1; index < ring.length; index++) {
             const key = edgeKey(ring[index - 1], ring[index]);
-            if (edgeOwners.get(key).size < 2 || drawnEdges.has(key)) {
+            if (excludedEdges.has(key) || edgeOwners.get(key).size < 2 || drawnEdges.has(key)) {
+              // 被跳过的边必须断开，不能让其前后端点被自动连成新的直线。
               flushSegment();
               continue;
             }
@@ -659,10 +691,11 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     }
 
     mapRoot.addEventListener("pointerdown", function handlePointerdown(event) {
+      // 新的一次按下（包括控件）不应继承上一次拖动的点击抑制。
+      if (activePointers.size === 0) suppressGestureClick = false;
       const interactive = event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control");
       if (interactive && !(event.pointerType === "touch" && interactive.matches(".map-marker"))) return;
       if (event.pointerType === "mouse" && event.button !== 0) return;
-      if (activePointers.size === 0) suppressGestureClick = false;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (activePointers.size === 2) {
         // 双指都交给地图；单点点位时保留按钮的原生点击目标。

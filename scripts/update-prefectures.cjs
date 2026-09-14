@@ -12,6 +12,7 @@ async function updatePrefectures() {
     if (!['Polygon', 'MultiPolygon'].includes(type)) throw new Error(`Unexpected geometry: ${type}`);
     return {
       name: feature.properties.name.replace(/市$/, ''),
+      // 展示层按边统计归属；这里仅展开环数组，不把不同环拼成一条折线。
       rings: type === 'MultiPolygon' ? coordinates.flat() : coordinates,
     };
   });

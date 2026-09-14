@@ -1,6 +1,11 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
+// 这里只筛选包围盒内的连续顶点，不做精确省界裁剪，也不补画缺失河段。
+function isWithinMapBounds([longitude, latitude]) {
+  return longitude >= 114.8 && longitude <= 122.71 && latitude >= 34.37 && latitude <= 38.41;
+}
+
 async function updateRivers() {
   const source = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson';
   const response = await fetch(source);
@@ -13,7 +18,7 @@ async function updateRivers() {
     for (const line of lines) {
       let segment = [];
       for (const point of line) {
-        const inside = point[0] >= 114.8 && point[0] <= 122.71 && point[1] >= 34.37 && point[1] <= 38.41;
+        const inside = isWithinMapBounds(point);
         if (inside) segment.push(point.slice(0, 2));
         else {
           if (segment.length > 1) rivers.push({ name: feature.properties.name, coordinates: segment });
