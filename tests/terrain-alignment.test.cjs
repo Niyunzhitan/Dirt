@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const test = require('node:test');
 
-async function setupMap(prefectures = []) {
+async function setupMap(prefectures = [], rivers = []) {
   const THREE = await import('three');
   let scene;
   let camera;
@@ -38,6 +38,7 @@ async function setupMap(prefectures = []) {
         maskBase64: Buffer.alloc(16, 255).toString('base64'),
       },
       SHANDONG_PREFECTURES: prefectures,
+      SHANDONG_RIVERS: rivers,
     },
     ResizeObserver: class { observe() {} },
     IntersectionObserver: class { observe() {} },
@@ -72,8 +73,30 @@ test('DEM updates reach the GPU and overlays follow mesh triangles', async () =>
   }
 });
 
+test('single-city duplicated rings are not inter-city boundaries', async () => {
+  const ring = [[118.227585, 38.037874], [118.410001, 38.053277], [118.40779, 38.026212], [118.2234, 38.00095], [118.227585, 38.037874]];
+  const { scene } = await setupMap([{ name: 'Dongying', rings: [ring, [...ring].reverse()] }]);
+  assert.equal(scene.children.find((item) => item.isMesh).children[0].children.length, 0);
+});
+
+test('river centerline lowers mesh vertices, not an elevated overlay', async () => {
+  const baseline = await setupMap();
+  const carved = await setupMap([], [{ coordinates: [[115, 35], [122, 38]] }]);
+  const original = baseline.scene.children.find((item) => item.isMesh).geometry.attributes.position;
+  const updated = carved.scene.children.find((item) => item.isMesh).geometry.attributes.position;
+  let lowered = 0;
+  for (let index = 0; index < original.count; index++) {
+    assert.ok(updated.getZ(index) <= original.getZ(index));
+    if (updated.getZ(index) < original.getZ(index)) lowered++;
+  }
+  assert.ok(lowered > 0);
+});
+
 test('boundary segments follow terrain between source vertices', async () => {
-  const { THREE, scene } = await setupMap([{ name: 'fixture', rings: [[[115, 35], [122, 38]]] }]);
+  const { THREE, scene } = await setupMap([
+    { name: 'first', rings: [[[115, 35], [122, 38]]] },
+    { name: 'second', rings: [[[122, 38], [115, 35]]] },
+  ]);
   const terrain = scene.children.find((item) => item.isMesh);
   terrain.updateMatrixWorld(true);
   const lines = terrain.children[0].children;

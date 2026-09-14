@@ -104,7 +104,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       MAP_VIEW.gridRows - 1,
     );
     const material = new THREE.MeshPhysicalMaterial({
-      color: 0x55776b,
+      color: 0xffffff,
+      vertexColors: true,
       roughness: 0.72,
       metalness: 0.02,
       clearcoat: 0.08,
@@ -298,6 +299,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       for (let index = 0; index < position.count; index += 1) {
         position.setZ(index, sampledHeights[index]);
       }
+      carveRiverChannels();
       // CPU 改顶点不会自动上传 GPU；漏掉此标记会让覆盖物悬在旧平面上。
       position.needsUpdate = true;
       geometry.computeVertexNormals();
@@ -309,10 +311,48 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
 
     // 高度图加载前先用平面占位，加载完成后由 applyHeightMap 覆盖。
     const position = geometry.getAttribute("position");
+    const terrainColors = position.clone();
+    geometry.setAttribute("color", terrainColors);
     for (let index = 0; index < position.count; index += 1) {
       position.setZ(index, 0.02);
+      terrainColors.setXYZ(index, 0.091, 0.184, 0.147);
     }
     geometry.computeVertexNormals();
+
+    function carveRiverChannels() {
+      const segments = [];
+      (window.SHANDONG_RIVERS || []).forEach(function projectRiver(river) {
+        const points = river.coordinates.map(([longitude, latitude]) => [
+          (longitude - config.bounds.west) / (config.bounds.east - config.bounds.west) * terrainWidth - terrainWidth / 2,
+          terrainHeightDimension / 2 - (config.bounds.north - latitude) / (config.bounds.north - config.bounds.south) * terrainHeightDimension,
+        ]);
+        for (let index = 1; index < points.length; index++) segments.push([points[index - 1], points[index]]);
+      });
+      // 网格约半像素宽的河槽用于省域展示，不表示真实河宽或水深。
+      const radius = terrainWidth / (MAP_VIEW.gridColumns - 1) * 0.85;
+      let carved = 0;
+      for (let index = 0; index < position.count; index++) {
+        const x = position.getX(index);
+        const y = position.getY(index);
+        let distance = radius;
+        for (const [a, b] of segments) {
+          if (x < Math.min(a[0], b[0]) - radius || x > Math.max(a[0], b[0]) + radius ||
+              y < Math.min(a[1], b[1]) - radius || y > Math.max(a[1], b[1]) + radius) continue;
+          const dx = b[0] - a[0];
+          const dy = b[1] - a[1];
+          const lengthSquared = dx * dx + dy * dy;
+          const t = lengthSquared ? THREE.MathUtils.clamp(((x - a[0]) * dx + (y - a[1]) * dy) / lengthSquared, 0, 1) : 0;
+          distance = Math.min(distance, Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy));
+        }
+        const amount = 1 - distance / radius;
+        position.setZ(index, position.getZ(index) - amount * 0.055);
+        terrainColors.setXYZ(index, 0.091 + amount * (0.025 - 0.091),
+          0.184 + amount * (0.32 - 0.184), 0.147 + amount * (0.48 - 0.147));
+        if (amount > 0) carved++;
+      }
+      terrainColors.needsUpdate = true;
+      mapRoot.dataset.riverVertices = String(carved);
+    }
 
     const terrain = new THREE.Mesh(geometry, material);
     terrain.castShadow = false;
@@ -389,6 +429,21 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       administrativeBoundaries.children.forEach((line) => line.geometry.dispose());
       administrativeBoundaries.clear();
       boundaryFitPoints = [];
+      // 市界必须由两个不同城市共享；单个城市的海域边、孔洞边不属于市际界线。
+      const edgeOwners = new Map();
+      function edgeKey(start, end) {
+        return [start.join(','), end.join(',')].sort().join('|');
+      }
+      window.SHANDONG_PREFECTURES.forEach(function collectCityEdges(prefecture) {
+        prefecture.rings.forEach(function collectRingEdges(ring) {
+          for (let index = 1; index < ring.length; index++) {
+            const key = edgeKey(ring[index - 1], ring[index]);
+            if (!edgeOwners.has(key)) edgeOwners.set(key, new Set());
+            edgeOwners.get(key).add(prefecture.name);
+          }
+        });
+      });
+      const drawnEdges = new Set();
       window.SHANDONG_PREFECTURES.forEach((prefecture) => {
         prefecture.rings.forEach((ring) => {
           let segment = [];
@@ -405,9 +460,15 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
             segment = [];
           };
           for (let index = 1; index < ring.length; index++) {
+            const key = edgeKey(ring[index - 1], ring[index]);
+            if (edgeOwners.get(key).size < 2 || drawnEdges.has(key)) {
+              flushSegment();
+              continue;
+            }
+            drawnEdges.add(key);
             const points = splitBoundaryEdge(ring[index - 1], ring[index]);
             points.forEach(function appendDrapedBoundary([longitude, latitude], pointIndex) {
-              if (index > 1 && pointIndex === 0) return;
+              if (segment.length && pointIndex === 0) return;
               const point = createBoundaryPoint(longitude, latitude);
               if (point) segment.push(point);
               else flushSegment();
