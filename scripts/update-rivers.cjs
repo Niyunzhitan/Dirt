@@ -13,6 +13,8 @@ async function updateRivers() {
   const data = await response.json();
   const rivers = [];
   for (const feature of data.features) {
+    // 当前公开数据只使用黄河，避免更新时重新带回已停用的 Yi、Zhang 折线。
+    if (feature.properties.name !== 'Huang') continue;
     const lines = feature.geometry.type === 'MultiLineString' ? feature.geometry.coordinates
       : feature.geometry.type === 'LineString' ? [feature.geometry.coordinates] : [];
     for (const line of lines) {

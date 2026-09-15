@@ -462,14 +462,6 @@
     showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2600);
   }
 
-  // 两个搜索框共用同一种清除反馈，避免重复维护 class 切换时序。
-  function replayClearFeedback(input, wrapperSelector) {
-    const wrapper = input.closest(wrapperSelector);
-    wrapper?.classList.remove("is-cleared");
-    window.requestAnimationFrame(() => wrapper?.classList.add("is-cleared"));
-    input.focus();
-  }
-
   // ==================== 02. 藏品、地图、课程和文创内容渲染 ====================
   // 有实物图时显示图片；没有图片时根据印文生成简单的数字复原图。
   function createRelicVisual(item) {
@@ -693,13 +685,6 @@
       details.style.removeProperty("height");
       details.classList.remove("is-animating");
     }
-  }
-
-  function handleSourceSupplementDetailsClick(event) {
-    const summary = event.target.closest(".source-card-supplement-details > summary");
-    if (!summary || !event.currentTarget.contains(summary)) return;
-    event.preventDefault();
-    animateSourceSupplementDetails(summary.parentElement, !summary.parentElement.open);
   }
 
   // 页面只展示三处精选；完整筛选结果只在弹窗中渲染，数量文案跟随数据变化。

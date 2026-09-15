@@ -317,13 +317,21 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     }
     geometry.computeVertexNormals();
 
+    // Huang 为黄河；源数据 Yi 走向存疑，沂河改用明确标注的参考图补绘。
+    function getDisplayedRivers() {
+      const publicRiverNames = new Set(["Huang"]);
+      const referenceRiverNames = new Set(["沂河", "大汶河", "徒骇河", "小清河", "潍河", "大沽河", "京杭运河（山东段示意）"]);
+      return [
+        ...(window.SHANDONG_RIVERS || []).filter((river) => publicRiverNames.has(river.name)),
+        ...(window.SHANDONG_REFERENCE_RIVERS || []).filter((river) => referenceRiverNames.has(river.name)),
+      ];
+    }
+
     // 先把经纬度折线转成模型线段，距离计算不再关心数据源格式。
     function createRiverSegments() {
       const segments = [];
-      const rivers = [
-        ...(window.SHANDONG_RIVERS || []),
-        ...(window.SHANDONG_REFERENCE_RIVERS || []),
-      ];
+      const rivers = getDisplayedRivers();
+      mapRoot.dataset.displayedRivers = rivers.map((river) => river.name).join(",");
       // 每条河流单独生成线段，禁止把不同来源或不同河流的首尾相连。
       rivers.forEach(function projectRiver(river) {
         const coordinates = extendRiverMouth(river);
@@ -373,6 +381,8 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
 
     function carveRiverChannels() {
       const segments = createRiverSegments();
+      // 公开单湖与参考图补绘合并判断水面，重叠处只开挖一次。
+      const lakes = [...(window.SHANDONG_LAKES || []), ...(window.SHANDONG_REFERENCE_LAKES || [])];
       // 半径为 0.85 个网格间距，不是实测河宽；每次都在新采样的 DEM 上开槽。
       const radius = terrainWidth / (MAP_VIEW.gridColumns - 1) * 0.85;
       const distances = new Float64Array(position.count).fill(radius);
@@ -395,8 +405,16 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
         }
       }
       let carved = 0;
+      let lakeVertices = 0;
       for (let index = 0; index < position.count; index++) {
-        const amount = 1 - distances[index] / radius;
+        const longitude = config.bounds.west + (position.getX(index) + terrainWidth / 2) / terrainWidth * (config.bounds.east - config.bounds.west);
+        const latitude = config.bounds.north - (terrainHeightDimension / 2 - position.getY(index)) / terrainHeightDimension * (config.bounds.north - config.bounds.south);
+        const inLake = lakes.some(lake =>
+          isPointInLakeRing(longitude, latitude, lake.rings[0]) &&
+          !lake.rings.slice(1).some(ring => isPointInLakeRing(longitude, latitude, ring)));
+        // 湖面按多边形填满，内环保留岛屿；与河槽重叠时只开挖一次。
+        const amount = inLake ? 1 : 1 - distances[index] / radius;
+        if (inLake) lakeVertices++;
         position.setZ(index, position.getZ(index) - amount * 0.055);
         terrainColors.setXYZ(index, 0.091 + amount * (0.025 - 0.091),
           0.184 + amount * (0.32 - 0.184), 0.147 + amount * (0.48 - 0.147));
@@ -404,7 +422,19 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       }
       terrainColors.needsUpdate = true;
       mapRoot.dataset.riverVertices = String(carved);
-      mapRoot.dataset.referenceRivers = String((window.SHANDONG_REFERENCE_RIVERS || []).length);
+      mapRoot.dataset.lakeVertices = String(lakeVertices);
+      mapRoot.dataset.referenceRivers = String(getDisplayedRivers().filter((river) => river.source === "reference-sketch").length);
+    }
+
+    // 水平射线奇偶规则，只判断水面归属，不推算真实水深。
+    function isPointInLakeRing(x, y, ring) {
+      let inside = false;
+      for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
+        const [ax, ay] = ring[index];
+        const [bx, by] = ring[previous];
+        if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) inside = !inside;
+      }
+      return inside;
     }
 
     const terrain = new THREE.Mesh(geometry, material);

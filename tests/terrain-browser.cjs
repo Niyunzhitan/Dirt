@@ -17,7 +17,10 @@ const sharp = require(process.env.SHARP_MODULE || 'sharp');
       await map.scrollIntoViewIfNeeded();
       const before = await map.screenshot();
       await map.screenshot({ path: path.join(process.env.TEMP, `terrain-top-${viewport.width}.png`) });
-      assert.equal(await map.getAttribute('data-reference-rivers'), '17');
+      assert.equal(await map.getAttribute('data-reference-rivers'), '7');
+      assert.ok(Number(await map.getAttribute('data-lake-vertices')) > 0);
+      assert.deepEqual((await map.getAttribute('data-displayed-rivers')).split(',').sort(),
+        ['Huang', '沂河', '大汶河', '徒骇河', '小清河', '潍河', '大沽河', '京杭运河（山东段示意）'].sort());
       await page.locator('#mapRotation').evaluate((input) => {
         input.value = '67';
         input.dispatchEvent(new Event('input', { bubbles: true }));

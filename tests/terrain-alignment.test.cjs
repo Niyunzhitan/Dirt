@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const test = require('node:test');
 
-async function setupMap(prefectures = [], rivers = []) {
+async function setupMap(prefectures = [], rivers = [], referenceRivers = [], lakes = [], referenceLakes = []) {
   const THREE = await import('three');
   let scene;
   let camera;
@@ -39,6 +39,9 @@ async function setupMap(prefectures = [], rivers = []) {
       },
       SHANDONG_PREFECTURES: prefectures,
       SHANDONG_RIVERS: rivers,
+      SHANDONG_REFERENCE_RIVERS: referenceRivers,
+      SHANDONG_LAKES: lakes,
+      SHANDONG_REFERENCE_LAKES: referenceLakes,
     },
     ResizeObserver: class { observe() {} },
     IntersectionObserver: class { observe() {} },
@@ -116,7 +119,7 @@ test('reported Dongying-Binzhou rectangle is excluded even with two owners', asy
 
 test('river centerline lowers mesh vertices, not an elevated overlay', async () => {
   const baseline = await setupMap();
-  const carved = await setupMap([], [{ coordinates: [[115, 35], [122, 38]] }]);
+  const carved = await setupMap([], [{ name: 'Huang', coordinates: [[115, 35], [122, 38]] }]);
   const original = baseline.scene.children.find((item) => item.isMesh).geometry.attributes.position;
   const updated = carved.scene.children.find((item) => item.isMesh).geometry.attributes.position;
   let lowered = 0;
@@ -125,6 +128,78 @@ test('river centerline lowers mesh vertices, not an elevated overlay', async () 
     if (updated.getZ(index) < original.getZ(index)) lowered++;
   }
   assert.ok(lowered > 0);
+});
+
+test('unselected waterways do not carve any terrain', async () => {
+  const { root } = await setupMap([], [
+    { name: 'Other', coordinates: [[115, 35], [122, 38]] },
+    { name: 'Zhang', coordinates: [[116, 35], [121, 38]] },
+  ]);
+  assert.equal(root.dataset.riverVertices, '0');
+  assert.equal(root.dataset.displayedRivers, '');
+});
+
+test('real datasets display selected rivers and Grand Canal', async () => {
+  const data = { window: {} };
+  for (const file of ['data/shandong-rivers.js', 'data/shandong-rivers-reference.js']) {
+    vm.runInNewContext(fs.readFileSync(file, 'utf8'), data);
+  }
+  const { root } = await setupMap([], data.window.SHANDONG_RIVERS, data.window.SHANDONG_REFERENCE_RIVERS);
+  assert.deepEqual(root.dataset.displayedRivers.split(',').sort(),
+    ['Huang', '沂河', '大汶河', '徒骇河', '小清河', '潍河', '大沽河', '京杭运河（山东段示意）'].sort());
+  assert.ok(Number(root.dataset.riverVertices) > 0);
+});
+
+test('Yihe carves terrain near Linyi and Weishan fills lake interior', async () => {
+  const data = { window: {} };
+  for (const file of ['data/shandong-rivers-reference.js', 'data/shandong-lakes.js']) {
+    vm.runInNewContext(fs.readFileSync(file, 'utf8'), data);
+  }
+  const baseline = await setupMap();
+  const result = await setupMap([], [], data.window.SHANDONG_REFERENCE_RIVERS, data.window.SHANDONG_LAKES);
+  const original = baseline.scene.children.find(item => item.isMesh).geometry.attributes.position;
+  const mesh = result.scene.children.find(item => item.isMesh);
+  const updated = mesh.geometry.attributes.position;
+  const x = (118.38 - 114.8102646639) / (122.706 - 114.8102646639) * 18 - 9;
+  const y = mesh.geometry.parameters.height / 2 - (38.3997238086 - 35.13) / (38.3997238086 - 34.3786) * mesh.geometry.parameters.height;
+  let nearest = 0;
+  let distance = Infinity;
+  for (let index = 0; index < updated.count; index++) {
+    const next = Math.hypot(updated.getX(index) - x, updated.getY(index) - y);
+    if (next < distance) { nearest = index; distance = next; }
+  }
+  assert.ok(updated.getZ(nearest) < original.getZ(nearest), 'Linyi river point must be lowered');
+  assert.ok(Number(result.root.dataset.lakeVertices) > 0, 'lake polygon interior must be filled');
+});
+
+test('northern Nansi lake sketch adds water beyond the southern Weishan polygon', async () => {
+  const data = { window: {} };
+  for (const file of ['data/shandong-lakes.js', 'data/shandong-lakes-reference.js']) {
+    vm.runInNewContext(fs.readFileSync(file, 'utf8'), data);
+  }
+  const south = await setupMap([], [], [], data.window.SHANDONG_LAKES);
+  const combined = await setupMap([], [], [], data.window.SHANDONG_LAKES, data.window.SHANDONG_REFERENCE_LAKES);
+  assert.ok(Number(combined.root.dataset.lakeVertices) > Number(south.root.dataset.lakeVertices) * 2);
+  const mesh = combined.scene.children.find(item => item.isMesh);
+  const original = south.scene.children.find(item => item.isMesh).geometry.attributes.position;
+  const updated = mesh.geometry.attributes.position;
+  let northernWater = 0;
+  for (let i = 0; i < updated.count; i++) {
+    const latitude = 38.3997238086 - (mesh.geometry.parameters.height / 2 - updated.getY(i)) / mesh.geometry.parameters.height * (38.3997238086 - 34.3786);
+    if (latitude > 35.1 && updated.getZ(i) < original.getZ(i)) northernWater++;
+  }
+  assert.ok(northernWater > 0, 'lake must extend north toward Jining');
+});
+
+test('Yihe outlet turns southwest rather than extending to the southern map edge', () => {
+  const data = { window: {} };
+  vm.runInNewContext(fs.readFileSync('data/shandong-rivers-reference.js', 'utf8'), data);
+  const river = data.window.SHANDONG_REFERENCE_RIVERS.find(item => item.name === '沂河');
+  const last = river.coordinates.at(-1);
+  const previous = river.coordinates.at(-2);
+  assert.ok(last[0] < previous[0] && last[1] < previous[1]);
+  assert.ok(last[1] > 34.5, 'do not extend to the map bounding-box bottom');
+  assert.equal(river.extendEndToCoast, undefined, 'an inland outlet is not a sea mouth');
 });
 
 test('boundary segments follow terrain between source vertices', async () => {
