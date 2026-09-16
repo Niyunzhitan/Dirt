@@ -19,6 +19,7 @@
 | 3D 牌具 | `js/three-showcase.js` | 加载贴图、管理模型资源、控制相机与渲染 |
 | 搜索与图录 | `js/search-dialog.js`、`js/source-archive.js` | 共用入口传入的模板及定位函数 |
 | 开屏与装饰 | `js/opening-loader.js`、`js/page-effects.js` | 管理动画帧、超时退场和可见性 |
+| 鼠标尾迹 | `js/cursor-debris.js` | 管理碎屑生成、尾迹控件、本地保存和设备限制；常用参数位于文件顶部 |
 | 导航与设置 | `js/site-navigation.js`、`js/display-settings.js` | 设置通过回调读写，避免保存过期状态引用 |
 | 音乐协调 | `js/media-coordinator.js` | 处理播放权限、用户偏好和视频播放时暂停音乐 |
 | 服务端 | `server.js`、`server/db.js` | 静态资源、AI 代理、数据库与问答 API |
@@ -34,6 +35,10 @@
 - 浏览器配置全部公开。API Key 和数据库凭据只放服务端环境变量，不写入前端或文档。
 
 ## 样式与数据
+
+字号和行距不再提供用户调整，正文默认值固定在 `css/02-content-layout.css`。开屏开关位于设置面板的“动态效果”分组。
+
+鼠标尾迹偏好单独保存在 `niyun-cursor-trail` 中，不属于 `app.js` 的显示设置对象。尾迹模块通过 `media-settings-reset` 响应“恢复默认”。窄屏、触屏、系统减少动态效果或页面动效为 0 时，控件锁定关闭；设备限制解除后仍使用原先保存的偏好。
 
 `css/tokens.css` 定义主题和尺寸变量，`01` 至 `06` 样式表按顺序叠加。相同选择器可能是有意覆盖，移动规则或合并媒体查询前应检查最终计算样式。
 
@@ -60,5 +65,7 @@ npm run build
 ```
 
 `tests/terrain-browser.cjs` 使用 Playwright 和 sharp，连接本地 `127.0.0.1:5173`，验证地图画布及移动端双触点。它们不是项目运行依赖；可以通过 `PLAYWRIGHT_MODULE`、`SHARP_MODULE` 指定已有安装路径。
+
+`node tests/cursor-debris.cjs` 使用 Playwright 检查尾迹生成、清理、控件和设备限制，无需启动网站服务；可通过 `PLAYWRIGHT_MODULE` 指定已有安装路径。该测试不是 `*.test.cjs`，需要单独执行。
 
 本轮整理保留常用简短的 `map`、`filter`、Promise 兜底和参数转发箭头函数。复杂回调采用具名函数，注释用于说明约束、时序和原因，不逐行复述代码。

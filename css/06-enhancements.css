@@ -3,6 +3,20 @@
    ========================================================================== */
 
 /* 19.1 首屏封泥呼吸和环境光效果 */
+/* 高于开屏层（9999），不参与命中检测；模态弹窗仍由浏览器顶层覆盖。 */
+.cursor-clay-debris {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10000;
+  pointer-events: none;
+  user-select: none;
+  clip-path: polygon(0 15%, 72% 0, 100% 58%, 35% 100%);
+}
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  .cursor-clay-debris { display: none; }
+}
+
 @keyframes seal-breathe {
   0% {
     filter: drop-shadow(0 18px 24px rgba(78, 32, 24, 0.28)) drop-shadow(0 0 12px rgba(168, 51, 42, 0.12));

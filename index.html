@@ -614,29 +614,19 @@
             </div>
           </fieldset>
 
-          <fieldset class="settings-group">
-            <legend>阅读显示</legend>
-            <label class="setting-check reading-setting-toggle" for="openingAnimationEnabled"><input id="openingAnimationEnabled" type="checkbox" checked><span>开启开屏动画</span></label>
-            <div class="setting-control">
-              <span class="setting-label">正文字号</span>
-              <div class="segmented-control" role="group" aria-label="正文字号">
-                <label><input type="radio" name="fontSize" value="small"><span>小</span></label>
-                <label><input type="radio" name="fontSize" value="standard"><span>标 准</span></label>
-                <label><input type="radio" name="fontSize" value="large"><span>大</span></label>
-              </div>
-            </div>
-            <div class="setting-control">
-              <span class="setting-label">行间距</span>
-              <div class="segmented-control" role="group" aria-label="正文行间距">
-                <label><input type="radio" name="lineHeight" value="compact"><span>紧 凑</span></label>
-                <label><input type="radio" name="lineHeight" value="comfortable"><span>舒 适</span></label>
-                <label><input type="radio" name="lineHeight" value="loose"><span>宽 松</span></label>
-              </div>
-            </div>
-          </fieldset>
-
           <fieldset class="settings-group motion-settings">
             <legend>动态效果</legend>
+            <label class="setting-check" for="openingAnimationEnabled"><input id="openingAnimationEnabled" type="checkbox" checked><span>开启开屏动画</span></label>
+            <label class="setting-check" for="cursorTrailEnabled"><input id="cursorTrailEnabled" type="checkbox" checked><span>开启鼠标尾迹</span></label>
+            <label class="range-setting" for="cursorTrailSize">
+              <span><b>尾迹颗粒大小</b><output id="cursorTrailSizeValue">4～6 px</output></span>
+              <input id="cursorTrailSize" type="range" min="2" max="8" step="1" value="4">
+            </label>
+            <label class="range-setting" for="cursorTrailDensity">
+              <span><b>尾迹密度</b><output id="cursorTrailDensityValue">2 粒/次</output></span>
+              <input id="cursorTrailDensity" type="range" min="1" max="4" step="1" value="2">
+            </label>
+            <p class="system-motion-note" id="cursorTrailLockNote" hidden>当前设备或动态效果设置不支持鼠标尾迹，已锁定关闭。</p>
             <label class="range-setting" for="motionIntensity">
               <span><b>页面动效强度</b><output id="motionValue" for="motionIntensity">60%</output></span>
               <input id="motionIntensity" name="motionIntensity" type="range" min="0" max="100" step="10" value="60">
@@ -764,6 +754,7 @@
     <script src="./js/search-dialog.js"></script>
     <script src="./js/ai-chat.js"></script>
     <script src="./js/page-effects.js"></script>
+    <script src="./js/cursor-debris.js"></script>
     <script src="./js/display-settings.js"></script>
     <script src="./js/site-navigation.js"></script>
     <script src="./js/map-browser.js"></script>

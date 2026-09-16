@@ -119,20 +119,6 @@
     });
   }
 
-  // 阅读设置：每个可选项对应的实际字号和行距。
-  const readerSettingOptions = {
-    fontSize: {
-      small: "0.82rem",
-      standard: "0.9rem",
-      large: "1rem",
-    },
-    lineHeight: {
-      compact: "1.6",
-      comfortable: "1.8",
-      loose: "2",
-    },
-  };
-
   // 动态设置：范围、步长、默认值和单位相互独立，便于以后分别调整。
   const motionSettingRanges = {
     pageMotion: { min: 0, max: 100, step: 10, defaultValue: 60, unit: "%" },
@@ -148,8 +134,6 @@
 
   const defaultSettings = {
     themeMode: "auto",
-    fontSize: "standard",
-    lineHeight: "comfortable",
     motionIntensity: systemPrefersReducedMotion
       ? motionSettingRanges.pageMotion.min
       : motionSettingRanges.pageMotion.defaultValue,
@@ -315,12 +299,6 @@
       themeMode: Object.hasOwn(themeSettingOptions, settings.themeMode)
         ? settings.themeMode
         : defaultSettings.themeMode,
-      fontSize: Object.hasOwn(readerSettingOptions.fontSize, settings.fontSize)
-        ? settings.fontSize
-        : defaultSettings.fontSize,
-      lineHeight: Object.hasOwn(readerSettingOptions.lineHeight, settings.lineHeight)
-        ? settings.lineHeight
-        : defaultSettings.lineHeight,
       motionIntensity: clampNumber(
         settings.motionIntensity,
         motionSettingRanges.pageMotion.min,
@@ -358,11 +336,7 @@
     root.dataset.theme = effectiveTheme;
     root.dataset.themeMode = userSettings.themeMode;
     root.style.colorScheme = effectiveTheme;
-    root.dataset.readerSize = userSettings.fontSize;
-    root.dataset.lineHeight = userSettings.lineHeight;
     root.dataset.motion = String(userSettings.motionIntensity);
-    root.style.setProperty("--reader-font-size", readerSettingOptions.fontSize[userSettings.fontSize]);
-    root.style.setProperty("--reader-line-height", readerSettingOptions.lineHeight[userSettings.lineHeight]);
     root.style.setProperty("--user-motion-scale", String(motionScale));
     scheduleAutomaticThemeUpdate();
 

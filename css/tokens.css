@@ -98,8 +98,6 @@
   --motion-scroll-knot: 400ms;
 
   /* 用户设置运行时变量：由设置抽屉即时更新，不建议手动修改。 */
-  --reader-font-size: 0.9rem;
-  --reader-line-height: 1.8;
   --user-motion-scale: 0.6;
 
   /*

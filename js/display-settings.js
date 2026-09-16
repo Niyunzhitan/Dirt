@@ -53,12 +53,6 @@
         form.querySelectorAll(`[name="themeMode"]`).forEach((input) => {
           input.checked = input.value === settings.themeMode;
         });
-        form.querySelectorAll(`[name="fontSize"]`).forEach((input) => {
-          input.checked = input.value === settings.fontSize;
-        });
-        form.querySelectorAll(`[name="lineHeight"]`).forEach((input) => {
-          input.checked = input.value === settings.lineHeight;
-        });
         const openingInput = $("#openingAnimationEnabled");
         if (openingInput) openingInput.checked = localStorage.getItem(openingKey) !== "false";
         const rangesMap = {

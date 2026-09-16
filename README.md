@@ -46,7 +46,7 @@ npm run package:fc  # 生成阿里云 FC 部署包
 - 封泥牌具用 Three.js 展示麻将和扑克牌，可旋转、缩放、翻面、切换款式和全屏查看。
 - “印小灵”支持文字提问和图片辅助观察。一次最多上传 4 张 JPEG、PNG 或 WebP 图片，每张不超过 5 MB。
 - 趣味问答每轮最多抽取 10 道题，提交答案后显示解析。
-- 显示设置包含浅色、深色、昼夜自动主题，以及字号、行距、动效、背景微尘、开屏动画、音乐和宠物设置。
+- 显示设置包含浅色、深色、昼夜自动主题，以及动效、背景微尘、鼠标尾迹、开屏动画、音乐和宠物设置。正文字号和行距固定使用默认值。
 
 ## 代码结构
 
@@ -67,6 +67,7 @@ npm run package:fc  # 生成阿里云 FC 部署包
 - [js/three-showcase.js](./js/three-showcase.js)：封泥牌具。
 - [js/ai-chat.js](./js/ai-chat.js)、[js/ai-service.js](./js/ai-service.js)：AI 对话界面和请求。
 - [js/media-coordinator.js](./js/media-coordinator.js)：背景音乐与视频之间的播放协调。
+- [js/cursor-debris.js](./js/cursor-debris.js)：鼠标碎屑尾迹及其开关、大小、密度设置；常用参数集中在文件顶部。
 - [server.js](./server.js)：静态文件、视频分段请求、AI 代理和数据库 API。
 
 `js/seal-glyph-paths.js` 保存开屏四字的 SVG 路径，`js/offline-texture-loader.js` 只在 `file://` 模式加载内嵌 3D 贴图。新增前端模块后，还要在 `index.html` 中按依赖顺序引入，并在需要时加入 `npm run check`。

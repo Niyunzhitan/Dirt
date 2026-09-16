@@ -292,7 +292,7 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 .setting-check + .setting-check { margin-top: var(--space-lg); }
 .sound-toggle-row + .music-track-tabs,
 .music-track-tabs + .range-setting { margin-top: var(--space-lg); }
-.reading-setting-toggle + .setting-control { margin-top: var(--space-lg); }
+.setting-check + .range-setting { margin-top: var(--space-lg); }
 .setting-label,
 .range-setting b,
 .setting-check span { display: block; color: var(--color-ink-muted); font: 600 var(--text-md)/1.4 var(--font-display); }
@@ -347,7 +347,7 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 #doneSettings:hover { background: var(--color-accent-dark); }
 
 /* 阅读设置仅作用于正文和说明，不缩放导航、按钮与展示标题。 */
-html[data-reader-size] :is(.hero-lead, .heading-note, .intro-copy, .story-details p, .relic-info p, .map-heading > p, #siteDescription, .map-knowledge p, .source-findings p, .source-index p, .course-recap-copy p, .course-scroll-footer p, .ai-intro > p:not(.eyebrow), .ai-intro li) { font-size: var(--reader-font-size); line-height: var(--reader-line-height); }
+html :is(.hero-lead, .heading-note, .intro-copy, .story-details p, .relic-info p, .map-heading > p, #siteDescription, .map-knowledge p, .source-findings p, .source-index p, .course-recap-copy p, .course-scroll-footer p, .ai-intro > p:not(.eyebrow), .ai-intro li) { font-size: .9rem; line-height: 1.8; }
 
 /* 动效强度主要控制空间位移；0% 时保留内容但取消移动。 */
 html[data-motion="0"] { scroll-behavior: auto; }
