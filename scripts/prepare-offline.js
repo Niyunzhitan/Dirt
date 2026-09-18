@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "..");
 const distRoot = path.join(projectRoot, "dist");
@@ -17,6 +18,19 @@ for (const directory of ["assets", "css", "data", "js"]) {
     recursive: true,
     force: true,
   });
+}
+
+// 校验实际配置引用的媒体，防止构建成功但上线后视频或封面返回 404。
+const mediaContext = { window: {} };
+vm.runInNewContext(fs.readFileSync(path.join(distRoot, "data/media-config.js"), "utf8"), mediaContext);
+for (const key of ["recapVideoUrl", "recapPosterUrl"]) {
+  const resource = mediaContext.window.MEDIA_CONFIG.coursePack[key];
+  if (!resource) throw new Error(`课程媒体缺少配置：${key}`);
+  if (/^https:\/\//.test(resource)) continue;
+  const resourcePath = path.resolve(distRoot, resource);
+  if (!resourcePath.startsWith(distRoot + path.sep) || !fs.existsSync(resourcePath) || !fs.statSync(resourcePath).size) {
+    throw new Error(`课程媒体未包含在构建目录中：${resource}`);
+  }
 }
 
 fs.copyFileSync(path.join(projectRoot, "favicon.ico"), path.join(distRoot, "favicon.ico"));

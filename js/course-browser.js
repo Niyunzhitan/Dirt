@@ -42,8 +42,20 @@
         });
         const recapVideo = $("#courseRecapVideo");
         const recapVideoUrl = safeResourceUrl(pack.recapVideoUrl);
+        const recapPosterUrl = safeResourceUrl(pack.recapPosterUrl);
+        const recapError = $("#courseRecapError");
+        if (recapVideo) {
+          if (recapPosterUrl) recapVideo.poster = recapPosterUrl;
+          else recapVideo.removeAttribute("poster");
+          recapVideo.onerror = function showRecapError() {
+            if (recapError) recapError.hidden = false;
+          };
+          recapVideo.onloadedmetadata = function clearRecapError() {
+            if (recapError) recapError.hidden = true;
+          };
+        }
         if (recapVideo && recapVideoUrl) {
-          recapVideo.src = recapVideoUrl;
+          if (recapVideo.src !== recapVideoUrl) recapVideo.src = recapVideoUrl;
           recapVideo.hidden = false;
         } else if (recapVideo) {
           recapVideo.hidden = true;

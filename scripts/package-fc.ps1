@@ -97,7 +97,8 @@ try {
     $names = $archive.Entries.FullName
     $required = @(
       "server.js", "server/db.js", "package.json", "package-lock.json", "dist/index.html",
-      "node_modules/dotenv/package.json", "node_modules/mysql2/package.json"
+      "node_modules/dotenv/package.json", "node_modules/mysql2/package.json",
+      "dist/assets/courses/course-recap.mp4", "dist/assets/courses/course-recap-poster.jpg"
     )
     $missing = $required | Where-Object { $names -notcontains $_ }
     # node_modules is now a required runtime entry, so only its accidental development root counts.

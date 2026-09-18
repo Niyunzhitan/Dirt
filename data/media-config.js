@@ -71,7 +71,8 @@ window.MEDIA_CONFIG = {
   coursePack: {
     guideUrl: "./assets/courses/教案+学习单(2).docx",
     guideFileName: "封泥教案+学习单.docx",
-    recapVideoUrl: "./assets/courses/视频.mp4"
+    recapVideoUrl: "./assets/courses/course-recap.mp4",
+    recapPosterUrl: "./assets/courses/course-recap-poster.jpg"
   },
 
   // 【位置 2：Three.js 贴图】保留文件名时只覆盖 assets 中的同名文件即可。

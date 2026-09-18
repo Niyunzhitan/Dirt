@@ -13,7 +13,9 @@ assets/courses/
 ├─ 第二课时 ppt.pdf
 ├─ 第三课时（1）.pdf
 ├─ 教案+学习单(2).docx
-└─ 视频.mp4
+├─ 视频.mp4                  原始视频备份
+├─ course-recap.mp4          网页播放版本（元数据前置）
+└─ course-recap-poster.jpg   视频片头封面
 ```
 
 一门课程的配置示例：
@@ -34,5 +36,7 @@ assets/courses/
 课程 ID 必须与 `data/mock-data.js` 或数据库记录一致。教案和活动回顾视频写在 `coursePack` 中，不要放进某一课的 `videoUrl`。新增或删除预览页后，要同步修改 `slideCount`。
 
 视频建议使用 MP4（H.264 + AAC）或 WebM，封面使用 WebP 或 PNG。新文件名尽量只用英文字母、数字、短横线和点，例如 `course-01.mp4`；现有中文文件名可继续使用，但修改名称后必须更新配置。
+
+活动视频地址配置为 `coursePack.recapVideoUrl`，封面配置为 `coursePack.recapPosterUrl`。发布时运行 `npm run package:fc`，并上传新的完整部署包；仅更新页面脚本不会补齐服务器缺失的视频。构建和打包会检查视频及封面是否存在。
 
 外部媒体地址必须使用 HTTPS，并把主机名加入 `allowedExternalHosts`。前端配置和媒体文件都能被访客访问，不要放入账号、Cookie、Token、私密签名或没有公开授权的内容。
