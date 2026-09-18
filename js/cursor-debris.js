@@ -7,9 +7,9 @@
     interval: 16,                 // 两次生成的最小间隔；越大越稀疏
     lifetime: 750,                // 单粒持续时间
     maxParticles: 120,            // 同时存在的粒子上限
-    particlesPerStep: 2,          // 每次生成数量
-    sizeMin: 4,                   // 最小尺寸
-    sizeRange: 2,                 // 随机尺寸增量，即当前尺寸为 4～6
+    particlesPerStep: 4,          // 每次生成数量
+    sizeMin: 6,                   // 最小尺寸
+    sizeRange: 2,                 // 随机尺寸增量，即默认尺寸为 6～8
     colors: ["#ad4030", "#d47850", "#e4ad76"],
     sidewaysRange: 18,           // 左右散开总范围，即 -9～9
     fallMin: 12,                 // 最小下落距离

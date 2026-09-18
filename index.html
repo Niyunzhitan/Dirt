@@ -619,12 +619,14 @@
             <label class="setting-check" for="openingAnimationEnabled"><input id="openingAnimationEnabled" type="checkbox" checked><span>开启开屏动画</span></label>
             <label class="setting-check" for="cursorTrailEnabled"><input id="cursorTrailEnabled" type="checkbox" checked><span>开启鼠标尾迹</span></label>
             <label class="range-setting" for="cursorTrailSize">
-              <span><b>尾迹颗粒大小</b><output id="cursorTrailSizeValue">4～6 px</output></span>
-              <input id="cursorTrailSize" type="range" min="2" max="8" step="1" value="4">
+              <span><b>尾迹颗粒大小</b><output id="cursorTrailSizeValue" for="cursorTrailSize">6～8 px</output></span>
+              <input id="cursorTrailSize" type="range" min="2" max="8" step="1" value="6">
+              <small><span>小</span><span>大</span></small>
             </label>
             <label class="range-setting" for="cursorTrailDensity">
-              <span><b>尾迹密度</b><output id="cursorTrailDensityValue">2 粒/次</output></span>
-              <input id="cursorTrailDensity" type="range" min="1" max="4" step="1" value="2">
+              <span><b>尾迹密度</b><output id="cursorTrailDensityValue" for="cursorTrailDensity">4 粒/次</output></span>
+              <input id="cursorTrailDensity" type="range" min="1" max="4" step="1" value="4">
+              <small><span>少</span><span>多</span></small>
             </label>
             <p class="system-motion-note" id="cursorTrailLockNote" hidden>当前设备或动态效果设置不支持鼠标尾迹，已锁定关闭。</p>
             <label class="range-setting" for="motionIntensity">

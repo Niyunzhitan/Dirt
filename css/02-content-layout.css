@@ -289,6 +289,7 @@ main > section + section { border-top: 1px solid rgba(36, 35, 33, .14); }
 .settings-group legend { width: 100%; margin-bottom: var(--space-md); padding: 0; color: var(--color-ink-muted); font: 600 var(--text-lg)/1.35 var(--font-display); }
 .setting-control + .setting-control,
 .range-setting + .range-setting,
+.system-motion-note + .range-setting,
 .setting-check + .setting-check { margin-top: var(--space-lg); }
 .sound-toggle-row + .music-track-tabs,
 .music-track-tabs + .range-setting { margin-top: var(--space-lg); }

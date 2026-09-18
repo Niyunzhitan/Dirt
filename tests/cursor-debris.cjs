@@ -14,11 +14,11 @@ async function verifyCursorDebris() {
       await page.waitForTimeout(35);
       await page.mouse.move(140, 125);
       const count = await page.locator('.cursor-clay-debris').count();
-      assert.equal(count, reducedMotion === 'reduce' ? 0 : 2);
+      assert.equal(count, reducedMotion === 'reduce' ? 0 : 4);
       if (count) {
         const sizes = await page.locator('.cursor-clay-debris').evaluateAll(elements =>
           elements.map(element => parseFloat(element.style.width)));
-        assert.ok(sizes.every(size => size >= 4 && size <= 6));
+        assert.ok(sizes.every(size => size >= 6 && size <= 8));
         assert.equal(await page.locator('.cursor-clay-debris').first().evaluate(el => getComputedStyle(el).pointerEvents), 'none');
         assert.ok(Number(await page.locator('.cursor-clay-debris').first().evaluate(el => getComputedStyle(el).zIndex)) > 9999);
         await page.screenshot({ path: path.join(process.env.TEMP, 'cursor-debris-check.png') });
@@ -43,7 +43,8 @@ async function verifyCursorDebris() {
         assert.equal(await page.locator('#cursorTrailDensity').isDisabled(), true);
         await page.evaluate(() => window.dispatchEvent(new Event('media-settings-reset')));
         assert.equal(await page.locator('#cursorTrailEnabled').isChecked(), true);
-        assert.equal(await page.locator('#cursorTrailSize').inputValue(), '4');
+        assert.equal(await page.locator('#cursorTrailSize').inputValue(), '6');
+        assert.equal(await page.locator('#cursorTrailDensity').inputValue(), '4');
         await page.setViewportSize({ width: 375, height: 812 });
         await page.waitForTimeout(100);
         assert.equal(await page.locator('#cursorTrailEnabled').isDisabled(), true);
