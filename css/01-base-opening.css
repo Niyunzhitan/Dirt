@@ -57,6 +57,12 @@ img[loading="lazy"].loaded {
   filter: blur(0);
 }
 
+/* 资源明确失败或超时后显示占位内容，不让失败状态一直伪装成加载中。 */
+img[loading="lazy"].load-timeout {
+  opacity: 1;
+  filter: blur(0);
+}
+
 /* 首屏开馆层：古卷封泥解封与卷轴展开动画 */
 .opening-loader {
   --opening-font-monument: "STKaiti", "KaiTi", serif;

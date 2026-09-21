@@ -21,7 +21,8 @@ const NiyunScrollStory = (function registerScrollStory() {
           image.className = "scroll-custom-image";
           image.alt = illustration.getAttribute("aria-label") || "数字手卷配图";
           image.draggable = false;
-          image.loading = "lazy";
+          // 手卷图片属于首个可见内容，开屏结束前必须完成加载或明确失败。
+          image.loading = "eager";
           image.decoding = "async";
           image.src = imagePath;
           image.addEventListener(

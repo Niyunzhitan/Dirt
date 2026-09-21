@@ -18,7 +18,8 @@ const NiyunOpeningLoader = (function registerOpeningLoader() {
         preBreakHoldMs: 1400,
         completedHoldMs: 900,
         removeDelayMs: 1100,
-        resourceReadyTimeoutMs: 8000,
+        // 单张图片最多等待 30 秒；超时会标记失败并使用页面已有占位内容。
+        resourceReadyTimeoutMs: 30000,
         initialProgress: 8,
         progressEase: 0.12,
         progressStopThreshold: 0.2,
@@ -329,28 +330,39 @@ const NiyunOpeningLoader = (function registerOpeningLoader() {
         didYouKnowText?.classList.remove("is-switching");
       }
 
-      // 等待正文初始图片解码和字体就绪，而不只等待遮罩图片；远处课件仍按需加载。
+      // 开屏结束前，等待页面当前已经生成的图片完成加载或明确失败。
       function waitForPageReady() {
         if (pageReadyPromise) return pageReadyPromise;
         const images = [...(document.querySelectorAll("#openingLoader img, main img") as NodeListOf<HTMLImageElement>)];
-        // 只主动准备初始图片；远处课件不参与等待，坏图也不能让开屏一直卡住。
-        function prepareImage(image) {
+        function prepareImage(image: HTMLImageElement): Promise<void> {
           if (!image.getAttribute("src") || image.hidden) return Promise.resolve();
-          if (image.loading === "lazy" && (image.closest(".course-slide") as HTMLElement)) return Promise.resolve();
           image.loading = "eager";
-          // decode 不只等待下载，还等待浏览器把图片转换成能显示的像素。
-          return image.decode().catch(function ignoreBrokenImage() {});
+          image.classList.remove("load-timeout");
+
+          return new Promise<void>(function waitForImage(resolve) {
+            let settled = false;
+            const timer = window.setTimeout(function markImageTimeout() {
+              if (settled) return;
+              settled = true;
+              image.classList.add("load-timeout");
+              resolve();
+            }, config.resourceReadyTimeoutMs);
+            const finish = function finishImage(success: boolean) {
+              if (settled) return;
+              settled = true;
+              window.clearTimeout(timer);
+              if (success && image.naturalWidth > 0) image.classList.add("loaded");
+              else image.classList.add("load-timeout");
+              resolve();
+            };
+            image.addEventListener("load", () => finish(true), { once: true });
+            image.addEventListener("error", () => finish(false), { once: true });
+            if (image.complete) finish(image.naturalWidth > 0);
+          });
         }
-        const imageReady = Promise.all([...images.map(prepareImage), document.fonts.ready]);
-        let timeoutId;
-        // 网络异常时最多等到上限，再让用户进入页面查看已加载的内容。
-        const timeout = new Promise(function limitResourceWait(resolve) {
-          timeoutId = window.setTimeout(resolve, config.resourceReadyTimeoutMs);
-        });
-        // 资源就绪和超时谁先完成就继续，后续调用复用这次等待。
-        pageReadyPromise = Promise.race([imageReady, timeout]).then(
+        const imageReady = Promise.all(images.map(prepareImage));
+        pageReadyPromise = Promise.all([imageReady, document.fonts.ready]).then(
           function allowFinalPaint() {
-            window.clearTimeout(timeoutId);
             // 留出两个绘制帧，让刚准备好的图片有机会显示后再继续退场。
             return new Promise(function waitForPaint(resolve) {
               window.requestAnimationFrame(function nextFrame() {
@@ -478,12 +490,8 @@ const NiyunOpeningLoader = (function registerOpeningLoader() {
           return;
         }
         window.NiyunSealGlyphs?.render((loader.querySelector(".seal-inscription") as SVGGElement));
-        // 接口加载异常时也不能让开屏层永久挡住页面，9 秒后走兜底完成流程。
-        fallbackTimer = window.setTimeout(function finishStalledOpening() {
-          if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
-          fallbackTimer = null;
-          finish(false, true);
-        }, 9000);
+        // 数据接口异常时仍会走页面资源等待；不再提前跳过图片直接结束开屏。
+        fallbackTimer = null;
         particleEngine = initParticles();
         prepareFracture();
         wakeProgress();
@@ -503,10 +511,10 @@ const NiyunOpeningLoader = (function registerOpeningLoader() {
       }
 
       // 资料就绪后播完碎裂和展卷，再清理动画帧并移除遮罩。
-      async function finishWhenReady(success, skipResourceWait) {
+      async function finishWhenReady(success) {
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
         if (fallbackTimer) window.clearTimeout(fallbackTimer);
-        if (!skipResourceWait) await waitForPageReady();
+        await waitForPageReady();
         if (!cachedPaperWidth && paper) cachedPaperWidth = paper.getBoundingClientRect().width || 704;
         // 数据很快就绪时，也要先走完裂纹阶段；不能提前清掉阶段计时器。
         await new Promise<void>(function waitForCracks(resolve) {
@@ -554,10 +562,10 @@ const NiyunOpeningLoader = (function registerOpeningLoader() {
       }
 
       // 正常加载与超时兜底都可能要求结束，这里确保退场流程只启动一次。
-      function finish(success = true, skipResourceWait = false) {
+      function finish(success = true) {
         if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
         if (finishPromise) return finishPromise;
-        finishPromise = finishWhenReady(success, skipResourceWait);
+        finishPromise = finishWhenReady(success);
         return finishPromise;
       }
 
