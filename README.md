@@ -1,6 +1,6 @@
 # 泥云智探
 
-泥云智探是一个介绍齐鲁封泥的网站，整理了封泥图片、印文和相关地理资料。网站还提供数字手卷、支教课件、3D 地图与牌具、AI 问答和知识测验。
+泥云智探是一个介绍齐鲁封泥的网站，网址为：[官网](https://www.niyunzhitan.cn)。网站整理了封泥图片、印文和相关地理资料，同时还提供数字手卷、支教课件、3D 地图与牌具、AI 问答和知识测验。
 
 完整项目由 [Windy-Field](https://github.com/Windy-Field) 开发并维护，源码见 [Windy-Field/Dirt](https://github.com/Windy-Field/Dirt)。
 
