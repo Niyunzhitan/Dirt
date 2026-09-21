@@ -15,6 +15,9 @@ const NiyunCourseBrowser = (function registerCourseBrowser() {
             let activeCourse: Course | null = null;
             let activeCourseSlideIndex = 0;
             const courseSlideMarkupCache = new Map<string, string>();
+            const courseSlideCache = new Map<string, DocumentFragment>();
+            const imageReadyCache = new WeakMap<HTMLImageElement, Promise<void>>();
+            let requestedCourseId = "";
             let courseRenderRequest = 0;
             let courseSlideRequest = 0;
             // 有可用地址才显示下载入口，避免出现点了没有反应的按钮。
@@ -163,20 +166,48 @@ const NiyunCourseBrowser = (function registerCourseBrowser() {
                 }
                 panel.style.minHeight = ("" + (Math.ceil(content.getBoundingClientRect().height)) + "px");
             }
-            async function waitForSlideImage(image: HTMLImageElement) {
+            function waitForSlideImage(image: HTMLImageElement): Promise<void> {
                 if (!image) {
-                    return;
+                    return Promise.resolve();
                 }
-                // 跳到远处的课件时主动加载；超时后也允许翻页，不让按钮一直等待。
+                if (imageReadyCache.has(image)) {
+                    return imageReadyCache.get(image);
+                }
                 image.loading = "eager";
-                let timer;
-                await Promise.race([
-                    image.decode().catch(function () { }),
-                    new Promise(function limitSlideDecodeWait(resolve) {
-                        timer = window.setTimeout(resolve, 4000);
-                    }),
-                ]);
-                window.clearTimeout(timer);
+                // 同一张图片只解码一次；失败后允许下次切换重试。
+                const ready = image.decode().then(function markReady() {
+                    image.classList.add("loaded");
+                }, function allowRetry() {
+                    imageReadyCache.delete(image);
+                });
+                imageReadyCache.set(image, ready);
+                return ready;
+            }
+            function getCourseSlides(course: Course): DocumentFragment {
+                if (courseSlideCache.has(course.id)) {
+                    return courseSlideCache.get(course.id);
+                }
+                const container = document.createElement("div");
+                container.innerHTML = getCourseSlideMarkup(course);
+                const fragment = document.createDocumentFragment();
+                while (container.firstChild) {
+                    fragment.appendChild(container.firstChild);
+                }
+                courseSlideCache.set(course.id, fragment);
+                return fragment;
+            }
+            function prepareCourseCovers() {
+                for (let index = 0; index < courses.length; index++) {
+                    const course = courses[index];
+                    if (course.id === requestedCourseId) {
+                        continue;
+                    }
+                    const fragment = getCourseSlides(course);
+                    const image = fragment.querySelector("img");
+                    if (image) {
+                        waitForSlideImage(image);
+                    }
+                }
             }
             // 先准备要看的这一页，再预加载下一页，兼顾首次加载和连续翻页。
             async function prepareCourseSlide(index: number) {
@@ -285,17 +316,22 @@ const NiyunCourseBrowser = (function registerCourseBrowser() {
                 }
                 const requestId = ++courseRenderRequest;
                 courseSlideRequest += 1;
-                // 先在临时容器中加载首张图，避免切换课时时页面短暂出现空白或旧画面。
-                const staging = document.createElement("div");
-                staging.innerHTML = getCourseSlideMarkup(course);
+                // 保留每课的真实节点和已解码图片，回来时不用重建整套课件。
+                const staging = getCourseSlides(course);
                 const firstImage = (staging.querySelector(".course-slide img") as HTMLImageElement);
                 await waitForSlideImage(firstImage);
                 if (requestId !== courseRenderRequest) {
                     return;
                 }
+                if (activeCourse) {
+                    const previousSlides = courseSlideCache.get(activeCourse.id);
+                    while (track.firstChild) {
+                        previousSlides.appendChild(track.firstChild);
+                    }
+                }
                 activeCourse = course;
                 activeCourseSlideIndex = 0;
-                track.replaceChildren(...Array.from(staging.children));
+                track.replaceChildren(staging);
                 viewport.style.setProperty("--course-slide-width", ("" + (viewport.clientWidth) + "px"));
                 viewport.scrollTo({ left: 0, behavior: "auto" });
                 (document.querySelector("#courseSlideProgress") as HTMLElement).style.transform = "scaleX(0)";
@@ -344,6 +380,10 @@ const NiyunCourseBrowser = (function registerCourseBrowser() {
                 if (!course) {
                     return;
                 }
+                if (requestedCourseId === course.id) {
+                    return;
+                }
+                requestedCourseId = course.id;
                 (document.querySelector("#courseMeta") as HTMLElement).textContent = ("第 " + (course.lesson) + " 课 · " + (course.duration));
                 const lessonProgress = (document.querySelector("#courseLessonProgress") as HTMLElement);
                 if (lessonProgress) {
@@ -400,7 +440,7 @@ const NiyunCourseBrowser = (function registerCourseBrowser() {
                 });
                 // 保存准备课件的 Promise，调用方可以等待它，而不是误以为调用后立即加载完成。
                 const slidesReady = renderCourseSlides(course);
-                if (options.scrollToContent) {
+                if (options.scrollToContent && window.matchMedia("(max-width: 47.5rem)").matches) {
                     window.requestAnimationFrame(function revealSelectedCourse() {
                         let valueResult41;
                         const value43 = (document.querySelector("#courseScroll") as HTMLElement);
@@ -471,6 +511,8 @@ const NiyunCourseBrowser = (function registerCourseBrowser() {
                 // 第一课准备完成后才结束初始化，让开屏能准确判断课件是否就绪。
                 await selectCourse(valueResult53);
                 syncCourseLessonPanelHeight();
+                // 首课显示后再准备其他课的首页，不阻塞开屏，也不下载整套远处课件。
+                window.setTimeout(prepareCourseCovers, 0);
             }
             // 将鼠标拖动、滚轮、键盘和进度条接到同一套课件翻页逻辑上。
             function initCourseScroll() {
