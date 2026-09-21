@@ -468,7 +468,7 @@ body,
 .story-link { display: flex; align-items: center; justify-content: space-between; padding-top: var(--space-sm); color: var(--color-ink-muted); border-top: var(--rule-hairline) solid var(--color-rule); font-size: var(--text-xs); white-space: nowrap; }
 .story-link b { color: var(--color-accent); font-weight: 600; }
 
-.story-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-left: var(--rule-hairline) solid var(--color-rule); }
+.story-details { margin-top: var(--space-lg); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-left: var(--rule-hairline) solid var(--color-rule); }
 .story-details article { min-height: 14rem; padding: var(--space-lg); scroll-margin-top: 6rem; background: var(--color-paper); border-right: var(--rule-hairline) solid var(--color-rule); border-bottom: var(--rule-hairline) solid var(--color-rule); }
 .story-details article:target { background: var(--color-paper-soft); outline: 2px solid var(--color-accent); outline-offset: -2px; }
 .story-details span { color: var(--color-accent); font-size: var(--text-sm); font-weight: 700; }

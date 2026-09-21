@@ -6,7 +6,7 @@ cd /d "%~dp0"
 
 where npm >nul 2>&1
 if errorlevel 1 (
-  echo [ERROR] npm was not found. Install Node.js 18 or later and try again.
+  echo [ERROR] npm was not found. Install Node.js 20.19+ or 22.12+ and try again.
   goto :failed
 )
 
