@@ -23,7 +23,7 @@ assets/textures/
 
 重要文字和印文与边缘至少留出画布宽度的 6%。圆角和立体阴影由模型生成，不必画进贴图。
 
-贴图路径集中在 [data/media-config.js](../../data/media-config.js) 的 `textures` 配置中。保留文件名时直接覆盖图片；更换文件名时只改配置，不要到 `js/three-showcase.js` 中查找路径。外部贴图必须使用 HTTPS，并将主机名加入 `allowedExternalHosts`。
+贴图路径集中在 [data/media-config.ts](../../data/media-config.ts) 的 `textures` 配置中。保留文件名时直接覆盖图片；更换文件名时只改配置，不要到 `js/three-showcase.ts` 中查找路径。外部贴图必须使用 HTTPS，并将主机名加入 `allowedExternalHosts`。
 
 麻将没有侧面图片时，程序会生成暖白木纹、灰蓝边线和朱砂细线的默认侧面。
 

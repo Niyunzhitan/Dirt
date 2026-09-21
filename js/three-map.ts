@@ -1,11 +1,12 @@
-const mapRoot = document.querySelector("#shandongMap");
+(function initializeTerrain() {
+const mapRoot = (document.querySelector("#shandongMap") as HTMLElement);
 
 if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
   mapRoot.dataset.mapMode = mapRoot.dataset.mapMode || "terrain";
-  const canvas = mapRoot.querySelector("#shandongTerrainCanvas");
-  const status = mapRoot.querySelector("#mapTerrainStatus");
-  const rotationInput = mapRoot.querySelector("#mapRotation");
-  const rotationOutput = mapRoot.querySelector("#mapRotationValue");
+  const canvas = (mapRoot.querySelector("#shandongTerrainCanvas") as HTMLCanvasElement);
+  const status = (mapRoot.querySelector("#mapTerrainStatus") as HTMLElement);
+  const rotationInput = (mapRoot.querySelector("#mapRotation") as HTMLInputElement);
+  const rotationOutput = (mapRoot.querySelector("#mapRotationValue") as HTMLOutputElement);
   const config = window.SHANDONG_TERRAIN;
 
   // ==================== 地图可配置项 ====================
@@ -19,6 +20,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     // 最大放大比例：5 表示地图最多放大到默认大小的 5 倍。
     maxZoomFactor: 5,
     maxDistance: 22,
+    minDistance: 0,
     wheelSpeed: 0.012,
     pinchSpeed: 0.025,
     panSpeed: 1,
@@ -354,7 +356,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       const dy = end[1] - previous[1];
       const length = Math.hypot(dx, dy);
       if (!length) return points;
-      function isLand([longitude, latitude]) {
+      function isLand([longitude, latitude]: number[]) {
         const x = (longitude - config.bounds.west) / (config.bounds.east - config.bounds.west) * 100;
         const y = (config.bounds.north - latitude) / (config.bounds.north - config.bounds.south) * 100;
         return x >= 0 && x <= 100 && y >= 0 && y <= 100 && sampleMask(x, y) >= 128;
@@ -481,10 +483,10 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       let sea = outside;
       for (let iteration = 0; iteration < 18; iteration++) {
         const middle = [(land[0] + sea[0]) / 2, (land[1] + sea[1]) / 2];
-        if (createBoundaryPoint(...middle)) land = middle;
+        if (createBoundaryPoint(middle[0], middle[1])) land = middle;
         else sea = middle;
       }
-      return createBoundaryPoint(...land);
+      return createBoundaryPoint(land[0], land[1]);
     }
 
     // 沿网格边和对角线切分：每段位于同一三角面内，插值高度才能全程贴地。
@@ -542,7 +544,9 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     // 顺序：清理旧显存 -> 统计共享边 -> 排除/去重 -> 切分贴地 -> 更新全貌视野。
     function drawAdministrativeBoundaries() {
       if (!heightSamples || !Array.isArray(window.SHANDONG_PREFECTURES)) return;
-      administrativeBoundaries.children.forEach((line) => line.geometry.dispose());
+      administrativeBoundaries.children.forEach((line) => {
+        if (line instanceof THREE.Line) line.geometry.dispose();
+      });
       administrativeBoundaries.clear();
       boundaryFitPoints = [];
       const edgeOwners = collectBoundaryOwners(window.SHANDONG_PREFECTURES);
@@ -726,7 +730,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     function projectMarkers() {
       const rect = mapRoot.getBoundingClientRect();
       if (mapRoot.dataset.mapMode === "flat") {
-        const flatImage = mapRoot.querySelector("#shandongFlatMapImage");
+        const flatImage = (mapRoot.querySelector("#shandongFlatMapImage") as HTMLImageElement);
         if (flatImage?.naturalWidth && flatImage?.naturalHeight) {
           const imageRatio = flatImage.naturalWidth / flatImage.naturalHeight;
           const displayWidth = Math.min(rect.width, rect.height * imageRatio);
@@ -736,7 +740,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
           // 图片左侧保留了队伍署名，按山东轮廓的实际边界校准点位投影。
           // 这个范围只用于简化平面图；3D 版仍直接使用 DEM 的经纬度范围。
           const flatMapBounds = { left: 0.177, right: 0.966, top: 0.099, bottom: 0.911 };
-          mapRoot.querySelectorAll(".map-marker").forEach((marker) => {
+          (mapRoot.querySelectorAll(".map-marker") as NodeListOf<HTMLElement>).forEach((marker) => {
             const percentX = Number(marker.dataset.terrainX) / 100;
             const percentY = Number(marker.dataset.terrainY) / 100;
             if (!Number.isFinite(percentX) || !Number.isFinite(percentY)) return;
@@ -750,7 +754,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
           return;
         }
       }
-      mapRoot.querySelectorAll(".map-marker").forEach((marker) => {
+      (mapRoot.querySelectorAll(".map-marker") as NodeListOf<HTMLElement>).forEach((marker) => {
         const percentX = Number(marker.dataset.terrainX);
         const percentY = Number(marker.dataset.terrainY);
         if (!Number.isFinite(percentX) || !Number.isFinite(percentY)) return;
@@ -778,7 +782,7 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     mapRoot.addEventListener("pointerdown", function handlePointerdown(event) {
       // 新的一次按下（包括控件）不应继承上一次拖动的点击抑制。
       if (activePointers.size === 0) suppressGestureClick = false;
-      const interactive = event.target.closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control");
+      const interactive = ((event.target as HTMLElement).closest("button, input, .map-legend, .map-terrain-status, .map-rotation-control") as HTMLElement);
       if (interactive && !(event.pointerType === "touch" && interactive.matches(".map-marker"))) return;
       if (event.pointerType === "mouse" && event.button !== 0) return;
       activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -885,16 +889,16 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
       });
     }
     mapRoot.addEventListener("click", function handleClick(event) {
-      if (event.target.closest("[data-map-reset]")) resetMapView();
+      if (((event.target as HTMLElement).closest("[data-map-reset]") as HTMLElement)) resetMapView();
     });
 
     new ResizeObserver(resize).observe(mapRoot);
-    const markerRoot = mapRoot.querySelector("#mapMarkers");
+    const markerRoot = (mapRoot.querySelector("#mapMarkers") as HTMLElement);
     if (markerRoot) {
       // 筛选条件变化时 map-browser.js 会重建点位；监听子节点变化后重新投影新元素。
       new MutationObserver(invalidateMarkerProjection).observe(markerRoot, { childList: true });
     }
-    const flatMapImage = mapRoot.querySelector("#shandongFlatMapImage");
+    const flatMapImage = (mapRoot.querySelector("#shandongFlatMapImage") as HTMLImageElement);
     if (flatMapImage) {
       if (flatMapImage.complete) invalidateMarkerProjection();
       else flatMapImage.addEventListener("load", invalidateMarkerProjection, { once: true });
@@ -928,3 +932,5 @@ if (mapRoot && window.THREE && window.SHANDONG_TERRAIN) {
     status.textContent = "平面地图模式";
   }
 }
+
+})();

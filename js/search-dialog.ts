@@ -1,8 +1,8 @@
-(function registerSearchDialog() {
+const NiyunSearchDialog = (function registerSearchDialog() {
   "use strict";
 
-  window.NiyunSearchDialog = {
-    create(dependencies) {
+  return {
+    create(dependencies: SearchDependencies) {
       // 搜索弹窗只处理搜索输入和结果跳转；图录卡片的渲染仍由 app.js 提供。
       const {
         $,
@@ -18,10 +18,10 @@
         showToast,
         apiService,
       } = dependencies;
-      const dialog = $("#searchDialog");
-      const input = $("#searchInput");
+      const dialog = ($("#searchDialog") as HTMLDialogElement);
+      const input = ($("#searchInput") as HTMLInputElement);
       const results = $("#searchResults");
-      const clearButton = $("#clearSearch");
+      const clearButton = ($("#clearSearch") as HTMLButtonElement);
       const initialMessage = "<p>输入关键词以检索封泥藏品、古地名与调研档案。</p>";
       let searchRequest = 0;
 
@@ -31,7 +31,7 @@
       }
 
       function openAnimation() {
-        const panel = dialog?.querySelector(".search-box");
+        const panel = (dialog?.querySelector(".search-box") as HTMLElement);
         if (!panel) return;
         panel.getAnimations().forEach((animation) => animation.cancel());
         panel.animate(
@@ -44,7 +44,7 @@
       }
 
       function closeAnimation() {
-        const panel = dialog?.querySelector(".search-box");
+        const panel = (dialog?.querySelector(".search-box") as HTMLElement);
         if (!panel || prefersReducedMotion()) return null;
         return panel.animate(
           [
@@ -123,8 +123,8 @@
       }
 
       function init() {
-        $("#openSearch")?.addEventListener("click", open);
-        $("#closeSearch")?.addEventListener("click", close);
+        ($("#openSearch") as HTMLButtonElement)?.addEventListener("click", open);
+        ($("#closeSearch") as HTMLButtonElement)?.addEventListener("click", close);
         dialog?.addEventListener("click", function handleClick(event) {
           if (event.target === dialog) close();
         });
@@ -139,22 +139,22 @@
           }
         });
         dialog?.addEventListener("close", function handleClose() {
-          return $("#openSearch")?.focus();
+          return ($("#openSearch") as HTMLButtonElement)?.focus();
         });
         input?.addEventListener("input", updateClearButton);
-        $("#clearSearch")?.addEventListener("click", function handleClick() {
+        ($("#clearSearch") as HTMLButtonElement)?.addEventListener("click", function handleClick() {
           searchRequest += 1;
           input.value = "";
           results.innerHTML = initialMessage;
           updateClearButton();
           input.focus();
         });
-        $("#searchForm")?.addEventListener("submit", function handleSubmit(event) {
+        ($("#searchForm") as HTMLFormElement)?.addEventListener("submit", function handleSubmit(event) {
           event.preventDefault();
           search();
         });
         results?.addEventListener("click", async function handleClick(event) {
-          const resultButton = event.target.closest("[data-search-id], [data-search-site-id]");
+          const resultButton = ((event.target as HTMLElement).closest("[data-search-id], [data-search-site-id]") as HTMLElement);
           if (!resultButton) return;
           if (resultButton.dataset.searchId) {
             const relic = await apiService.getRelicById(resultButton.dataset.searchId);
@@ -192,3 +192,5 @@
     },
   };
 })();
+
+window.NiyunSearchDialog = NiyunSearchDialog;

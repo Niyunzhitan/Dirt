@@ -13,7 +13,7 @@ if (!fs.existsSync(builtQuizPath)) {
 // assets 的复制可能覆盖刚生成的问答包，因此先保留构建结果，复制后恢复。
 const quizBundle = fs.readFileSync(builtQuizPath);
 
-for (const directory of ["assets", "css", "data", "js"]) {
+for (const directory of ["assets", "css", "data", "js", ".runtime"]) {
   fs.cpSync(path.join(projectRoot, directory), path.join(distRoot, directory), {
     recursive: true,
     force: true,
@@ -22,7 +22,7 @@ for (const directory of ["assets", "css", "data", "js"]) {
 
 // 校验实际配置引用的媒体，防止构建成功但上线后视频或封面返回 404。
 const mediaContext = { window: {} };
-vm.runInNewContext(fs.readFileSync(path.join(distRoot, "data/media-config.js"), "utf8"), mediaContext);
+vm.runInNewContext(fs.readFileSync(path.join(distRoot, ".runtime/data/media-config.js"), "utf8"), mediaContext);
 for (const key of ["recapVideoUrl", "recapPosterUrl"]) {
   const resource = mediaContext.window.MEDIA_CONFIG.coursePack[key];
   if (!resource) throw new Error(`课程媒体缺少配置：${key}`);

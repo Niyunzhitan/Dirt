@@ -23,6 +23,7 @@ dist/
 deploy/fc/dist/
 deploy/fc/node_modules/
 releases/
+.runtime/
 
 # 研究原始资料与视觉验收截图不参与网站运行
 docs/research/

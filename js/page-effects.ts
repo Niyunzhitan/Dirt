@@ -1,8 +1,8 @@
-(function registerPageEffects() {
+const NiyunPageEffects = (function registerPageEffects() {
   "use strict";
 
-  window.NiyunPageEffects = {
-    create(dependencies) {
+  return {
+    create(dependencies: EffectsDependencies) {
       // 这些效果共用显示设置，但不负责保存设置；每次使用时读取最新值即可即时响应调整。
       const { $, $$, prefersReducedMotion, getSettings, visualEffects, motionSettingRanges } = dependencies;
 
@@ -11,7 +11,7 @@
         const pageProgressBar = $("#pageProgressBar");
         let scrollTicking = false;
 
-        const revealItems = $$('[data-reveal]');
+        const revealItems = ($$('[data-reveal]') as HTMLElement[]);
         if ("IntersectionObserver" in window) {
           const revealObserver = new IntersectionObserver(
             function updateRevealedSections(entries) {
@@ -100,7 +100,7 @@
               if (!prefersReducedMotion()) {
                 const shift = Math.min(scrollTop, window.innerHeight) / window.innerHeight;
                 const settings = getSettings();
-                $$(`[data-parallax]`).forEach((item) =>
+                ($$(`[data-parallax]`) as HTMLElement[]).forEach((item) =>
                   item.style.setProperty(
                     "--parallax-y",
                     `${shift * Number(item.dataset.parallax || 0) * (settings.motionIntensity / motionSettingRanges.pageMotion.max)}px`,
@@ -117,9 +117,9 @@
         document.addEventListener("click", function handleClick(event) {
           const target =
             event.target instanceof Element
-              ? event.target.closest(
+              ? ((event.target as HTMLElement).closest(
                   ".button, .filter-chip, .search-row button, .chat-form button, .scroll-story-controls button, .course-scroll-controls button, .quick-prompts button, .source-index-more",
-                )
+                ) as HTMLElement)
               : null;
           if (!target) return;
           const rect = target.getBoundingClientRect();
@@ -135,7 +135,7 @@
         document.addEventListener("pointerdown", function handlePointerdown(event) {
           return (
             event.target instanceof Element &&
-            event.target.closest(".course-scroll-controls button")?.classList.add("is-pressing")
+            ((event.target as HTMLElement).closest(".course-scroll-controls button") as HTMLButtonElement)?.classList.add("is-pressing")
           );
         });
         ["pointerup", "pointercancel", "pointerleave"].forEach((name) =>
@@ -143,7 +143,7 @@
             name,
             (event) =>
               event.target instanceof Element &&
-              event.target.closest(".course-scroll-controls button")?.classList.remove("is-pressing"),
+              ((event.target as HTMLElement).closest(".course-scroll-controls button") as HTMLButtonElement)?.classList.remove("is-pressing"),
           ),
         );
 
@@ -158,7 +158,7 @@
             ".source-index article",
           ].join(", ");
           document.addEventListener("mousemove", function handleMousemove(event) {
-            const card = event.target instanceof Element ? event.target.closest(cardSelector) : null;
+            const card = event.target instanceof Element ? event.target.closest(cardSelector) as HTMLElement : null;
             if (!card) return;
             const settings = getSettings();
             if (settings.tiltDegrees === 0) {
@@ -175,13 +175,13 @@
             card.style.transform = `perspective(${visualEffects.cardPerspective}px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-${visualEffects.cardLift}px)`;
           });
           document.addEventListener("mouseout", function handleMouseout(event) {
-            const card = event.target instanceof Element ? event.target.closest(cardSelector) : null;
-            if (card && (!event.relatedTarget || !card.contains(event.relatedTarget)))
+            const card = event.target instanceof Element ? event.target.closest(cardSelector) as HTMLElement : null;
+            if (card && (!(event.relatedTarget instanceof Node) || !card.contains(event.relatedTarget)))
               card.style.transform = "";
           });
         }
 
-        const canvas = $("#ambientCanvas");
+        const canvas = ($("#ambientCanvas") as HTMLCanvasElement);
         if (canvas) {
           const context = canvas.getContext("2d");
           let width = (canvas.width = window.innerWidth);
@@ -258,11 +258,11 @@
         document.addEventListener(
           "load",
           function handleLoad(event) {
-            if (event.target instanceof HTMLImageElement) event.target.classList.add("loaded");
+            if (event.target instanceof HTMLImageElement) (event.target as HTMLElement).classList.add("loaded");
           },
           true,
         );
-        $$('img[loading="lazy"]').forEach((image) => {
+        ($$('img[loading="lazy"]') as HTMLImageElement[]).forEach((image) => {
           if (image.complete) image.classList.add("loaded");
         });
 
@@ -318,3 +318,5 @@
     },
   };
 })();
+
+window.NiyunPageEffects = NiyunPageEffects;

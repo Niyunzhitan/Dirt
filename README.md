@@ -26,7 +26,7 @@ npm run dev
 常用命令：
 
 ```powershell
-npm run check       # 检查 JavaScript 语法
+npm run check       # 检查 TypeScript 编译结果和 JavaScript 语法
 npm run build       # 生成 dist/
 npm run build:three # 重新生成按需版 Three.js
 npm run db:seed     # 写入数据库种子数据
@@ -35,7 +35,7 @@ npm run package:fc  # 生成阿里云 FC 部署包
 
 维护者应在根目录的 `index.html` 中修改页面结构。构建脚本会生成 `dist/index.html`，不要直接编辑该生成文件。
 
-双击根目录的 `index.html` 可以预览大部分静态内容。预览趣味问答前，开发者需要先运行一次 `npm run build`；使用 AI 和数据库功能时，还需要启动 `server.js`。
+双击根目录的 `index.html` 可以预览大部分静态内容。由于页面脚本由 TypeScript 编译生成，首次双击前需要先运行一次 `npm run compile:frontend`，或直接运行 `npm run build`；使用 AI 和数据库功能时，还需要启动 `server.js`。
 
 ## 网站功能
 
@@ -50,7 +50,7 @@ npm run package:fc  # 生成阿里云 FC 部署包
 
 ## 代码结构
 
-页面主体使用原生 HTML、CSS 和 JavaScript，趣味问答使用 Vue 3，由 Vite 编译。普通前端脚本通过 `window` 上的对象共享功能，因此也能支持本地双击预览。
+页面主体使用原生 HTML、CSS 和 TypeScript，趣味问答使用 Vue 3，由 Vite 编译。普通前端脚本通过 `window` 上的对象共享功能，因此也能支持本地双击预览。TypeScript 源码在 `js/*.ts` 和 `data/*.ts` 中，编译后的浏览器脚本位于 `.runtime/` 目录。
 
 模块职责、生成文件来源和验证方法见[源码阅读导航](./docs/CODE-READING.md)。
 
@@ -58,19 +58,19 @@ npm run package:fc  # 生成阿里云 FC 部署包
 
 - [index.html](./index.html)：页面结构和脚本加载顺序。
 - [css/tokens.css](./css/tokens.css)：颜色、字体、间距、布局尺寸和动效参数。
-- [js/app.js](./js/app.js)：页面初始化、共享工具和基础数据渲染。
-- [js/theme-bootstrap.js](./js/theme-bootstrap.js)：在 CSS 加载前恢复主题，避免刷新时闪出错误颜色。
-- [js/course-browser.js](./js/course-browser.js)：课程切换、课件翻页和进度条。
-- [js/scroll-story.js](./js/scroll-story.js)：数字手卷。
-- [js/map-browser.js](./js/map-browser.js) 与 [js/three-map.js](./js/three-map.js)：地图筛选、模式切换和 3D 地形。
-- [js/source-archive.js](./js/source-archive.js)：完整图录与补充史料。
-- [js/three-showcase.js](./js/three-showcase.js)：封泥牌具。
-- [js/ai-chat.js](./js/ai-chat.js)、[js/ai-service.js](./js/ai-service.js)：AI 对话界面和请求。
-- [js/media-coordinator.js](./js/media-coordinator.js)：背景音乐与视频之间的播放协调。
-- [js/cursor-debris.js](./js/cursor-debris.js)：鼠标碎屑尾迹及其开关、大小、密度设置；常用参数集中在文件顶部。
+- [js/app.ts](./js/app.ts)：页面初始化、共享工具和基础数据渲染。
+- [js/theme-bootstrap.ts](./js/theme-bootstrap.ts)：在 CSS 加载前恢复主题，避免刷新时闪出错误颜色。
+- [js/course-browser.ts](./js/course-browser.ts)：课程切换、课件翻页和进度条。
+- [js/scroll-story.ts](./js/scroll-story.ts)：数字手卷。
+- [js/map-browser.ts](./js/map-browser.ts) 与 [js/three-map.ts](./js/three-map.ts)：地图筛选、模式切换和 3D 地形。
+- [js/source-archive.ts](./js/source-archive.ts)：完整图录与补充史料。
+- [js/three-showcase.ts](./js/three-showcase.ts)：封泥牌具。
+- [js/ai-chat.ts](./js/ai-chat.ts)、[js/ai-service.ts](./js/ai-service.ts)：AI 对话界面和请求。
+- [js/media-coordinator.ts](./js/media-coordinator.ts)：背景音乐与视频之间的播放协调。
+- [js/cursor-debris.ts](./js/cursor-debris.ts)：鼠标碎屑尾迹及其开关、大小、密度设置；常用参数集中在文件顶部。
 - [server.js](./server.js)：静态文件、视频分段请求、AI 代理和数据库 API。
 
-`js/seal-glyph-paths.js` 保存开屏四字的 SVG 路径，`js/offline-texture-loader.js` 只在 `file://` 模式加载内嵌 3D 贴图。新增前端模块后，还要在 `index.html` 中按依赖顺序引入，并在需要时加入 `npm run check`。
+`js/seal-glyph-paths.js` 保存开屏四字的 SVG 路径，`data/*-inline.js` 和 `data/texture-inline.js` 是生成数据，`js/vendor/three.js` 是生成的第三方运行库；这些文件保持 JavaScript。`js/offline-texture-loader.ts` 只在 `file://` 模式加载内嵌 3D 贴图。修改 TypeScript 后运行 `npm run compile:frontend`，页面加载的是 `.runtime/` 中的编译结果。
 
 CSS 的加载顺序不可随意交换：
 
@@ -93,9 +93,9 @@ USE_DATABASE: false,
 USE_QUIZ_DATABASE: false
 ```
 
-这两个开关位于 [js/config.js](./js/config.js)，可以分别启用栏目数据库和题库数据库。数据库准备方法见[数据库说明](./db/README.md)。
+这两个开关位于 [js/config.ts](./js/config.ts)，可以分别启用栏目数据库和题库数据库。数据库准备方法见[数据库说明](./db/README.md)。
 
-课程文件、音乐和牌具贴图的路径集中在 [data/media-config.js](./data/media-config.js)。本地资源使用 `./assets/` 下的相对路径。添加外部资源时，维护者需要使用 HTTPS 地址，并将主机名加入 `allowedExternalHosts`。浏览器会加载这份公开配置，因此文件中不能包含密码、Token、Cookie 或私密签名。
+课程文件、音乐和牌具贴图的路径集中在 [data/media-config.ts](./data/media-config.ts)。本地资源使用 `./assets/` 下的相对路径。添加外部资源时，维护者需要使用 HTTPS 地址，并将主机名加入 `allowedExternalHosts`。浏览器会加载这份公开配置，因此文件中不能包含密码、Token、Cookie 或私密签名。
 
 资源维护说明：
 
@@ -128,7 +128,7 @@ GET http://127.0.0.1:3000/api/ai/status
 
 ## Umami 统计
 
-网站通过 [js/config.js](./js/config.js) 接入 Umami Cloud，统计域名限制为 `niyunzhitan.cn` 和 `www.niyunzhitan.cn`。本地双击页面时，网站不会加载统计脚本；访客在浏览器中启用 Do Not Track 时，Umami 也不会记录访问。
+网站通过 [js/config.ts](./js/config.ts) 接入 Umami Cloud，统计域名限制为 `niyunzhitan.cn` 和 `www.niyunzhitan.cn`。本地双击页面时，网站不会加载统计脚本；访客在浏览器中启用 Do Not Track 时，Umami 也不会记录访问。
 
 更换 Umami 站点时，修改以下三项：
 
@@ -144,7 +144,7 @@ UMAMI_DOMAINS: "niyunzhitan.cn,www.niyunzhitan.cn",
 
 [js/vendor/three.js](./js/vendor/three.js) 是基于 Three.js 0.160.0 生成的按需版本，导出列表位于 [scripts/three-entry.js](./scripts/three-entry.js)。新增 `THREE.xxx` 调用后，先补充对应导出，再运行 `npm run build:three`。不要直接删改生成文件里的内部类或着色器。
 
-地图参数放在 `js/three-map.js` 顶部的 `MAP_VIEW`，牌具参数放在 `js/three-showcase.js` 顶部。Three.js 许可证见 [LICENSE.three.txt](./js/vendor/LICENSE.three.txt)。
+地图参数放在 `js/three-map.ts` 顶部的 `MAP_VIEW`，牌具参数放在 `js/three-showcase.ts` 顶部。Three.js 许可证见 [LICENSE.three.txt](./js/vendor/LICENSE.three.txt)。
 
 浅色线为现代市界，蓝色为主要河槽示意，不是历史行政界线或完整水网。数据来源、更新脚本和局部展示排除见[山东地形数据说明](./assets/terrain/README.md)。
 

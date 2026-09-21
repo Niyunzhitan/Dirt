@@ -1,4 +1,5 @@
-const root = document.querySelector("#product3dShowcase");
+(function initializeShowcase() {
+const root = (document.querySelector("#product3dShowcase") as HTMLElement);
 
 /*
  * ==================== 3D 展厅交互参数 ====================
@@ -22,17 +23,17 @@ const showcaseSettings = {
 
 if (root && window.SEAL_3D_PRODUCTS) {
   const config = window.SEAL_3D_PRODUCTS;
-  const canvas = root.querySelector("#product3dCanvas");
-  const viewport = root.querySelector(".product-3d-viewport");
-  const status = root.querySelector("#product3dStatus");
-  const title = root.querySelector("#product3dTitle");
-  const subtitle = root.querySelector("#product3dSubtitle");
-  const description = root.querySelector("#product3dDescription");
-  const counter = root.querySelector("#product3dCounter");
-  const autoRotateButton = root.querySelector("#product3dAutoRotate");
-  const flipButton = root.querySelector("#product3dFlip");
-  const resetButton = root.querySelector("#product3dReset");
-  const fullscreenButton = root.querySelector("#product3dFullscreen");
+  const canvas = (root.querySelector("#product3dCanvas") as HTMLCanvasElement);
+  const viewport = (root.querySelector(".product-3d-viewport") as HTMLElement);
+  const status = (root.querySelector("#product3dStatus") as HTMLElement);
+  const title = (root.querySelector("#product3dTitle") as HTMLElement);
+  const subtitle = (root.querySelector("#product3dSubtitle") as HTMLElement);
+  const description = (root.querySelector("#product3dDescription") as HTMLElement);
+  const counter = (root.querySelector("#product3dCounter") as HTMLElement);
+  const autoRotateButton = (root.querySelector("#product3dAutoRotate") as HTMLButtonElement);
+  const flipButton = (root.querySelector("#product3dFlip") as HTMLButtonElement);
+  const resetButton = (root.querySelector("#product3dReset") as HTMLButtonElement);
+  const fullscreenButton = (root.querySelector("#product3dFullscreen") as HTMLButtonElement);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
@@ -192,7 +193,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
       const inlineSource = window.SEAL_INLINE_TEXTURES?.[path];
       if (!inlineSource) return fallback;
       try {
-        const image = await new Promise(function decodeInlineTexture(resolve, reject) {
+        const image = await new Promise<HTMLImageElement>(function decodeInlineTexture(resolve, reject) {
           const localImage = new Image();
           localImage.addEventListener(
             "load",
@@ -230,7 +231,8 @@ if (root && window.SEAL_3D_PRODUCTS) {
     while (modelRoot.children.length) {
       const child = modelRoot.children.pop();
       child.traverse(function disposeObjectResources(object) {
-        object.geometry?.dispose();
+        if (!(object instanceof THREE.Mesh)) return;
+        object.geometry.dispose();
         const materials = Array.isArray(object.material) ? object.material : [object.material];
         materials.filter(Boolean).forEach((material) => {
           material.map?.dispose();
@@ -364,7 +366,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     autoRotateButton.setAttribute("aria-pressed", String(autoRotate));
     autoRotateButton.textContent = autoRotate ? "暂停旋转" : "自动旋转";
     flipButton.textContent = flipped ? "查看正面" : "翻到背面";
-    root.querySelectorAll("[data-product-mode]").forEach((button) => {
+    (root.querySelectorAll("[data-product-mode]") as NodeListOf<HTMLElement>).forEach((button) => {
       const active = button.dataset.productMode === mode;
       button.classList.toggle("active", active);
       button.setAttribute("aria-pressed", String(active));
@@ -420,24 +422,24 @@ if (root && window.SEAL_3D_PRODUCTS) {
   }
 
   root.addEventListener("click", function handleClick(event) {
-    const modeButton = event.target.closest("[data-product-mode]");
+    const modeButton = ((event.target as HTMLElement).closest("[data-product-mode]") as HTMLElement);
     if (modeButton) return setMode(modeButton.dataset.productMode);
-    if (event.target.closest("#product3dPrev")) changeItem(-1);
-    if (event.target.closest("#product3dNext")) changeItem(1);
-    if (event.target.closest("#product3dFlip")) flipItem();
-    if (event.target.closest("#product3dAutoRotate")) {
+    if (((event.target as HTMLElement).closest("#product3dPrev") as HTMLButtonElement)) changeItem(-1);
+    if (((event.target as HTMLElement).closest("#product3dNext") as HTMLButtonElement)) changeItem(1);
+    if (((event.target as HTMLElement).closest("#product3dFlip") as HTMLButtonElement)) flipItem();
+    if (((event.target as HTMLElement).closest("#product3dAutoRotate") as HTMLButtonElement)) {
       autoRotate = !autoRotate;
       updateButtons();
     }
-    if (event.target.closest("#product3dReset")) {
+    if (((event.target as HTMLElement).closest("#product3dReset") as HTMLButtonElement)) {
       resetView();
       updateButtons();
     }
-    if (event.target.closest("#product3dFullscreen")) viewport.requestFullscreen?.();
+    if (((event.target as HTMLElement).closest("#product3dFullscreen") as HTMLButtonElement)) viewport.requestFullscreen?.();
   });
 
   viewport.addEventListener("pointerdown", function handlePointerdown(event) {
-    if (event.target.closest("button, .product-3d-mode, .product-3d-controls")) return;
+    if (((event.target as HTMLElement).closest("button, .product-3d-mode, .product-3d-controls") as HTMLElement)) return;
     isDragging = true;
     autoRotate = false;
     dragStart = { x: event.clientX, y: event.clientY };
@@ -463,7 +465,7 @@ if (root && window.SEAL_3D_PRODUCTS) {
     isDragging = false;
   });
   viewport.addEventListener("dblclick", function handleDblclick(event) {
-    if (!event.target.closest("button")) flipItem();
+    if (!((event.target as HTMLElement).closest("button") as HTMLButtonElement)) flipItem();
   });
   viewport.addEventListener(
     "wheel",
@@ -523,3 +525,5 @@ if (root && window.SEAL_3D_PRODUCTS) {
   loadCurrentItem();
   animate();
 }
+
+})();

@@ -1,3 +1,33 @@
+interface ApiSite {
+  id: number;
+  period: string;
+  [key: string]: any;
+}
+
+interface ApiRelic {
+  id: string;
+  name: string;
+  inscription: string;
+  period: string;
+  location: string;
+  category: string;
+  value: string;
+  [key: string]: any;
+}
+
+interface ApiCourse extends Course {
+  id: string;
+  videoUrl?: string;
+  posterUrl?: string;
+  resourceUrl?: string;
+  resourceType?: string;
+  resourceName?: string;
+  resourceFileName?: string;
+  slideBasePath?: string;
+  slideCount?: number;
+  [key: string]: any;
+}
+
 (function initializeDataService() {
   const baseUrl = String(window.APP_CONFIG?.API_BASE_URL || "").replace(/\/$/, "");
   const useDatabase = Boolean(window.APP_CONFIG?.USE_DATABASE);
@@ -6,7 +36,7 @@
     return `${baseUrl}${path}`;
   };
   // GET 请求统一从这里读取 JSON；接口报错时把错误交给页面处理。
-  async function request(path) {
+  async function request(path: string): Promise<any> {
     const response = await fetch(apiUrl(path));
     if (!response.ok)
       throw new Error(
@@ -15,7 +45,7 @@
     return response.json();
   }
   // 将提交内容转换为 JSON，并统一检查服务器是否成功接收。
-  async function post(path, body) {
+  async function post(path: string, body: any): Promise<any> {
     const response = await fetch(apiUrl(path), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -29,13 +59,13 @@
   }
 
   // 未配置数据库时保留模拟数据，便于本地做页面开发；上线时打开 USE_DATABASE。
-  const copyItems = function copyItems(items) {
+  const copyItems = function copyItems(items: any[]): any[] {
     return items.map((item) => ({ ...item }));
   };
   // 常用媒体配置按课程 id 补充视频、课件等公开资源，数据库和 mock 模式共用。
-  const applyCourseMedia = function applyCourseMedia(items) {
-    return items.map(function mergeCourseMedia(course) {
-      const media = window.MEDIA_CONFIG?.courses?.[course.id] || {};
+  const applyCourseMedia = function applyCourseMedia(items: Course[]): Course[] {
+    return items.map(function mergeCourseMedia(course: Course): Course {
+      const media: any = window.MEDIA_CONFIG?.courses?.[course.id] || {};
       return {
         ...course,
         videoUrl: media.videoUrl || course.videoUrl || "",
@@ -50,7 +80,7 @@
     });
   };
   // 先复制数组，再从后往前随机交换，避免打乱原始题库。
-  function shuffle(items) {
+  function shuffle(items: any[]): any[] {
     const result = [...items];
     for (let index = result.length - 1; index > 0; index -= 1) {
       const randomIndex = Math.floor(Math.random() * (index + 1));
@@ -66,7 +96,7 @@
     return { questions, total: 10, scorePerQuestion: 10 };
   }
 
-  function answerMockQuiz(questionId, answer) {
+  function answerMockQuiz(questionId: number, answer: string): any {
     const question = window.MOCK_DATA.questions.find((item) => item.id === Number(questionId));
     if (!question) throw new Error("题目不存在");
     const selectedAnswer = String(answer).toUpperCase();
@@ -99,7 +129,7 @@
       });
       return copyItems(items);
     },
-    async getRelics(params = {}) {
+    async getRelics(params: { keyword?: string } = {}) {
       if (useDatabase) return request(`/api/data/relics?keyword=${encodeURIComponent(params.keyword || "")}`);
       const keyword = String(params.keyword || "")
         .trim()

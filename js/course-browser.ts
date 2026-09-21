@@ -1,20 +1,20 @@
-(function registerCourseBrowser() {
+const NiyunCourseBrowser = (function registerCourseBrowser() {
   "use strict";
 
   // 课程浏览器独立管理课时切换、课件横向阅读和进度条拖动。
   // 这里使用 window 命名空间而不是 import/export，是为了让根目录 index.html 在 file:// 下也能直接打开。
-  window.NiyunCourseBrowser = {
-    create(dependencies) {
+  return {
+    create(dependencies: CourseDependencies) {
       const { $, $$, escapeHtml, safeResourceUrl, prefersReducedMotion, mediaConfig } = dependencies;
-      let courses = [];
-      let activeCourse = null;
+      let courses: Course[] = [];
+      let activeCourse: Course | null = null;
       let activeCourseSlideIndex = 0;
-      const courseSlideMarkupCache = new Map();
+      const courseSlideMarkupCache = new Map<string, string>();
       let courseRenderRequest = 0;
       let courseSlideRequest = 0;
 
       // 有可用地址才显示下载入口，避免出现点了没有反应的按钮。
-      function configureCourseLink(link, value, options = {}) {
+      function configureCourseLink(link: HTMLAnchorElement, value: string, options: { downloadName?: string; openInNewTab?: boolean } = {}) {
         if (!link) return;
         const resourceUrl = safeResourceUrl(value);
         link.hidden = !resourceUrl;
@@ -36,11 +36,11 @@
 
       // 把配置中的教案和回顾视频接到页面上，资源地址集中在配置文件维护。
       function configureCoursePackLinks() {
-        const pack = mediaConfig?.coursePack || {};
-        configureCourseLink($("#courseGuideLink"), pack.guideUrl, {
+        const pack: CoursePack = mediaConfig?.coursePack || {};
+        configureCourseLink(($("#courseGuideLink") as HTMLAnchorElement), pack.guideUrl, {
           downloadName: pack.guideFileName || "封泥教案与学习单.docx",
         });
-        const recapVideo = $("#courseRecapVideo");
+        const recapVideo = ($("#courseRecapVideo") as HTMLVideoElement);
         const recapVideoUrl = safeResourceUrl(pack.recapVideoUrl);
         const recapPosterUrl = safeResourceUrl(pack.recapPosterUrl);
         const recapError = $("#courseRecapError");
@@ -63,7 +63,7 @@
         }
       }
 
-      function courseLessonLabel(course) {
+      function courseLessonLabel(course: Course) {
         const lesson = Number(course?.lesson) || 1;
         const numeral = ["一", "二", "三"][lesson - 1] || String(lesson);
         return `第${numeral}课时`;
@@ -77,7 +77,7 @@
       function courseSlideAnchors(viewport = $("#courseSlideViewport")) {
         if (!viewport) return [];
         const viewportRect = viewport.getBoundingClientRect();
-        return $$(".course-slide", $("#courseSlideTrack")).map((panel) => {
+        return ($$(".course-slide", $("#courseSlideTrack")) as HTMLElement[]).map((panel) => {
           const panelRect = panel.getBoundingClientRect();
           return panelRect.left - viewportRect.left + viewport.scrollLeft;
         });
@@ -95,7 +95,7 @@
         panel.style.minHeight = `${Math.ceil(content.getBoundingClientRect().height)}px`;
       }
 
-      async function waitForSlideImage(image) {
+      async function waitForSlideImage(image: HTMLImageElement) {
         if (!image) return;
         // 跳到远处的课件时主动加载；超时后也允许翻页，不让按钮一直等待。
         image.loading = "eager";
@@ -110,15 +110,15 @@
       }
 
       // 先准备要看的这一页，再预加载下一页，兼顾首次加载和连续翻页。
-      async function prepareCourseSlide(index) {
-        const panels = $$(".course-slide", $("#courseSlideTrack"));
-        await waitForSlideImage(panels[index]?.querySelector("img"));
-        const nextImage = panels[index + 1]?.querySelector("img");
+      async function prepareCourseSlide(index: number) {
+        const panels = ($$(".course-slide", $("#courseSlideTrack")) as HTMLElement[]);
+        await waitForSlideImage((panels[index]?.querySelector("img") as HTMLImageElement));
+        const nextImage = (panels[index + 1]?.querySelector("img") as HTMLImageElement);
         if (nextImage) nextImage.loading = "eager";
       }
 
       // 翻到指定页，并同步页码和按钮；请求编号保证快速操作时以最后一次为准。
-      async function updateCourseSlideState(index, behavior = "smooth") {
+      async function updateCourseSlideState(index: number, behavior: ScrollBehavior = "smooth") {
         const count = courseSlideCount();
         if (!count || !activeCourse) return;
         const nextIndex = Math.max(0, Math.min(index, count - 1));
@@ -127,7 +127,7 @@
         // 用户快速切换课件时，旧课件的图片可能晚一步加载；只接受最后一次请求的结果。
         if (requestId !== courseSlideRequest || !activeCourse) return;
         activeCourseSlideIndex = nextIndex;
-        const panels = $$(".course-slide", $("#courseSlideTrack"));
+        const panels = ($$(".course-slide", $("#courseSlideTrack")) as HTMLElement[]);
         panels.forEach((panel, panelIndex) =>
           panel.toggleAttribute("data-current", panelIndex === activeCourseSlideIndex),
         );
@@ -138,12 +138,12 @@
         }
         $("#courseSlideStatus").innerHTML =
           `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(activeCourseSlideIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
-        $("#courseSlidePrev").disabled = activeCourseSlideIndex === 0;
-        $("#courseSlideNext").disabled = activeCourseSlideIndex === count - 1;
+        ($("#courseSlidePrev") as HTMLButtonElement).disabled = activeCourseSlideIndex === 0;
+        ($("#courseSlideNext") as HTMLButtonElement).disabled = activeCourseSlideIndex === count - 1;
       }
 
       // 生成本课的图片页面并缓存 HTML；远处的页面暂不急着下载。
-      function getCourseSlideMarkup(course) {
+      function getCourseSlideMarkup(course: Course) {
         const count = Number(course.slideCount) || 0;
         const basePath = String(course.slideBasePath || "").replace(/\/$/, "");
         if (courseSlideMarkupCache.has(course.id)) return courseSlideMarkupCache.get(course.id);
@@ -160,7 +160,7 @@
       }
 
       // 新课件首图准备好后再换掉旧内容，减少切换时的空白。
-      async function renderCourseSlides(course) {
+      async function renderCourseSlides(course: Course) {
         const track = $("#courseSlideTrack");
         const viewport = $("#courseSlideViewport");
         if (!track || !viewport) return;
@@ -169,7 +169,7 @@
         // 先在临时容器中加载首张图，避免切换课时时页面短暂出现空白或旧画面。
         const staging = document.createElement("div");
         staging.innerHTML = getCourseSlideMarkup(course);
-        const firstImage = staging.querySelector(".course-slide img");
+        const firstImage = (staging.querySelector(".course-slide img") as HTMLImageElement);
         await waitForSlideImage(firstImage);
         if (requestId !== courseRenderRequest) return;
         activeCourse = course;
@@ -184,7 +184,7 @@
       }
 
       // 切换课时的统一入口：更新介绍、选中按钮、下载链接和课件。
-      function selectCourse(id, options = {}) {
+      function selectCourse(id: string, options: { scrollToContent?: boolean } = {}) {
         const course = courses.find((item) => item.id === id) || courses[0];
         if (!course) return;
         $("#courseMeta").textContent = `第 ${course.lesson} 课 · ${course.duration}`;
@@ -193,7 +193,7 @@
           lessonProgress.textContent = `${String(course.lesson).padStart(2, "0")} / ${String(courses.length || 3).padStart(2, "0")}`;
         $("#courseScrollTitle").textContent = course.title;
         $("#courseDescription").textContent = course.description;
-        $$(`[data-course-id]`).forEach((button) => {
+        ($$(`[data-course-id]`) as HTMLElement[]).forEach((button) => {
           const active = button.dataset.courseId === course.id;
           button.classList.toggle("active", active);
           if (active) {
@@ -204,7 +204,7 @@
           button.setAttribute("aria-selected", String(active));
           button.tabIndex = active ? 0 : -1;
         });
-        const resourceLink = $("#courseResourceLink");
+        const resourceLink = ($("#courseResourceLink") as HTMLAnchorElement);
         const isPdf = String(course.resourceType || "").toUpperCase() === "PDF";
         resourceLink.textContent = isPdf ? "打开原始 PDF" : "下载原始 PPTX";
         configureCourseLink(resourceLink, course.resourceUrl, {
@@ -225,7 +225,7 @@
       }
 
       // 首次拿到课程列表后，生成课时按钮并默认打开第一课。
-      async function renderCourses(items) {
+      async function renderCourses(items: Course[]) {
         courses = items;
         $("#courseLessonTabs").innerHTML = items
           .map((course, index) => {
@@ -251,7 +251,7 @@
 
         // 用户也能手动拖动课卷，所以页码要根据实际滚动位置更新。
         function syncCourseSlideFromScroll() {
-          const panels = $$(".course-slide", $("#courseSlideTrack"));
+          const panels = ($$(".course-slide", $("#courseSlideTrack")) as HTMLElement[]);
           if (!panels.length) return;
           const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
           const scrollRatio = maxScroll > 0 ? viewport.scrollLeft / maxScroll : 0;
@@ -267,8 +267,8 @@
             panels.forEach((panel) => panel.removeAttribute("data-current"));
             $("#courseSlideStatus").innerHTML =
               `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>-- / ${String(count).padStart(2, "0")}</b>`;
-            $("#courseSlidePrev").disabled = viewport.scrollLeft <= 1;
-            $("#courseSlideNext").disabled = viewport.scrollLeft >= maxScroll - 1;
+            ($("#courseSlidePrev") as HTMLButtonElement).disabled = viewport.scrollLeft <= 1;
+            ($("#courseSlideNext") as HTMLButtonElement).disabled = viewport.scrollLeft >= maxScroll - 1;
             return;
           }
           if (nextIndex === activeCourseSlideIndex) return;
@@ -278,23 +278,23 @@
           );
           $("#courseSlideStatus").innerHTML =
             `<span>${escapeHtml(courseLessonLabel(activeCourse))}</span><b>${String(nextIndex + 1).padStart(2, "0")} / ${String(count).padStart(2, "0")}</b>`;
-          $("#courseSlidePrev").disabled = nextIndex === 0;
-          $("#courseSlideNext").disabled = nextIndex === count - 1;
+          ($("#courseSlidePrev") as HTMLButtonElement).disabled = nextIndex === 0;
+          ($("#courseSlideNext") as HTMLButtonElement).disabled = nextIndex === count - 1;
         }
 
-        function setCourseScrollPercent(percent) {
+        function setCourseScrollPercent(percent: number) {
           const clamped = Math.min(100, Math.max(0, percent));
           const maxScroll = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
           viewport.scrollLeft = (maxScroll * clamped) / 100;
         }
 
-        function setCourseScrollFromPointer(event) {
+        function setCourseScrollFromPointer(event: PointerEvent) {
           const bounds = progressTrack.getBoundingClientRect();
           const percent = bounds.width > 0 ? ((event.clientX - bounds.left) / bounds.width) * 100 : 0;
           setCourseScrollPercent(percent);
         }
 
-        function moveToCourseAnchor(direction) {
+        function moveToCourseAnchor(direction: number) {
           const anchors = courseSlideAnchors(viewport);
           const current = viewport.scrollLeft;
           const tolerance = 4;
@@ -312,23 +312,23 @@
           if (targetIndex >= 0) updateCourseSlideState(targetIndex);
         }
         tabs.addEventListener("click", function handleClick(event) {
-          const button = event.target.closest("[data-course-id]");
+          const button = ((event.target as HTMLElement).closest("[data-course-id]") as HTMLElement);
           if (button) selectCourse(button.dataset.courseId, { scrollToContent: true });
         });
         tabs.addEventListener("keydown", function handleKeydown(event) {
           if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
           event.preventDefault();
-          const tabButtons = $$(`[data-course-id]`, tabs);
+          const tabButtons = ($$(`[data-course-id]`, tabs) as HTMLElement[]);
           const current = tabButtons.findIndex((button) => button.getAttribute("aria-selected") === "true");
           const next =
             (current + (event.key === "ArrowRight" ? 1 : -1) + tabButtons.length) % tabButtons.length;
           tabButtons[next].focus();
           selectCourse(tabButtons[next].dataset.courseId, { scrollToContent: true });
         });
-        $("#courseSlidePrev").addEventListener("click", function handleClick() {
+        ($("#courseSlidePrev") as HTMLButtonElement).addEventListener("click", function handleClick() {
           return moveToCourseAnchor(-1);
         });
-        $("#courseSlideNext").addEventListener("click", function handleClick() {
+        ($("#courseSlideNext") as HTMLButtonElement).addEventListener("click", function handleClick() {
           return moveToCourseAnchor(1);
         });
         viewport.addEventListener("keydown", function handleKeydown(event) {
@@ -431,3 +431,5 @@
     },
   };
 })();
+
+window.NiyunCourseBrowser = NiyunCourseBrowser;

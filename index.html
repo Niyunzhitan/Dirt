@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" href="./assets/branding/apple-touch-icon.png?v=seal-v2" sizes="180x180">
     <title>泥云智探｜齐鲁封泥智慧人文平台</title>
     <!-- 同源外部脚本可通过严格 CSP，并在 CSS 首次计算前恢复主题，避免刷新时闪出浅色开屏。 -->
-    <script src="./js/theme-bootstrap.js"></script>
+    <script src="./.runtime/js/theme-bootstrap.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -731,14 +731,14 @@
     <!-- 开幕封泥字形已转为 SVG 路径；在 SVG 解析完成后由外部脚本绘制，以兼容严格 CSP。 -->
     <script src="./js/seal-glyph-paths.js"></script>
     <!-- 常用媒体替换入口必须最先加载，课程和 Three.js 都从这里读取安全路径。 -->
-    <script src="./data/media-config.js"></script>
-    <script src="./js/offline-texture-loader.js"></script>
-    <script src="./data/ai-pet-config.js"></script>
-    <script src="./data/ppt-knowledge.js"></script>
-    <script src="./data/supplementary-sources.js"></script>
-    <script src="./data/mock-data.js"></script>
-    <script src="./data/3d-products.js"></script>
-    <script src="./data/shandong-terrain.js"></script>
+    <script src="./.runtime/data/media-config.js"></script>
+    <script src="./.runtime/js/offline-texture-loader.js"></script>
+    <script src="./.runtime/data/ai-pet-config.js"></script>
+    <script src="./.runtime/data/ppt-knowledge.js"></script>
+    <script src="./.runtime/data/supplementary-sources.js"></script>
+    <script src="./.runtime/data/mock-data.js"></script>
+    <script src="./.runtime/data/3d-products.js"></script>
+    <script src="./.runtime/data/shandong-terrain.js"></script>
     <script src="./data/shandong-terrain-inline.js"></script>
     <script src="./data/shandong-prefectures.js"></script>
     <script src="./data/shandong-rivers.js"></script>
@@ -747,27 +747,27 @@
     <!-- 手工补绘与公开水系数据分开维护，均只用于河槽示意。 -->
     <script src="./data/shandong-rivers-reference.js"></script>
     <!-- 先读取公开配置，再由统计加载器判断是否启用 Umami；Website ID 留空时不会发送请求。 -->
-    <script src="./js/config.js"></script>
-    <script src="./js/analytics.js"></script>
-    <script src="./js/api.js"></script>
-    <script src="./js/media-coordinator.js"></script>
-    <script src="./js/course-browser.js"></script>
-    <script src="./js/scroll-story.js"></script>
-    <script src="./js/opening-loader.js"></script>
-    <script src="./js/search-dialog.js"></script>
-    <script src="./js/ai-chat.js"></script>
-    <script src="./js/page-effects.js"></script>
-    <script src="./js/cursor-debris.js"></script>
-    <script src="./js/display-settings.js"></script>
-    <script src="./js/site-navigation.js"></script>
-    <script src="./js/map-browser.js"></script>
-    <script src="./js/source-archive.js"></script>
-    <script src="./js/ai-service.js"></script>
-    <script src="./js/app.js"></script>
-    <script src="./js/ai-pet.js"></script>
+    <script src="./.runtime/js/config.js"></script>
+    <script src="./.runtime/js/analytics.js"></script>
+    <script src="./.runtime/js/api.js"></script>
+    <script src="./.runtime/js/media-coordinator.js"></script>
+    <script src="./.runtime/js/course-browser.js"></script>
+    <script src="./.runtime/js/scroll-story.js"></script>
+    <script src="./.runtime/js/opening-loader.js"></script>
+    <script src="./.runtime/js/search-dialog.js"></script>
+    <script src="./.runtime/js/ai-chat.js"></script>
+    <script src="./.runtime/js/page-effects.js"></script>
+    <script src="./.runtime/js/cursor-debris.js"></script>
+    <script src="./.runtime/js/display-settings.js"></script>
+    <script src="./.runtime/js/site-navigation.js"></script>
+    <script src="./.runtime/js/map-browser.js"></script>
+    <script src="./.runtime/js/source-archive.js"></script>
+    <script src="./.runtime/js/ai-service.js"></script>
+    <script src="./.runtime/js/app.js"></script>
+    <script src="./.runtime/js/ai-pet.js"></script>
     <script src="./js/vendor/three.js"></script>
-    <script src="./js/three-map.js"></script>
-    <script src="./js/three-showcase.js"></script>
+    <script src="./.runtime/js/three-map.js"></script>
+    <script src="./.runtime/js/three-showcase.js"></script>
     <script src="./dist/assets/quiz-bundle.js"></script>
   </body>
 </html>

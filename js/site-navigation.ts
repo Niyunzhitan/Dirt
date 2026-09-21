@@ -1,27 +1,27 @@
-(function registerSiteNavigation() {
+const NiyunSiteNavigation = (function registerSiteNavigation() {
   "use strict";
-  window.NiyunSiteNavigation = {
-    create({ $, $$, prefersReducedMotion, interfaceConfig }) {
+  return {
+    create({ $, $$, prefersReducedMotion, interfaceConfig }: NavigationDependencies) {
       // 导航模块只改变滚动位置和 active 状态，不负责渲染栏目内容。
-      function setMenuOpen(open) {
+      function setMenuOpen(open: boolean) {
         const mainNav = $("#mainNav");
-        const menuToggle = $("#menuToggle");
+        const menuToggle = (($("#menuToggle") as HTMLButtonElement) as HTMLButtonElement);
         mainNav?.classList.toggle("open", open);
         menuToggle?.setAttribute("aria-expanded", String(open));
         menuToggle?.setAttribute("aria-label", open ? "关闭导航" : "打开导航");
       }
 
       // 沿父容器累加位置，得到元素在整张网页中的实际高度。
-      function getLayoutTop(element) {
+      function getLayoutTop(element: HTMLElement) {
         let top = 0;
-        for (let current = element; current; current = current.offsetParent) {
+        for (let current = element; current; current = current.offsetParent as HTMLElement) {
           top += current.offsetTop;
         }
         return top;
       }
 
       // 跳转时给固定导航栏留出空间，再选中相应地图点位。
-      function navigateToMapIndex(siteId) {
+      function navigateToMapIndex(siteId: number | string) {
         const mapToolbar = $("#map .map-toolbar");
         if (!mapToolbar) return;
         const rootStyle = getComputedStyle(document.documentElement);
@@ -40,7 +40,7 @@
         if (marker) window.setTimeout(() => marker.click(), 400);
       }
       function init() {
-        const menuToggle = $("#menuToggle");
+        const menuToggle = (($("#menuToggle") as HTMLButtonElement) as HTMLButtonElement);
         const mainNav = $("#mainNav");
         menuToggle?.addEventListener("click", function handleClick() {
           return setMenuOpen(!mainNav.classList.contains("open"));
@@ -51,7 +51,7 @@
             menuToggle?.focus();
           }
         });
-        const links = $$("#mainNav a, .footer-links a, .hero-actions a, .scroll-cue");
+        const links = ($$("#mainNav a, .footer-links a, .hero-actions a, .scroll-cue") as HTMLElement[]);
         links.forEach((link) =>
           link.addEventListener("click", function handleClick(event) {
             const target = $(link.getAttribute("href"));
@@ -66,7 +66,7 @@
             history.pushState(null, "", link.getAttribute("href"));
           }),
         );
-        const clock = $("#headerClock");
+        const clock = (($("#headerClock") as HTMLTimeElement) as HTMLTimeElement);
         const clockFormatter = new Intl.DateTimeFormat(
           interfaceConfig.clockLocale,
           interfaceConfig.clockFormat,
@@ -79,8 +79,8 @@
         }
         updateClock();
         window.setInterval(updateClock, interfaceConfig.clockRefreshInterval);
-        const navLinks = $$("#mainNav a");
-        const setActiveNav = function setActiveNav(sectionId) {
+        const navLinks = ($$("#mainNav a") as HTMLAnchorElement[]);
+        const setActiveNav = function setActiveNav(sectionId: string) {
           return navLinks.forEach((link) => {
             link.classList.toggle("active", link.getAttribute("href") === `#${sectionId}`);
           });
@@ -93,7 +93,7 @@
           },
           { rootMargin: "-35% 0px -55%" },
         );
-        $$("main section[id]").forEach((section) => observer.observe(section));
+        ($$("main section[id]") as HTMLElement[]).forEach((section) => observer.observe(section));
         const hero = $(".hero");
         if (hero)
           new IntersectionObserver(
@@ -117,9 +117,11 @@
           // 提前 200px 开始入场，让快速下翻时内容尽量在进入视口前显现。
           { rootMargin: "200px 0px", threshold: 0.01 },
         );
-        $$("[data-reveal]").forEach((section) => reveal.observe(section));
+        ($$("[data-reveal]") as HTMLElement[]).forEach((section) => reveal.observe(section));
       }
       return { init, setMenuOpen, getLayoutTop, navigateToMapIndex };
     },
   };
 })();
+
+window.NiyunSiteNavigation = NiyunSiteNavigation;

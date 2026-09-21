@@ -7,7 +7,7 @@
 1. 用 MySQL 管理员账号执行 [schema.sql](./schema.sql)。
 2. 在项目根目录复制 `.env.example` 为 `.env`，填入数据库连接信息。
 3. 运行 `npm run db:seed`。
-4. 在 [js/config.js](../js/config.js) 中打开需要的数据库开关。
+4. 在 [js/config.ts](../js/config.ts) 中打开需要的数据库开关。
 5. 启动服务，访问 `http://127.0.0.1:3000/api/health` 检查连接。
 
 本地配置示例：

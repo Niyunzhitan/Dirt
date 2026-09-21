@@ -11,13 +11,13 @@ shandong-mask.png        山东轮廓遮罩
 
 地图还会读取：
 
-- `data/shandong-terrain.js`：图片路径、经纬度边界和显示参数
+- `data/shandong-terrain.ts`：图片路径、经纬度边界和显示参数
 - `data/shandong-terrain-inline.js`：本地双击页面时使用的轻量数据
 - `data/shandong-prefectures.js`：山东 16 个地级市边界
 - `data/shandong-rivers.js`：主要河流概化中心线，供蓝色河槽示意使用
 - `data/shandong-rivers-reference.js`：按用户参考图相对位置补绘的河流、运河示意
 - `assets/maps/shandong-map-flat.webp`：简化平面版地图
-- `js/three-map.js`：相机、缩放、抬升、点位投影和渲染逻辑
+- `js/three-map.ts`：相机、缩放、抬升、点位投影和渲染逻辑
 
 替换 DEM 时，要一起核对图片尺寸、`bounds` 经纬度范围、遮罩方向和行政边界映射。只换图片不改配置，点位可能偏离实际位置。
 

@@ -1,8 +1,8 @@
-(function registerOpeningLoader() {
+const NiyunOpeningLoader = (function registerOpeningLoader() {
   "use strict";
 
-  window.NiyunOpeningLoader = {
-    create({ $ }) {
+  return {
+    create({ $ }: { $(selector: string): HTMLElement }) {
       // 开屏动画只负责展示层；正文数据加载完成后由 app.js 调用 finish() 让它退场。
       const config = {
         // “你知道吗”轮换节奏（毫秒）：改这里即可，数字越大换得越慢。
@@ -55,14 +55,14 @@
       const rollerLeft = $("#scrollRollerLeft");
       const rollerRight = $("#scrollRollerRight");
       const paperContainer = $("#scrollPaperContainer");
-      const paper = paperContainer?.querySelector(".scroll-paper");
+      const paper = (paperContainer?.querySelector(".scroll-paper") as HTMLElement);
       const content = $("#scrollContent");
       const cord = $("#scrollCord");
       const seal = $("#claySealEntity");
       const cracks = $("#sealCracksSvg");
       let crackPaths = [];
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const particleCanvas = $("#sealParticlesCanvas");
+      const particleCanvas = ($("#sealParticlesCanvas") as HTMLCanvasElement);
       // 这里只保存四块碎片元素；飞行轨迹由 releaseFragments 计算，不再使用旧 CSS 动画类。
       const fragments = [
         $("#fragNW"),
@@ -94,7 +94,7 @@
 
       // 先画裂纹，再复制完整印面作为碎块；各副本的 SVG 编号必须不同，避免引用串台。
       function prepareFracture() {
-        const svg = seal?.querySelector(".clay-seal-svg");
+        const svg = (seal?.querySelector(".clay-seal-svg") as SVGSVGElement);
         if (!svg || !cracks) return;
         const ns = "http://www.w3.org/2000/svg";
         const lines = [
@@ -109,7 +109,7 @@
         ];
         const clip = document.createElementNS(ns, "clipPath");
         clip.id = "sealFractureClip";
-        const outline = svg.querySelector(".clay-base").cloneNode(true);
+        const outline = svg.querySelector(".clay-base").cloneNode(true) as SVGPathElement;
         outline.removeAttribute("class");
         outline.setAttribute("fill", "white");
         clip.append(outline);
@@ -129,23 +129,23 @@
             path.setAttribute("stroke-linejoin", "round");
             path.setAttribute("class", highlight ? "crack-highlight" : "crack-path");
             path.setAttribute("pathLength", "180");
-            path.dataset.branch = index;
+            path.dataset.branch = String(index);
             if (highlight) path.setAttribute("opacity", ".7");
             cracks.append(path);
           }
         });
-        crackPaths = [...cracks.querySelectorAll("path")];
+        crackPaths = Array.from(cracks.querySelectorAll("path"));
         fragments.forEach((fragment, index) => {
           if (!fragment) return;
-          const copy = svg.cloneNode(true);
-          copy.querySelectorAll("script, .seal-cracks-group").forEach((node) => node.remove());
+          const copy = svg.cloneNode(true) as SVGSVGElement;
+          (copy.querySelectorAll("script, .seal-cracks-group") as NodeListOf<HTMLElement>).forEach((node) => node.remove());
           const ids = new Map();
-          copy.querySelectorAll("[id]").forEach((node) => {
+          (copy.querySelectorAll("[id]") as NodeListOf<HTMLElement>).forEach((node) => {
             const old = node.id;
             ids.set(old, `${old}-fragment-${index}`);
             node.id = ids.get(old);
           });
-          copy.querySelectorAll("*").forEach((node) => {
+          (copy.querySelectorAll("*") as NodeListOf<HTMLElement>).forEach((node) => {
             for (const attr of [...node.attributes]) {
               let value = attr.value;
               ids.forEach((next, old) => {
@@ -332,11 +332,11 @@
       // 等待正文初始图片解码和字体就绪，而不只等待遮罩图片；远处课件仍按需加载。
       function waitForPageReady() {
         if (pageReadyPromise) return pageReadyPromise;
-        const images = [...document.querySelectorAll("#openingLoader img, main img")];
+        const images = [...(document.querySelectorAll("#openingLoader img, main img") as NodeListOf<HTMLImageElement>)];
         // 只主动准备初始图片；远处课件不参与等待，坏图也不能让开屏一直卡住。
         function prepareImage(image) {
           if (!image.getAttribute("src") || image.hidden) return Promise.resolve();
-          if (image.loading === "lazy" && image.closest(".course-slide")) return Promise.resolve();
+          if (image.loading === "lazy" && (image.closest(".course-slide") as HTMLElement)) return Promise.resolve();
           image.loading = "eager";
           // decode 不只等待下载，还等待浏览器把图片转换成能显示的像素。
           return image.decode().catch(function ignoreBrokenImage() {});
@@ -477,7 +477,7 @@
           loader.remove();
           return;
         }
-        window.NiyunSealGlyphs?.render(loader.querySelector(".seal-inscription"));
+        window.NiyunSealGlyphs?.render((loader.querySelector(".seal-inscription") as SVGGElement));
         // 接口加载异常时也不能让开屏层永久挡住页面，9 秒后走兜底完成流程。
         fallbackTimer = window.setTimeout(function finishStalledOpening() {
           if (!loader?.isConnected || loader.classList.contains("is-closing")) return;
@@ -509,7 +509,7 @@
         if (!skipResourceWait) await waitForPageReady();
         if (!cachedPaperWidth && paper) cachedPaperWidth = paper.getBoundingClientRect().width || 704;
         // 数据很快就绪时，也要先走完裂纹阶段；不能提前清掉阶段计时器。
-        await new Promise(function waitForCracks(resolve) {
+        await new Promise<void>(function waitForCracks(resolve) {
           // 进度采用逐渐逼近的方式更新，53.5 会显示为 54%，不要求小数精确等于 54。
           function checkCrackProgress() {
             if (!loader.isConnected || currentProgress >= 53.5) {
@@ -528,7 +528,7 @@
         if (!success) status.textContent = "展厅已打开，部分资料稍后加载";
         targetProgress = 100;
         wakeProgress();
-        await new Promise(function waitForFinalProgress(resolve) {
+        await new Promise<void>(function waitForFinalProgress(resolve) {
           const startedAt = performance.now();
           const waitForProgress = function waitForProgress(timestamp) {
             if (!loader?.isConnected || currentProgress >= 99.5) return resolve();
@@ -563,7 +563,7 @@
 
       // 暂时让出执行时间，让浏览器先画一帧，避免连续生成内容时卡住动画。
       function yieldToBrowser() {
-        return new Promise(function scheduleBrowserYield(resolve) {
+        return new Promise<void>(function scheduleBrowserYield(resolve) {
           if ("scheduler" in window && typeof window.scheduler?.postTask === "function") {
             window.scheduler.postTask(resolve, { priority: "user-visible" });
             return;
@@ -576,3 +576,5 @@
     },
   };
 })();
+
+window.NiyunOpeningLoader = NiyunOpeningLoader;

@@ -1,16 +1,16 @@
 (function initializeMediaCoordinator() {
-  const config = window.MEDIA_CONFIG?.backgroundMusic || {};
+  const config: MusicConfig = window.MEDIA_CONFIG?.backgroundMusic || {};
   const storageKey = "niyun-background-music-settings";
   const defaultVolume = Math.min(1, Math.max(0, Number(config.defaultVolume) || 0.03));
   const audio = document.createElement("audio");
-  const settingsInput = document.querySelector("#backgroundMusicEnabled");
-  const volumeInput = document.querySelector("#backgroundMusicVolume");
-  const volumeOutput = document.querySelector("#backgroundMusicVolumeValue");
-  const musicButton = document.querySelector("#toggleMusic");
-  const restartButton = document.querySelector("#restartMusic");
-  const carouselButton = document.querySelector("#toggleMusicCarousel");
-  const nextButton = document.querySelector("#nextMusic");
-  const trackInputs = [...document.querySelectorAll("[name=backgroundMusicTrack]")];
+  const settingsInput = (document.querySelector("#backgroundMusicEnabled") as HTMLInputElement);
+  const volumeInput = (document.querySelector("#backgroundMusicVolume") as HTMLInputElement);
+  const volumeOutput = (document.querySelector("#backgroundMusicVolumeValue") as HTMLOutputElement);
+  const musicButton = (document.querySelector("#toggleMusic") as HTMLButtonElement);
+  const restartButton = (document.querySelector("#restartMusic") as HTMLButtonElement);
+  const carouselButton = (document.querySelector("#toggleMusicCarousel") as HTMLButtonElement);
+  const nextButton = (document.querySelector("#nextMusic") as HTMLButtonElement);
+  const trackInputs = [...(document.querySelectorAll("[name=backgroundMusicTrack]") as NodeListOf<HTMLInputElement>)];
   const tracks = (config.tracks || [])
     .map((track) => ({
       ...track,
@@ -217,9 +217,9 @@
   // 用户已开启音乐时尝试自动播放；若浏览器拦截，则在用户第一次操作页面时重试。
   function resumeAfterUserGesture(event) {
     if (
-      event.target.closest?.(
+      ((event.target as HTMLElement).closest?.(
         "#toggleMusic, #restartMusic, #toggleMusicCarousel, #nextMusic, #backgroundMusicEnabled, [name=backgroundMusicTrack], #backgroundMusicVolume",
-      )
+      ) as HTMLInputElement)
     )
       return;
     if (!settings.enabled || activeVideos > 0 || !audio.paused) return;

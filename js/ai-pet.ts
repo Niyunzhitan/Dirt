@@ -1,24 +1,24 @@
 (function initializeAiPet() {
-  const config = window.AI_PET_CONFIG || {};
-  const root = document.querySelector("#aiPet");
+  const config: PetConfig = window.AI_PET_CONFIG || {};
+  const root = (document.querySelector("#aiPet") as HTMLElement);
   if (!root || config.enabled === false || !window.AiService) return;
 
   const storageKey = "niyun-ai-pet-enabled";
   const sessionKey = "niyun-yinxiaoling-ai-pet-session";
   const positionKey = "niyun-ai-pet-relative-position";
-  const petButton = root.querySelector("[data-pet-toggle]");
-  const panel = root.querySelector(".ai-pet-panel");
-  const form = root.querySelector(".ai-pet-form");
-  const input = root.querySelector(".ai-pet-input");
-  const messages = root.querySelector(".ai-pet-messages");
-  const stage = root.querySelector(".ai-pet-stage");
-  const layers = stage ? Array.from(stage.querySelectorAll(".ai-pet-layer")) : [];
+  const petButton = (root.querySelector("[data-pet-toggle]") as HTMLElement);
+  const panel = (root.querySelector(".ai-pet-panel") as HTMLElement);
+  const form = (root.querySelector(".ai-pet-form") as HTMLFormElement);
+  const input = (root.querySelector(".ai-pet-input") as HTMLInputElement);
+  const messages = (root.querySelector(".ai-pet-messages") as HTMLElement);
+  const stage = (root.querySelector(".ai-pet-stage") as HTMLElement);
+  const layers = stage ? Array.from((stage.querySelectorAll(".ai-pet-layer") as NodeListOf<HTMLImageElement>)) : [];
   let currentLayerIndex = 0;
-  const image = layers[0] || root.querySelector(".ai-pet-image");
-  const closeButton = root.querySelector("[data-pet-close]");
-  const clearButton = root.querySelector("[data-pet-clear]");
-  const greeting = root.querySelector(".ai-pet-greeting");
-  const stateText = root.querySelector(".ai-pet-state");
+  const image = layers[0] || (root.querySelector(".ai-pet-image") as HTMLImageElement);
+  const closeButton = (root.querySelector("[data-pet-close]") as HTMLElement);
+  const clearButton = (root.querySelector("[data-pet-clear]") as HTMLElement);
+  const greeting = (root.querySelector(".ai-pet-greeting") as HTMLElement);
+  const stateText = (root.querySelector(".ai-pet-state") as HTMLElement);
   const greetingStorageKey = "niyun-ai-pet-dynamic-greeting";
   let sessionId = window.sessionStorage.getItem(sessionKey) || "";
   let moved = false;
@@ -62,7 +62,7 @@
   preloadPetStates();
 
   // 两张图片交替显示，先准备下一张再切换，减少角色状态变化时的闪白。
-  function switchTexture(nextSrc) {
+  function switchTexture(nextSrc: string) {
     if (!nextSrc) return;
     if (layers.length < 2) {
       if (image) image.src = nextSrc;
@@ -109,7 +109,7 @@
   }
 
   // 统一更新角色图片与状态文字，思考、回答等流程都从这里切换表情。
-  function setState(state, label) {
+  function setState(state: string, label = "") {
     currentState = state;
     root.dataset.state = state;
     stateText.textContent =
@@ -236,7 +236,7 @@
     );
   }
 
-  function appendMessage(text, role) {
+  function appendMessage(text: string, role: string) {
     const message = document.createElement("div");
     message.className = `ai-pet-message ${role}`;
     message.textContent = text;
@@ -246,7 +246,7 @@
   }
 
   // 发送快捷对话，并在请求期间显示思考状态；结束后恢复可交互状态。
-  async function send(text) {
+  async function send(text: string) {
     const message = text.trim();
     if (!message) return;
     const requestRevision = ++conversationRevision;
@@ -312,7 +312,7 @@
     event.preventDefault();
     send(input.value);
   });
-  root.querySelectorAll("[data-pet-prompt]").forEach((button) =>
+  (root.querySelectorAll("[data-pet-prompt]") as NodeListOf<HTMLElement>).forEach((button) =>
     button.addEventListener("click", function handleClick() {
       return send(button.dataset.petPrompt);
     }),
@@ -430,8 +430,8 @@
   const enabled = window.localStorage.getItem(storageKey) !== "false";
   dynamicGreetingEnabled =
     window.localStorage.getItem(greetingStorageKey) !== "false" && config.dynamicGreeting !== false;
-  const enabledInput = document.querySelector("#aiPetEnabled");
-  const dynamicGreetingInput = document.querySelector("#aiPetDynamicGreeting");
+  const enabledInput = (document.querySelector("#aiPetEnabled") as HTMLInputElement);
+  const dynamicGreetingInput = (document.querySelector("#aiPetDynamicGreeting") as HTMLInputElement);
   if (enabledInput) enabledInput.checked = enabled;
   if (dynamicGreetingInput) dynamicGreetingInput.checked = dynamicGreetingEnabled;
   root.hidden = !enabled;
@@ -493,14 +493,14 @@
   setState(currentState);
   startGreetingCycle();
   dynamicGreetingInput?.addEventListener("change", function handleChange(event) {
-    const isEnabled = event.target.checked;
+    const isEnabled = (event.target as HTMLInputElement).checked;
     dynamicGreetingEnabled = isEnabled;
     window.localStorage.setItem(greetingStorageKey, String(isEnabled));
     if (isEnabled) startGreetingCycle();
     else stopGreetingCycle();
   });
   enabledInput?.addEventListener("change", function handleChange(event) {
-    const isEnabled = event.target.checked;
+    const isEnabled = (event.target as HTMLInputElement).checked;
     window.localStorage.setItem(storageKey, String(isEnabled));
     root.hidden = !isEnabled;
     if (isEnabled) startGreetingCycle();

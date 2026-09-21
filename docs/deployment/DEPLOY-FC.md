@@ -101,7 +101,7 @@ dist/
 
 ## 前端地址配置
 
-如果网页与 API 同域，可以将 [js/config.js](../../js/config.js) 中对应 API 地址设为空字符串，让浏览器使用同域 `/api/*`。
+如果网页与 API 同域，可以将 [js/config.ts](../../js/config.ts) 中对应 API 地址设为空字符串，让浏览器使用同域 `/api/*`。部署包会在构建时把 TypeScript 编译结果放入 `dist/.runtime/`。
 
 如果前端部署在 OSS、API 部署在 FC：
 
@@ -110,7 +110,7 @@ dist/
 3. 将 FC 环境变量 `FRONTEND_ORIGIN` 设置为 OSS 或自定义域名的完整 HTTPS 地址。
 4. 根据需要开启 `USE_DATABASE` 和 `USE_QUIZ_DATABASE`。
 
-不要把 API Key 写入 `js/config.js`，该文件会公开给所有访客。
+不要把 API Key 写入 `js/config.ts`，该文件会公开给所有访客。
 
 ## 部署后检查
 

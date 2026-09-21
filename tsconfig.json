@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "None",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": false,
+    "noEmitOnError": true,
+    "outDir": ".runtime",
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "types/**/*.d.ts",
+    "js/*.ts",
+    "data/*.ts"
+  ]
+}

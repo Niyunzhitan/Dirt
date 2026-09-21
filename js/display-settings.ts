@@ -1,8 +1,8 @@
-(function registerDisplaySettings() {
+const NiyunDisplaySettings = (function registerDisplaySettings() {
   "use strict";
 
-  window.NiyunDisplaySettings = {
-    create(dependencies) {
+  return {
+    create(dependencies: SettingsDependencies) {
       // 设置模块不直接持有 userSettings，而是通过回调读写，避免恢复默认后出现旧状态。
       const {
         $,
@@ -17,14 +17,14 @@
         showToast,
         dispatchReset,
       } = dependencies;
-      const dialog = $("#settingsDialog");
-      const form = $("#settingsForm");
-      const openButton = $("#openSettings");
+      const dialog = ($("#settingsDialog") as HTMLDialogElement);
+      const form = ($("#settingsForm") as HTMLFormElement);
+      const openButton = ($("#openSettings") as HTMLButtonElement);
       const outputs = {
-        motionIntensity: $("#motionValue"),
-        tiltDegrees: $("#tiltValue"),
-        dustQuantity: $("#dustValue"),
-        dustSpeed: $("#dustSpeedValue"),
+        motionIntensity: ($("#motionValue") as HTMLOutputElement),
+        tiltDegrees: ($("#tiltValue") as HTMLOutputElement),
+        dustQuantity: ($("#dustValue") as HTMLOutputElement),
+        dustSpeed: ($("#dustSpeedValue") as HTMLOutputElement),
       };
 
       const describe = {
@@ -50,10 +50,10 @@
       function sync() {
         if (!form) return;
         const settings = getSettings();
-        form.querySelectorAll(`[name="themeMode"]`).forEach((input) => {
+        (form.querySelectorAll(`[name="themeMode"]`) as NodeListOf<HTMLInputElement>).forEach((input) => {
           input.checked = input.value === settings.themeMode;
         });
-        const openingInput = $("#openingAnimationEnabled");
+        const openingInput = ($("#openingAnimationEnabled") as HTMLInputElement);
         if (openingInput) openingInput.checked = localStorage.getItem(openingKey) !== "false";
         const rangesMap = {
           motionIntensity: ranges.pageMotion,
@@ -75,8 +75,8 @@
         if (systemNote) systemNote.hidden = !reducedMotion;
       }
 
-      function animate(open) {
-        const panel = dialog?.querySelector(".settings-panel");
+      function animate(open: boolean) {
+        const panel = (dialog?.querySelector(".settings-panel") as HTMLElement);
         if (!panel) return null;
         panel.getAnimations().forEach((item) => item.cancel());
         return panel.animate(
@@ -108,10 +108,10 @@
           dialog.showModal();
           animate(true);
           openButton.setAttribute("aria-expanded", "true");
-          $("#closeSettings")?.focus();
+          ($("#closeSettings") as HTMLButtonElement)?.focus();
         });
-        $("#closeSettings")?.addEventListener("click", close);
-        $("#doneSettings")?.addEventListener("click", close);
+        ($("#closeSettings") as HTMLButtonElement)?.addEventListener("click", close);
+        ($("#doneSettings") as HTMLButtonElement)?.addEventListener("click", close);
         dialog?.addEventListener("click", function handleClick(event) {
           if (event.target === dialog) close();
         });
@@ -125,6 +125,7 @@
         });
         form?.addEventListener("input", function handleInput(event) {
           const input = event.target;
+          if (!(input instanceof HTMLInputElement)) return;
           if (input.id === "openingAnimationEnabled") {
             localStorage.setItem(openingKey, String(input.checked));
             return;
@@ -134,7 +135,7 @@
           applySettings();
           sync();
         });
-        $("#resetSettings")?.addEventListener("click", function handleClick() {
+        ($("#resetSettings") as HTMLButtonElement)?.addEventListener("click", function handleClick() {
           resetSettings();
           applySettings();
           localStorage.setItem(openingKey, "true");
@@ -148,3 +149,5 @@
     },
   };
 })();
+
+window.NiyunDisplaySettings = NiyunDisplaySettings;

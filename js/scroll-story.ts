@@ -1,20 +1,20 @@
-(function registerScrollStory() {
+const NiyunScrollStory = (function registerScrollStory() {
   "use strict";
 
-  window.NiyunScrollStory = {
-    create(dependencies) {
+  return {
+    create(dependencies: PageHelpers) {
       const { $, $$, escapeHtml, prefersReducedMotion } = dependencies;
 
       function init() {
         const viewport = $("#scrollViewport");
         if (!viewport) return;
         const track = $("#scrollTrack");
-        const panels = $$(".scroll-panel", viewport);
-        const previous = $("#scrollPrev");
-        const next = $("#scrollNext");
+        const panels = ($$(".scroll-panel", viewport) as HTMLElement[]);
+        const previous = ($("#scrollPrev") as HTMLButtonElement);
+        const next = ($("#scrollNext") as HTMLButtonElement);
         const progress = $("#scrollProgress");
         const status = $("#scrollStatus");
-        $$(`[data-scroll-image]`, viewport).forEach((illustration) => {
+        ($$(`[data-scroll-image]`, viewport) as HTMLElement[]).forEach((illustration) => {
           const imagePath = illustration.dataset.scrollImage?.trim();
           if (!imagePath) return;
           const image = document.createElement("img");
@@ -44,7 +44,7 @@
         let dragging = false;
         let dragStart = 0;
         let scrollStart = 0;
-        let chapterStops = [];
+        let chapterStops: number[] = [];
 
         // 重新记录各幕的位置，窗口大小改变后翻页仍能准确停靠。
         function refreshChapterStops() {
@@ -81,7 +81,7 @@
           next.disabled = viewport.scrollLeft >= max - 1;
         }
 
-        function moveToChapter(direction) {
+        function moveToChapter(direction: number) {
           const tolerance = 4;
           const current = viewport.scrollLeft;
           const target =
@@ -92,7 +92,7 @@
             viewport.scrollTo({ left: target, behavior: prefersReducedMotion() ? "auto" : "smooth" });
         }
 
-        function moveToEdge(edge) {
+        function moveToEdge(edge: string) {
           viewport.scrollTo({
             left: edge === "start" ? 0 : viewport.scrollWidth,
             behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -169,3 +169,5 @@
     },
   };
 })();
+
+window.NiyunScrollStory = NiyunScrollStory;

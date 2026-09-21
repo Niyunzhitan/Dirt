@@ -1,13 +1,13 @@
-(function registerAiChatController() {
+const NiyunAiChat = (function registerAiChatController() {
   "use strict";
 
-  window.NiyunAiChat = {
-    create(dependencies) {
+  return {
+    create(dependencies: ChatDependencies) {
       const { $, $$, escapeHtml, renderMarkdown, showToast, aiService, sessionStorageKey } = dependencies;
-      let selectedImages = [];
+      let selectedImages: SelectedImage[] = [];
       let sessionId = window.sessionStorage.getItem(sessionStorageKey) || "";
 
-      function appendMessage(text, role) {
+      function appendMessage(text: string, role: string) {
         const messages = $("#chatMessages");
         const message = document.createElement("div");
         message.className = `chat-message ${role}`;
@@ -17,7 +17,7 @@
         return message;
       }
 
-      function normalizeDisplayedAiName(text) {
+      function normalizeDisplayedAiName(text: string) {
         return String(text || "").replaceAll("于见泥", "印小灵");
       }
 
@@ -37,20 +37,20 @@
       function clearSelectedImages() {
         selectedImages.forEach((item) => URL.revokeObjectURL(item.previewUrl));
         selectedImages = [];
-        $("#aiImage").value = "";
+        ($("#aiImage") as HTMLInputElement).value = "";
         renderSelectedImages();
       }
 
       // 先显示用户消息和等待提示，再请求回答；成功或失败都要恢复发送按钮。
-      async function send(message) {
+      async function send(message: string) {
         const images = selectedImages.map((item) => item.file);
         if (!message && !images.length) return;
         const uploadText = images.length ? `带了 ${images.length} 张图片给你看` : "";
         appendMessage([message, uploadText].filter(Boolean).join(" · "), "user");
-        $("#aiQuestion").value = "";
+        ($("#aiQuestion") as HTMLInputElement).value = "";
         clearSelectedImages();
         const pending = appendMessage("印小灵正在翻翻小册子……", "assistant pending");
-        const submitButton = $("#chatForm button[type='submit']");
+        const submitButton = ($("#chatForm button[type='submit']") as HTMLButtonElement);
         submitButton.disabled = true;
         try {
           const result = await aiService.chat({ message, images, sessionId });
@@ -68,7 +68,7 @@
         }
       }
 
-      function renderStatus(status) {
+      function renderStatus(status: AiStatus) {
         const element = $("#aiStatus");
         if (!element) return;
         const ready = status.connected === true;
@@ -89,17 +89,17 @@
         window.addEventListener("ai-status-change", function handleAiStatusChange(event) {
           return renderStatus(event.detail || { connected: false });
         });
-        $("#chatForm")?.addEventListener("submit", function handleSubmit(event) {
+        ($("#chatForm") as HTMLFormElement)?.addEventListener("submit", function handleSubmit(event) {
           event.preventDefault();
-          send($("#aiQuestion").value.trim());
+          send(($("#aiQuestion") as HTMLInputElement).value.trim());
         });
-        $$(`[data-prompt]`).forEach((button) =>
+        ($$(`[data-prompt]`) as HTMLElement[]).forEach((button) =>
           button.addEventListener("click", function handleClick() {
             return send(button.dataset.prompt);
           }),
         );
-        $("#aiImage")?.addEventListener("change", function handleChange() {
-          const files = [...$("#aiImage").files];
+        ($("#aiImage") as HTMLInputElement)?.addEventListener("change", function handleChange() {
+          const files = [...($("#aiImage") as HTMLInputElement).files];
           const availableSlots = Math.max(0, 4 - selectedImages.length);
           const validFiles = files
             .filter((file) => {
@@ -118,11 +118,11 @@
               previewUrl: URL.createObjectURL(file),
             }),
           );
-          $("#aiImage").value = "";
+          ($("#aiImage") as HTMLInputElement).value = "";
           renderSelectedImages();
         });
         $("#uploadThumbnails")?.addEventListener("click", function handleClick(event) {
-          const button = event.target.closest("[data-remove-image]");
+          const button = ((event.target as HTMLElement).closest("[data-remove-image]") as HTMLElement);
           if (!button) return;
           const index = selectedImages.findIndex((item) => item.id === button.dataset.removeImage);
           if (index < 0) return;
@@ -130,8 +130,8 @@
           selectedImages.splice(index, 1);
           renderSelectedImages();
         });
-        $("#clearImages")?.addEventListener("click", clearSelectedImages);
-        $("#clearChat")?.addEventListener("click", function handleClick() {
+        ($("#clearImages") as HTMLButtonElement)?.addEventListener("click", clearSelectedImages);
+        ($("#clearChat") as HTMLButtonElement)?.addEventListener("click", function handleClick() {
           $("#chatMessages").innerHTML =
             '<div class="chat-message assistant">小黑板擦干净啦！重新开始吧，想聊封泥或别的小问题都可以。</div>';
           sessionId = "";
@@ -144,3 +144,5 @@
     },
   };
 })();
+
+window.NiyunAiChat = NiyunAiChat;

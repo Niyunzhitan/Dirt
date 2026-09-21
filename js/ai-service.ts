@@ -1,3 +1,10 @@
+interface AiImageData {
+  name: string;
+  type: string;
+  size: number;
+  dataUrl: string;
+}
+
 (function initializeAiService() {
   // 云端优先、本地兜底；真实 Key 始终只保存在对应后端。
   // 地址为空时使用同源后端，支持通过 server.js 同时托管网页和 AI API。
@@ -21,20 +28,24 @@
   ];
   let activeBaseUrl = "";
   // 保留最近一次状态的配置结论；网络超时时沿用它，但不会把超时误报成确定离线。
-  let lastKnownStatus = null;
+  let lastKnownStatus: AiStatus | null = null;
 
   // connected: true 表示成功，false 表示失败，null 表示探测未取得结论。
   // configured 只说明配置齐全，不能代替上游可用性判断。
-  function notifyStatus(status) {
+  function notifyStatus(status: AiStatus): void {
     lastKnownStatus = status;
     window.dispatchEvent(new CustomEvent("ai-status-change", { detail: status }));
   }
 
   // 浏览器不能直接把 File 对象放进 JSON，所以先转成后端可读取的 Data URL。
-  function fileToDataUrl(file) {
+  function fileToDataUrl(file: File): Promise<AiImageData> {
     return new Promise(function readImageAsDataUrl(resolve, reject) {
       const reader = new FileReader();
       reader.onload = function handleImageRead() {
+        if (typeof reader.result !== "string") {
+          reject(new Error("无法读取图片数据"));
+          return;
+        }
         resolve({
           name: file.name,
           type: file.type,
@@ -51,13 +62,13 @@
 
   window.AiService = {
     // 页面启动时调用状态接口，用来显示“AI助手已连接/未连接”。
-    async getStatus() {
-      let latestStatus = null;
+    async getStatus(): Promise<AiStatus> {
+      let latestStatus: AiStatus | null = null;
       let latestBaseUrl = "";
       for (const baseUrl of API_BASE_URLS) {
         try {
           const response = await fetch(`${baseUrl}/api/ai/status`, { signal: AbortSignal.timeout(10000) });
-          const status = response.ok ? await response.json() : null;
+          const status: AiStatus | null = response.ok ? await response.json() : null;
           if (status) {
             latestStatus = status;
             latestBaseUrl = baseUrl;
@@ -92,7 +103,7 @@
     },
 
     // 把文字、图片和会话编号统一交给后端；后端再决定调用文字模型还是视觉模型。
-    async chat({ message, images = [], sessionId = "guest" }) {
+    async chat({ message, images = [], sessionId = "guest" }: AiRequest): Promise<AiReply> {
       const encodedImages = await Promise.all(images.map(fileToDataUrl));
       const candidates = [...new Set([activeBaseUrl, ...API_BASE_URLS].filter(Boolean))];
       let lastError = API_BASE_URLS.length
@@ -105,7 +116,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message, sessionId, images: encodedImages }),
           });
-          const result = await response.json().catch(() => ({}));
+          const result: AiReply = await response.json().catch(() => ({}));
           if (!response.ok) {
             const code = result.errorCode || `HTTP_${response.status}`;
             const upstream = result.upstreamCode ? `，上游码：${result.upstreamCode}` : "";

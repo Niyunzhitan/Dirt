@@ -41,14 +41,14 @@
     preferences.size = clampPreference(saved.size, 2, 8, defaults.size);
     preferences.density = clampPreference(saved.density, 1, 4, defaults.density);
   } catch (_) { /* 存储不可用或损坏时沿用默认值。 */ }
-  const enabledInput = document.querySelector("#cursorTrailEnabled");
-  const sizeInput = document.querySelector("#cursorTrailSize");
-  const densityInput = document.querySelector("#cursorTrailDensity");
-  const particles = new Map();
+  const enabledInput = (document.querySelector("#cursorTrailEnabled") as HTMLInputElement);
+  const sizeInput = (document.querySelector("#cursorTrailSize") as HTMLInputElement);
+  const densityInput = (document.querySelector("#cursorTrailDensity") as HTMLInputElement);
+  const particles = new Map<HTMLElement, Animation>();
   let lastEmission = 0;
-  let previousPoint = null;
+  let previousPoint: { x: number; y: number } | null = null;
 
-  function clampPreference(value, min, max, fallback) {
+  function clampPreference(value: number, min: number, max: number, fallback: number) {
     return Number.isFinite(value) ? Math.round(Math.min(max, Math.max(min, value))) : fallback;
   }
 
@@ -68,11 +68,11 @@
     }
     if (sizeInput) sizeInput.value = String(preferences.size);
     if (densityInput) densityInput.value = String(preferences.density);
-    const sizeOutput = document.querySelector("#cursorTrailSizeValue");
-    const densityOutput = document.querySelector("#cursorTrailDensityValue");
+    const sizeOutput = (document.querySelector("#cursorTrailSizeValue") as HTMLOutputElement);
+    const densityOutput = (document.querySelector("#cursorTrailDensityValue") as HTMLOutputElement);
     if (sizeOutput) sizeOutput.textContent = `${preferences.size}～${preferences.size + settings.sizeRange} px`;
     if (densityOutput) densityOutput.textContent = `${preferences.density} 粒/次`;
-    const note = document.querySelector("#cursorTrailLockNote");
+    const note = (document.querySelector("#cursorTrailLockNote") as HTMLElement);
     if (note) note.hidden = !locked;
     if (locked || !preferences.enabled) clearTrail();
   }
@@ -92,7 +92,7 @@
     return preferences.enabled && !isLocked() && !document.hidden;
   }
 
-  function removeParticle(particle) {
+  function removeParticle(particle: HTMLElement) {
     const animation = particles.get(particle);
     particles.delete(particle);
     if (animation) animation.cancel();
@@ -104,7 +104,7 @@
     previousPoint = null;
   }
 
-  function emitParticle(x, y) {
+  function emitParticle(x: number, y: number) {
     if (particles.size >= settings.maxParticles) removeParticle(particles.keys().next().value);
     const particle = document.createElement("span");
     particle.className = "cursor-clay-debris";
@@ -130,7 +130,7 @@
 
   document.addEventListener("pointermove", function handleCursorMovement(event) {
     if (!isEnabled() || event.pointerType !== "mouse" || event.buttons ||
-        event.target.closest("input, textarea, select, [contenteditable], dialog")) {
+        ((event.target as HTMLElement).closest("input, textarea, select, [contenteditable], dialog") as HTMLDialogElement)) {
       clearTrail();
       return;
     }

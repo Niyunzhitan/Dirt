@@ -1,14 +1,14 @@
 (function initializeWebsite() {
   // ==================== 01. 通用工具和页面状态 ====================
   // $ 查找一个元素，$$ 查找多个元素并转成数组，后面所有板块都会使用。
-  const $ = function $(selector, scope = document) {
-    return scope.querySelector(selector);
+  const $ = function $(selector: string, scope: ParentNode = document): HTMLElement {
+    return scope.querySelector(selector) as HTMLElement;
   };
-  const $$ = function $$(selector, scope = document) {
-    return [...scope.querySelectorAll(selector)];
+  const $$ = function $$(selector: string, scope: ParentNode = document): HTMLElement[] {
+    return Array.from(scope.querySelectorAll(selector)) as HTMLElement[];
   };
   // 这些小工具和基础状态由多个功能模块共享，因此保留在入口文件中统一提供。
-  let visibleSites = [];
+  let visibleSites: Site[] = [];
   // 改名后启用新的会话命名空间，避免旧会话带回历史 AI 名称。
   const aiSessionStorageKey = "niyun-yinxiaoling-ai-session";
   window.sessionStorage.removeItem("nimeng-ai-session");
@@ -24,7 +24,7 @@
   const systemPrefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // 导航时钟与弹窗动画：时间单位均为毫秒。
-  const interfaceConfig = {
+  const interfaceConfig: InterfaceConfig = {
     clockLocale: "zh-CN",
     clockRefreshInterval: 1000,
     clockFormat: { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false },
@@ -223,19 +223,19 @@
   function applyBrandLogo() {
     const logoUrl = safeResourceUrl(window.MEDIA_CONFIG?.brandLogo);
     if (!logoUrl) return;
-    $$(".brand-logo-image").forEach((image) => {
+    ($$(".brand-logo-image") as HTMLImageElement[]).forEach((image) => {
       image.src = logoUrl;
       image.hidden = false;
       image.addEventListener(
         "error",
         function handleError() {
           image.hidden = true;
-          const fallback = image.parentElement.querySelector(".brand-logo-fallback");
+          const fallback = (image.parentElement.querySelector(".brand-logo-fallback") as HTMLElement);
           if (fallback) fallback.hidden = false;
         },
         { once: true },
       );
-      const fallback = image.parentElement.querySelector(".brand-logo-fallback");
+      const fallback = (image.parentElement.querySelector(".brand-logo-fallback") as HTMLElement);
       if (fallback) fallback.hidden = true;
     });
   }
@@ -428,12 +428,13 @@
   }
 
   // 页面右下角的短提示，2.6 秒后自动隐藏。
-  function showToast(message) {
+  let toastTimer = 0;
+  function showToast(message: string) {
     const toast = $("#toast");
     toast.textContent = message;
     toast.classList.add("show");
-    window.clearTimeout(showToast.timer);
-    showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2600);
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2600);
   }
 
   // ==================== 02. 藏品、地图、课程和文创内容渲染 ====================
@@ -598,7 +599,7 @@
   // 提前记录折叠内容的高度，展开动画时就能知道应该长到多高。
   function cacheSourceSupplementHeights(root) {
     if (!root) return;
-    root.querySelectorAll(".source-card-supplement-details").forEach((details) => {
+    (root.querySelectorAll(".source-card-supplement-details") as NodeListOf<HTMLDetailsElement>).forEach((details) => {
       if (details.open) return;
       details.open = true;
       details.dataset.openHeight = String(details.scrollHeight);
@@ -608,8 +609,8 @@
 
   // 原生 details 会直接跳开，这里先播放高度变化，再确定最终展开状态。
   async function animateSourceSupplementDetails(details, shouldOpen) {
-    const summary = details.querySelector(":scope > summary");
-    const content = details.querySelector(":scope > .source-card-supplement-details-content");
+    const summary = (details.querySelector(":scope > summary") as HTMLElement);
+    const content = (details.querySelector(":scope > .source-card-supplement-details-content") as HTMLElement);
     if (!summary || !content || details.classList.contains("is-animating")) return;
 
     if (prefersReducedMotion()) {
@@ -680,7 +681,7 @@
     const query = keyword.trim().toLowerCase();
     const items = findKnowledgeSites(query);
     renderSourceCards($("#sourceDialogIndex"), items);
-    $("#clearSourceDialogSearch").hidden = !query;
+    ($("#clearSourceDialogSearch") as HTMLButtonElement).hidden = !query;
     $("#sourceDialogFeedback").textContent = query
       ? `找到 ${items.length} 处匹配资料`
       : `显示全部 ${items.length} 处区县资料`;
@@ -698,11 +699,11 @@
       ApiService.getRelics(),
       ApiService.getCourses(),
     ]);
-    $("#statRelics").textContent = stats.relics;
-    $("#statSites").textContent = stats.sites;
-    $("#statCourses").textContent = stats.courses;
+    $("#statRelics").textContent = String(stats.relics);
+    $("#statSites").textContent = String(stats.sites);
+    $("#statCourses").textContent = String(stats.courses);
     if (mapConfig.imageUrl) {
-      const image = $("#mapSourceImage");
+      const image = ($("#mapSourceImage") as HTMLImageElement);
       image.src = mapConfig.imageUrl;
       image.hidden = false;
       $("#shandongMap").classList.add("has-source-image");
@@ -737,10 +738,10 @@
     openingLoaderController.finish(true);
   }
 
-  const sourceDialog = $("#sourceDialog");
-  const sourceDialogPanel = sourceDialog?.querySelector(".source-dialog-panel");
-  const sourceDialogSearch = $("#sourceDialogSearch");
-  const clearSourceDialogSearch = $("#clearSourceDialogSearch");
+  const sourceDialog = ($("#sourceDialog") as HTMLDialogElement);
+  const sourceDialogPanel = (sourceDialog?.querySelector(".source-dialog-panel") as HTMLElement);
+  const sourceDialogSearch = ($("#sourceDialogSearch") as HTMLInputElement);
+  const clearSourceDialogSearch = ($("#clearSourceDialogSearch") as HTMLButtonElement);
 
   // 搜索、图录和设置弹窗共用的基础进出场动画。
   function openModalAnimation(panel) {
@@ -849,7 +850,7 @@
     window.history.pushState(null, "", "#collection");
   }
 
-  $$("[data-artifact-relic-id]").forEach((artifact) =>
+  ($$("[data-artifact-relic-id]") as HTMLElement[]).forEach((artifact) =>
     artifact.addEventListener("keydown", function handleKeydown(event) {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
@@ -858,14 +859,14 @@
   );
 
   document.addEventListener("click", async function handleClick(event) {
-    const artifact = event.target.closest("[data-artifact-relic-id]");
+    const artifact = ((event.target as HTMLElement).closest("[data-artifact-relic-id]") as HTMLElement);
     if (artifact) {
       revealRelicCard(artifact.dataset.artifactRelicId);
       return;
     }
-    const notice = event.target.closest("[data-notice]");
+    const notice = ((event.target as HTMLElement).closest("[data-notice]") as HTMLElement);
     if (notice) showToast(notice.dataset.notice);
-    const detail = event.target.closest("[data-relic-id]");
+    const detail = ((event.target as HTMLElement).closest("[data-relic-id]") as HTMLElement);
     if (detail) {
       event.preventDefault();
       await sourceArchiveController.openRelic(detail.dataset.relicId);

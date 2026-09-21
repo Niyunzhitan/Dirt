@@ -1,8 +1,8 @@
-(function registerSourceArchive() {
+const NiyunSourceArchive = (function registerSourceArchive() {
   "use strict";
 
-  window.NiyunSourceArchive = {
-    create(dependencies) {
+  return {
+    create(dependencies: ArchiveDependencies) {
       // 地图、藏品卡和搜索结果都会打开同一个图录弹窗，因此集中在这里维护打开、关闭和定位逻辑。
       const {
         $,
@@ -48,7 +48,7 @@
       }
 
       // 等弹窗排版完成后定位卡片，否则滚动位置可能算不准。
-      function focusCard(siteId, message) {
+      function focusCard(siteId: number, message = "") {
         window.setTimeout(function focusArchiveCardAfterLayout() {
           const target = $(`#sourceDialogIndex [data-source-card="${siteId}"]`);
           target?.classList.add("search-target");
@@ -58,7 +58,7 @@
         }, 80);
       }
 
-      function openSite(siteId) {
+      function openSite(siteId: number) {
         const site = getVisibleSites().find((item) => Number(item.id) === Number(siteId));
         if (!site) return;
         const county = String(site.city || "").split(" · ")[1] || String(site.city || "");
@@ -66,7 +66,7 @@
         focusCard(site.id, `已定位图录：${site.city} · ${site.seals[0]}`);
       }
 
-      function openRelic(relicId) {
+      function openRelic(relicId: string) {
         const link = getRelicArchiveLink(relicId) || {};
         openArchive(link.query || "");
         if (link.siteId) {
@@ -80,8 +80,8 @@
         }
       }
 
-      function navigateToMap(event) {
-        const link = event.target.closest("[data-source-site]");
+      function navigateToMap(event: MouseEvent) {
+        const link = ((event.target as HTMLElement).closest("[data-source-site]") as HTMLElement);
         if (!link) return;
         event.preventDefault();
         navigateToMapIndex(link.dataset.sourceSite);
@@ -91,18 +91,19 @@
       function init() {
         $("#sourceIndex")?.addEventListener("click", navigateToMap);
         $("#sourceDialogIndex")?.addEventListener("click", navigateToMap);
-        const handleDetails = function handleDetails(event) {
-          const summary = event.target.closest(".source-card-supplement-details > summary");
+        const handleDetails = function handleDetails(event: MouseEvent) {
+          const summary = ((event.target as HTMLElement).closest(".source-card-supplement-details > summary") as HTMLElement);
           if (!summary) return;
           event.preventDefault();
-          animateSourceSupplementDetails(summary.parentElement, !summary.parentElement.open);
+          const details = summary.parentElement as HTMLDetailsElement;
+          animateSourceSupplementDetails(details, !details.open);
         };
         $("#sourceIndex")?.addEventListener("click", handleDetails);
         $("#sourceDialogIndex")?.addEventListener("click", handleDetails);
-        $("#openSourceIndex")?.addEventListener("click", function handleClick() {
+        ($("#openSourceIndex") as HTMLButtonElement)?.addEventListener("click", function handleClick() {
           return openArchive();
         });
-        $("#closeSourceIndex")?.addEventListener("click", close);
+        ($("#closeSourceIndex") as HTMLButtonElement)?.addEventListener("click", close);
         sourceDialog?.addEventListener("click", function handleClick(event) {
           if (event.target === sourceDialog) close();
         });
@@ -111,7 +112,7 @@
           close();
         });
         sourceDialogSearch?.addEventListener("input", function handleInput(event) {
-          return renderSourceDialogIndex(event.target.value);
+          return renderSourceDialogIndex((event.target as HTMLInputElement).value);
         });
         clearSourceDialogSearch?.addEventListener("click", function handleClick() {
           sourceDialogSearch.value = "";
@@ -127,3 +128,5 @@
     },
   };
 })();
+
+window.NiyunSourceArchive = NiyunSourceArchive;

@@ -1,6 +1,6 @@
 # 课程资源
 
-三课时 PDF、逐页预览图、教案学习单和支教活动回顾视频都放在这个目录。网页中的路径统一写在 [data/media-config.js](../../data/media-config.js)，替换同名文件时不需要改页面代码。
+三课时 PDF、逐页预览图、教案学习单和支教活动回顾视频都放在这个目录。网页中的路径统一写在 [data/media-config.ts](../../data/media-config.ts)，替换同名文件时不需要改页面代码。
 
 当前目录：
 
@@ -33,7 +33,7 @@ assets/courses/
 }
 ```
 
-课程 ID 必须与 `data/mock-data.js` 或数据库记录一致。教案和活动回顾视频写在 `coursePack` 中，不要放进某一课的 `videoUrl`。新增或删除预览页后，要同步修改 `slideCount`。
+课程 ID 必须与 `data/mock-data.ts` 或数据库记录一致。教案和活动回顾视频写在 `coursePack` 中，不要放进某一课的 `videoUrl`。新增或删除预览页后，要同步修改 `slideCount`。
 
 视频建议使用 MP4（H.264 + AAC）或 WebM，封面使用 WebP 或 PNG。新文件名尽量只用英文字母、数字、短横线和点，例如 `course-01.mp4`；现有中文文件名可继续使用，但修改名称后必须更新配置。
 
